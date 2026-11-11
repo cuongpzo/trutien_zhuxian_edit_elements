@@ -116,6 +116,8 @@ public sealed class TableFileView : Panel, IModuleView
         Controls.Add(right);
         Controls.Add(top);
 
+        GameFont.Bind(_grid);
+        GameFont.Bind(_fields);
         _tablePick.SelectedIndexChanged += (_, _) => { if (_tablePick.SelectedIndex >= 0) SetTable(_file.Tables[_tablePick.SelectedIndex]); };
         _search.TextChanged += (_, _) => ApplyFilter();
         _search.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter && _grid.RowCount > 0) { e.SuppressKeyPress = true; _grid.Focus(); } };

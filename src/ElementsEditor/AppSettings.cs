@@ -13,6 +13,10 @@ public sealed class AppSettings
     public int? LastList { get; set; }
     /// <summary>UI language code (lang\&lt;code&gt;.json); null / "en" = English.</summary>
     public string? Language { get; set; }
+    /// <summary>Font family for game (Chinese) text; null = default.</summary>
+    public string? CjkFont { get; set; }
+    /// <summary>Size factor for game text (1.0 = normal).</summary>
+    public float CjkFontScale { get; set; } = 1f;
 
     private static string FilePath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ElementsEditor", "settings.json");

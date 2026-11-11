@@ -266,6 +266,8 @@ public sealed class ColorTextEditor : Panel
         var bar = new ColorCodeBar(_text) { Dock = DockStyle.Top };
         var prevLabel = new Label { Text = L.T("Preview (in game)"), Dock = DockStyle.Top, Height = 20, ForeColor = Color.DimGray, TextAlign = ContentAlignment.BottomLeft };
         _preview = new GameTextPreview { Dock = DockStyle.Fill, TabStop = false };
+        GameFont.Bind(_text);
+        GameFont.Bind(_preview);
         var bottom = new Panel { Dock = DockStyle.Bottom, Height = 38, Padding = new Padding(0, 6, 0, 0) };
         _hint = new Label { Text = L.T("Ctrl+Enter save · Esc cancel"), Dock = DockStyle.Fill, ForeColor = Color.DimGray, TextAlign = ContentAlignment.MiddleLeft };
         _save = new Button { Text = L.T("✓ Save text"), Dock = DockStyle.Right, Width = 96 };

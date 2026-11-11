@@ -87,6 +87,8 @@ public sealed class GShopView : Panel, IModuleView
         Controls.Add(_shopMode);
         Controls.Add(top);
 
+        GameFont.Bind(_list);
+        GameFont.Bind(_tree);
         _tree.AfterSelect += (_, e) => { _filter = e.Node?.Tag as (int, int)?; FillList(); };
         _search.TextChanged += (_, _) => FillList();
         _list.DrawItem += DrawItem;
@@ -441,6 +443,7 @@ public sealed class GShopView : Panel, IModuleView
         tb.Leave += (_, _) => Commit();
         tb.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Commit(); } };
         tb.TextChanged += (_, _) => UpdateHint();
+        if (col.IsText) GameFont.Bind(tb);
         var tip = new ToolTip();
         if (col.Note != null) tip.SetToolTip(tb, col.Note);
         s.AddRow(label, col.Note, tb, after);
@@ -589,6 +592,8 @@ public sealed class GShopView : Panel, IModuleView
         var col = _items.Columns[c];
         var text = new TextBox { Multiline = true, ScrollBars = ScrollBars.Vertical, AcceptsReturn = true, Width = 600, Height = 96, Font = new Font("Segoe UI", 10F), Text = r.Text(c).Replace("\r\n", "\n").Replace("\n", "\r\n") };
         var preview = new GameTextPreview { Width = 600, Height = 96, Font = new Font("Segoe UI", 10F) };
+        GameFont.Bind(text);
+        GameFont.Bind(preview);
         var counter = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(0, 4, 0, 0) };
         bool crlf = r.Text(c).Contains("\r\n");
         string Norm() => crlf ? text.Text : text.Text.Replace("\r\n", "\n");

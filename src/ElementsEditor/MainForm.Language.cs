@@ -1,4 +1,4 @@
-using ElementsCore;
+﻿using ElementsCore;
 
 namespace ElementsEditor;
 
@@ -32,6 +32,7 @@ public sealed partial class MainForm
         };
         mLang.DropDownItems.Add("English"); // placeholder so the arrow shows; filled on opening
         menu.Items.Add(mLang);
+        SetupFontMenu(); // right-aligned: left of Language
     }
 
     private void SwitchLanguage(string code)

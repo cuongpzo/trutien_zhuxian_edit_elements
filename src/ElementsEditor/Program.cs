@@ -10,6 +10,8 @@ internal static class Program
         Theme.Dark = settings.DarkTheme;
         // UI language (lang\*.json next to the exe; English when unset) – before any window is built
         ElementsCore.L.Load(settings.Language);
+        // font for game (Chinese) text: fonts\*.ttf next to the exe + the saved choice (Font menu)
+        GameFont.Init(settings.CjkFont, settings.CjkFontScale);
         Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
         Application.ThreadException += (_, e) =>
         {

@@ -14,6 +14,11 @@ C# .NET 10 – WinForms. Đã kiểm chứng trên Client0619 (version 165): đ�
 - Mỗi ngôn ngữ là một file JSON `src\ElementsEditor\lang\<mã>.json` (được chép vào `lang\` cạnh exe): `{"code","name","englishName","strings":{"English text":"bản dịch"}}`. Chuỗi thiếu → hiện tiếng Anh. Thêm ngôn ngữ mới = thả thêm file JSON (vd `fr.json`), không cần build lại.
 - Trong code: `L.T("English")` / `L.F("Saved {0}", path)` (src\ElementsCore\L.cs).
 
+## Phông chữ cho chữ tiếng Trung
+- Menu **Aa Font** (cạnh Language): chọn phông cho chữ tiếng Trung / dữ liệu game (tên vật phẩm, mô tả, hội thoại NPC, các bảng dữ liệu) và cỡ chữ 100–175%; áp dụng ngay, lưu trong settings.
+- Phông đi kèm chương trình: thả file `.ttf/.otf/.ttc` vào thư mục `fonts\` của dự án → được chép vào `Release\fonts\` và nạp riêng cho chương trình (không cài vào Windows). Hiện có **DFKai-SB** (標楷體). Có thể chọn cả phông CJK đã cài (Microsoft YaHei, SimSun, MingLiU…).
+- Thư mục `fonts\` không đưa lên GitHub (giấy phép phông thương mại).
+
 ## Tính năng
 - 318 list + **NPC Dialogs** (204 hội thoại, dạng cây cửa sổ/lựa chọn, sửa được, độ dài tự do).
 - Field theo schema JSON: enum/mask hiện ý nghĩa, field đổi kiểu theo điều kiện (vd addon param → float).

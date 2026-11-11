@@ -189,6 +189,10 @@ public sealed class DomainMapView : Panel, IModuleView
         Controls.Add(top);
 
         // ── events
+        GameFont.Bind(_list);
+        GameFont.Bind(_nbList);
+        GameFont.Bind(_tbName);
+        GameFont.Bind(_canvas);
         _search.TextChanged += (_, _) => FillList();
         _list.DrawItem += DrawListItem;
         _list.SelectedIndexChanged += (_, _) => { if (!_syncing && _list.SelectedIndex >= 0) Select(_shown[_list.SelectedIndex], fromList: true); };

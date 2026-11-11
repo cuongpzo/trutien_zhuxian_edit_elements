@@ -11,5 +11,7 @@
     <None Include="$(MSBuildThisFileDirectory)schemas\**\*.json" Link="schemas\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <!-- UI languages: src\ElementsEditor\lang\<code>.json → lang\ next to the exe (English is built in) -->
     <None Include="$(MSBuildThisFileDirectory)src\ElementsEditor\lang\*.json" Link="lang\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Fonts for game (Chinese) text: fonts\*.ttf|otf|ttc → fonts\ next to the exe (not in git: font licences) -->
+    <None Include="$(MSBuildThisFileDirectory)fonts\*.ttf;$(MSBuildThisFileDirectory)fonts\*.otf;$(MSBuildThisFileDirectory)fonts\*.ttc" Link="fonts\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

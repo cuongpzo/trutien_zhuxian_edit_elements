@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using ElementsCore;
 using ElementsCore.Exchange;
 
@@ -52,6 +52,7 @@ public sealed class ChangesPanel : Panel
         _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Old"), Width = 130 });
         _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("New"), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 120 });
         _grid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "", Width = 44, Text = "↺", UseColumnTextForButtonValue = false, FlatStyle = FlatStyle.Flat });
+        GameFont.Bind(_grid);
         _grid.CellValueNeeded += OnValueNeeded;
         _grid.CellFormatting += OnFormatting;
         _grid.CellContentClick += (_, e) => { if (e.ColumnIndex == 4 && e.RowIndex >= 0) RevertRow(e.RowIndex); };

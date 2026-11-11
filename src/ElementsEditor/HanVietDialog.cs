@@ -197,6 +197,7 @@ public sealed class HanVietDialog : ThemedForm
         _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Hán Việt"), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 200 });
         _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Length"), Width = 70 });
         _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Status"), Width = 170 });
+        GameFont.Bind(_grid);
         _grid.CellValueNeeded += OnValue;
         _grid.CellFormatting += OnFormat;
         var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(0, 8, 0, 0) };

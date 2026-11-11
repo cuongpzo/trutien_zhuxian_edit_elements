@@ -11,3 +11,6 @@ ISSUES_ChinhDo_Game.MD
 
 # Thư mục riêng không đưa lên GitHub
 private-folder/
+
+# bundled fonts (commercial licences) – copied into Release, not published
+fonts/
