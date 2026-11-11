@@ -3,6 +3,8 @@
 Công cụ đọc/sửa/Việt hoá `elements.data` (Tru Tiên 3 / Jade Dynasty, engine Perfect World).
 C# .NET 10 – WinForms. Đã kiểm chứng trên Client0619 (version 165): đọc rồi ghi lại **giống hệt từng byte**.
 
+## KHÔNG SỬ DỤNG VỚI MỤC ĐÍCH THƯƠNG MẠI
+
 ## Chạy
 - App: `Release\ElementsEditor.exe` (cần .NET 10 Desktop Runtime – máy này đã có). Phiên bản hiện trên thanh tiêu đề, `Release\VERSION.txt`, `ElementsCli --version`.
 - Build bản phát hành: `.\build-release.ps1 [-Note "ghi chú"]` – tự tăng phiên bản, build Editor + CLI vào `Release\`, ghi dòng vào `RELEASE_HISTORY.md`. `-NoBump` để build lại giữ nguyên số.
