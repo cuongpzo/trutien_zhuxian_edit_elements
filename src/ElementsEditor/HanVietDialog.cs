@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ElementsCore;
 using ElementsCore.Exchange;
 
 namespace ElementsEditor;
@@ -41,7 +42,7 @@ public static class HanVietTools
             if (Settings.HanVietDict != path) { Settings.HanVietDict = path; Settings.Save(); }
             return _cached;
         }
-        catch (Exception ex) { error = $"Không đọc được từ điển phiên âm:\n{path}\n{ex.Message}"; return null; }
+        catch (Exception ex) { error = L.F("Cannot read the transcription dictionary:\n{0}\n{1}", path, ex.Message); return null; }
     }
 
     /// <summary>Converts one cell; returns a message for the status bar (or an error box text when it was skipped).</summary>
@@ -49,14 +50,14 @@ public static class HanVietTools
     {
         var hv = Dictionary(null, out var err);
         if (hv == null) { message = err!; return false; }
-        if (t.Gbk) { message = $"{t.Field} là field GBK – không chứa được tiếng Việt có dấu."; return false; }
-        if (!HanViet.HasCjk(t.Text)) { message = $"{t.Field} của {t.Key} không còn chữ Hán."; return false; }
+        if (t.Gbk) { message = L.F("{0} is a GBK field – it cannot hold Vietnamese letters with diacritics.", t.Field); return false; }
+        if (!HanViet.HasCjk(t.Text)) { message = L.F("{0} of {1} has no Chinese characters left.", t.Field, t.Key); return false; }
         var s = hv.Convert(t.Text, LastMode, out int unk);
         int len = t.Measure(s);
-        if (len > t.Max) { message = $"Bỏ qua: \"{s}\" dài {len}/{t.Max} – vượt độ dài của {t.Field}. Hãy sửa tay cho ngắn lại."; return false; }
+        if (len > t.Max) { message = L.F("Skipped: \"{0}\" is {1}/{2} long – exceeds the length of {3}. Shorten it by hand.", s, len, t.Max, t.Field); return false; }
         var e = t.Set(s);
         if (e != null) { message = e; return false; }
-        message = $"{t.Key} · {t.Field}: {t.Text} → {s}" + (unk > 0 ? $"  (thiếu {unk} chữ trong từ điển)" : "");
+        message = $"{t.Key} · {t.Field}: {t.Text} → {s}" + (unk > 0 ? "  " + L.F("({0} characters missing from the dictionary)", unk) : "");
         return true;
     }
 
@@ -111,7 +112,7 @@ public static class HanVietTools
 /// <summary>
 /// Bulk Hán-Việt: pick fields (e.g. name), preview every Chinese text converted with the
 /// ChinesePhienAmWords dictionary, rows that would exceed the field length are skipped (left as
-/// they are), then apply. Applied rows are ordinary edits: visible in "Lịch sử sửa", undoable, saved with Ctrl+S.
+/// they are), then apply. Applied rows are ordinary edits: visible in the edit history, undoable, saved with Ctrl+S.
 /// </summary>
 public sealed class HanVietDialog : ThemedForm
 {
@@ -144,7 +145,7 @@ public sealed class HanVietDialog : ThemedForm
     public HanVietDialog(IReadOnlyList<TextScope> scopes, AppSettings settings, string? preferField = "name", bool onlyThatField = false)
     {
         _scopes = scopes; _settings = settings; _onlyField = onlyThatField ? preferField : null;
-        Text = "Việt hoá Hán Việt hàng loạt";
+        Text = L.T("Bulk Sino-Vietnamese (Hán Việt) conversion");
         StartPosition = FormStartPosition.CenterParent;
         Size = new Size(1180, 760);
         MinimumSize = new Size(900, 560);
@@ -152,24 +153,24 @@ public sealed class HanVietDialog : ThemedForm
         KeyPreview = true;
 
         var left = new Panel { Dock = DockStyle.Left, Width = 320, Padding = new Padding(12, 10, 8, 10) };
-        var lDict = new Label { Text = "Từ điển phiên âm (字=âm)", Dock = DockStyle.Top, Height = 22, ForeColor = Color.DimGray };
+        var lDict = new Label { Text = L.T("Transcription dictionary (字=reading)"), Dock = DockStyle.Top, Height = 22, ForeColor = Color.DimGray };
         var dictRow = new Panel { Dock = DockStyle.Top, Height = 32 };
         _dictPath = new TextBox { Dock = DockStyle.Fill, Text = settings.HanVietDict ?? HanViet.DefaultPath };
         var browse = new Button { Text = "…", Dock = DockStyle.Right, Width = 34 };
         dictRow.Controls.Add(_dictPath);
         dictRow.Controls.Add(browse);
         _dictInfo = new Label { Dock = DockStyle.Top, Height = 22, ForeColor = Color.DimGray, UseMnemonic = false };
-        var lScope = new Label { Text = "Phạm vi", Dock = DockStyle.Top, Height = 24, ForeColor = Color.DimGray, TextAlign = ContentAlignment.BottomLeft };
+        var lScope = new Label { Text = L.T("Scope"), Dock = DockStyle.Top, Height = 24, ForeColor = Color.DimGray, TextAlign = ContentAlignment.BottomLeft };
         _scope = new ComboBox { Dock = DockStyle.Top, DropDownStyle = ComboBoxStyle.DropDownList };
         foreach (var s in scopes) _scope.Items.Add(s.Title);
-        var lFields = new Label { Text = "Field cần Việt hoá (số dòng còn chữ Hán)", Dock = DockStyle.Top, Height = 26, ForeColor = Color.DimGray, TextAlign = ContentAlignment.BottomLeft };
+        var lFields = new Label { Text = L.T("Fields to convert (rows still containing Chinese)"), Dock = DockStyle.Top, Height = 26, ForeColor = Color.DimGray, TextAlign = ContentAlignment.BottomLeft };
         _fields = new CheckedListBox { Dock = DockStyle.Fill, CheckOnClick = true, IntegralHeight = false };
-        var caseBox = new GroupBox { Text = "Viết hoa", Dock = DockStyle.Bottom, Height = 104, Padding = new Padding(8, 4, 8, 4) };
-        _rEvery = new RadioButton { Text = "Mỗi chữ – Tích Thiện Y (tên)", Dock = DockStyle.Top, Checked = HanVietTools.LastMode == HanVietCase.EveryWord, Height = 24 };
-        _rFirst = new RadioButton { Text = "Chữ đầu – Tích thiện y (câu)", Dock = DockStyle.Top, Checked = HanVietTools.LastMode == HanVietCase.FirstWord, Height = 24 };
-        _rLower = new RadioButton { Text = "Thường – tích thiện y", Dock = DockStyle.Top, Checked = HanVietTools.LastMode == HanVietCase.Lower, Height = 24 };
+        var caseBox = new GroupBox { Text = L.T("Capitalization"), Dock = DockStyle.Bottom, Height = 104, Padding = new Padding(8, 4, 8, 4) };
+        _rEvery = new RadioButton { Text = L.T("Every Word Capitalized (names)"), Dock = DockStyle.Top, Checked = HanVietTools.LastMode == HanVietCase.EveryWord, Height = 24 };
+        _rFirst = new RadioButton { Text = L.T("First word capitalized (sentences)"), Dock = DockStyle.Top, Checked = HanVietTools.LastMode == HanVietCase.FirstWord, Height = 24 };
+        _rLower = new RadioButton { Text = L.T("all lowercase"), Dock = DockStyle.Top, Checked = HanVietTools.LastMode == HanVietCase.Lower, Height = 24 };
         caseBox.Controls.AddRange([_rLower, _rFirst, _rEvery]);
-        _preview = new Button { Text = "Xem trước", Dock = DockStyle.Bottom, Height = 34 };
+        _preview = new Button { Text = L.T("Preview"), Dock = DockStyle.Bottom, Height = 34 };
         left.Controls.Add(_fields);
         left.Controls.Add(lFields);
         left.Controls.Add(_scope);
@@ -183,24 +184,24 @@ public sealed class HanVietDialog : ThemedForm
         left.Controls.Add(_preview);
 
         var right = new Panel { Dock = DockStyle.Fill, Padding = new Padding(4, 10, 12, 10) };
-        _summary = new Label { Dock = DockStyle.Top, Height = 44, UseMnemonic = false, Text = "Chọn field rồi bấm Xem trước. Dòng nào sau khi đổi vượt độ dài của field sẽ được bỏ qua (giữ nguyên)." };
+        _summary = new Label { Dock = DockStyle.Top, Height = 44, UseMnemonic = false, Text = L.T("Choose fields, then click Preview. Rows that would exceed the field length after conversion are skipped (left unchanged).") };
         _grid = new DataGridView
         {
             Dock = DockStyle.Fill, VirtualMode = true, ReadOnly = true, AllowUserToAddRows = false, AllowUserToDeleteRows = false, AllowUserToResizeRows = false,
             RowHeadersVisible = false, SelectionMode = DataGridViewSelectionMode.FullRowSelect, BorderStyle = BorderStyle.None, BackgroundColor = SystemColors.Window,
         };
         typeof(DataGridView).GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(_grid, true);
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Bản ghi", Width = 150 });
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Field", Width = 80 });
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Gốc", Width = 200 });
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Hán Việt", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 200 });
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Độ dài", Width = 70 });
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trạng thái", Width = 170 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Record"), Width = 150 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Field"), Width = 80 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Original"), Width = 200 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Hán Việt"), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 200 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Length"), Width = 70 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Status"), Width = 170 });
         _grid.CellValueNeeded += OnValue;
         _grid.CellFormatting += OnFormat;
         var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(0, 8, 0, 0) };
-        var close = new Button { Text = "Đóng", Width = 90, Height = 32, DialogResult = DialogResult.Cancel };
-        _apply = new Button { Text = "Áp dụng", Width = 200, Height = 32, Enabled = false };
+        var close = new Button { Text = L.T("Close"), Width = 90, Height = 32, DialogResult = DialogResult.Cancel };
+        _apply = new Button { Text = L.T("Apply"), Width = 200, Height = 32, Enabled = false };
         bottom.Controls.AddRange([close, _apply]);
         right.Controls.Add(_grid);
         right.Controls.Add(_summary);
@@ -213,7 +214,7 @@ public sealed class HanVietDialog : ThemedForm
 
         browse.Click += (_, _) =>
         {
-            using var ofd = new OpenFileDialog { Filter = "Từ điển (*.txt)|*.txt|Tất cả|*.*", FileName = _dictPath.Text };
+            using var ofd = new OpenFileDialog { Filter = L.T("Dictionary (*.txt)|*.txt|All files|*.*"), FileName = _dictPath.Text };
             if (ofd.ShowDialog(this) == DialogResult.OK) { _dictPath.Text = ofd.FileName; LoadDict(); }
         };
         _dictPath.Leave += (_, _) => LoadDict();
@@ -235,7 +236,7 @@ public sealed class HanVietDialog : ThemedForm
         var p = _dictPath.Text.Trim();
         if (_hv != null && _hv.Source == p) return;
         _hv = HanVietTools.Dictionary(p, out var err);
-        _dictInfo.Text = _hv != null ? $"✓ {_hv.Count:N0} chữ" : "✗ " + err;
+        _dictInfo.Text = _hv != null ? "✓ " + L.F("{0:N0} characters", _hv.Count) : "✗ " + err;
         _dictInfo.ForeColor = _hv != null ? Color.DarkGreen : Color.Firebrick;
         ClearPreview();
     }
@@ -259,7 +260,7 @@ public sealed class HanVietDialog : ThemedForm
         }
         _loadingFields = false;
         ClearPreview();
-        if (_targets.Count == 0) _summary.Text = "Phạm vi này không còn chữ Hán nào.";
+        if (_targets.Count == 0) _summary.Text = L.T("No Chinese characters left in this scope.");
     }
 
     private sealed record FieldItem(string Name, int Count)
@@ -274,35 +275,35 @@ public sealed class HanVietDialog : ThemedForm
         _rows.Clear();
         _grid.RowCount = 0;
         _apply.Enabled = false;
-        _apply.Text = "Áp dụng";
+        _apply.Text = L.T("Apply");
     }
 
     private void Preview()
     {
         LoadDict();
-        if (_hv == null) { Msg.Show("Chưa đọc được từ điển phiên âm.", Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+        if (_hv == null) { Msg.Show(L.T("The transcription dictionary could not be read."), Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
         var fields = _fields.CheckedItems.Cast<FieldItem>().Select(f => f.Name).ToHashSet();
-        if (fields.Count == 0) { _summary.Text = "Hãy tích ít nhất một field."; return; }
+        if (fields.Count == 0) { _summary.Text = L.T("Tick at least one field."); return; }
         _rows.Clear();
         var mode = Mode;
         foreach (var t in _targets.Where(t => fields.Contains(t.Field)))
         {
             var s = _hv.Convert(t.Text, mode, out int unk);
             var r = new Row { T = t, New = s, Unknown = unk, Len = t.Measure(s) };
-            if (t.Gbk) r.Status = "Bỏ qua: field GBK không chứa được tiếng Việt";
-            else if (r.Len > t.Max) r.Status = $"Bỏ qua: quá dài {r.Len}/{t.Max}";
-            else { r.Ok = true; r.Status = unk > 0 ? $"Đổi · thiếu {unk} chữ trong từ điển" : "Đổi"; }
+            if (t.Gbk) r.Status = L.T("Skipped: GBK field cannot hold Vietnamese");
+            else if (r.Len > t.Max) r.Status = L.F("Skipped: too long {0}/{1}", r.Len, t.Max);
+            else { r.Ok = true; r.Status = unk > 0 ? L.F("Convert · {0} characters missing from the dictionary", unk) : L.T("Convert"); }
             _rows.Add(r);
         }
         _rows.Sort((a, b) => a.Ok == b.Ok ? 0 : a.Ok ? 1 : -1); // skipped rows first, to review them
         int ok = _rows.Count(r => r.Ok), tooLong = _rows.Count(r => !r.Ok && !r.T.Gbk), gbk = _rows.Count(r => r.T.Gbk), unknown = _rows.Count(r => r.Unknown > 0);
-        _summary.Text = $"{_rows.Count:N0} dòng có chữ Hán · sẽ đổi {ok:N0} · bỏ qua vì quá dài {tooLong:N0}" + (gbk > 0 ? $" · bỏ qua field GBK {gbk:N0}" : "")
-            + (unknown > 0 ? $" · {unknown:N0} dòng còn chữ không có trong từ điển (giữ nguyên chữ đó)" : "")
-            + "\nCác dòng bỏ qua giữ nguyên văn bản gốc. Sau khi áp dụng: xem/hoàn tác ở “Lịch sử sửa”, rồi Lưu (Ctrl+S).";
+        _summary.Text = L.F("{0:N0} rows contain Chinese · {1:N0} will be converted · {2:N0} skipped as too long", _rows.Count, ok, tooLong) + (gbk > 0 ? " · " + L.F("{0:N0} skipped (GBK field)", gbk) : "")
+            + (unknown > 0 ? " · " + L.F("{0:N0} rows contain characters missing from the dictionary (those characters are kept)", unknown) : "")
+            + "\n" + L.T("Skipped rows keep their original text. After applying: review / undo in the edit history, then Save (Ctrl+S).");
         _grid.RowCount = 0;
         _grid.RowCount = _rows.Count;
         _apply.Enabled = ok > 0;
-        _apply.Text = $"Áp dụng {ok:N0} dòng";
+        _apply.Text = L.F("Apply {0:N0} rows", ok);
         AcceptButton = _apply;
     }
 
@@ -320,7 +321,7 @@ public sealed class HanVietDialog : ThemedForm
         }
         finally { Cursor = Cursors.Default; }
         Applied += n;
-        Msg.Show($"Đã Việt hoá Hán Việt {n:N0} dòng" + (failed > 0 ? $", {failed:N0} dòng không ghi được" : "") + ".\nChưa ghi vào file – bấm Lưu (Ctrl+S) để ghi.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        Msg.Show(L.F("Converted {0:N0} rows to Hán Việt", n) + (failed > 0 ? L.F(", {0:N0} rows could not be written", failed) : "") + ".\n" + L.T("Not written to the file yet – click Save (Ctrl+S) to write it."), Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
         DialogResult = DialogResult.OK;
         Close();
     }

@@ -17,7 +17,7 @@ public sealed class TextDataFile : DataFile
     private byte[]? _original;
     private string? _originalText;
 
-    public override string FormatName => $"Văn bản ({EncodingName}{(Bom.Length > 0 ? ", BOM" : "")})";
+    public override string FormatName => L.F("Text ({0}{1})", EncodingName, Bom.Length > 0 ? ", BOM" : "");
 
     public static TextDataFile Parse(byte[] data, string path)
     {
@@ -32,7 +32,7 @@ public sealed class TextDataFile : DataFile
         int crlf = CountOf(f.Text, "\r\n"), lf = CountOf(f.Text, "\n") - crlf;
         f.NewLine = lf > crlf ? "\n" : "\r\n";
         if (!f.Encoding.GetBytes(f.Text).AsSpan().SequenceEqual(data.AsSpan(f.Bom.Length)))
-            f.Warnings.Add($"Có byte không giải mã được bằng {f.EncodingName}; nếu sửa và lưu, các byte đó sẽ bị thay.");
+            f.Warnings.Add(L.F("Some bytes cannot be decoded as {0}; if you edit and save, those bytes will be replaced.", f.EncodingName));
         return f;
     }
 
@@ -63,8 +63,8 @@ public sealed class TextDataFile : DataFile
         var round = Encoding.GetString(Encoding.GetBytes(text));
         if (round == text) return null;
         for (int i = 0; i < Math.Min(round.Length, text.Length); i++)
-            if (round[i] != text[i]) return $"Ký tự '{text[i]}' (vị trí {i}) không lưu được bằng {EncodingName}.";
-        return $"Có ký tự không lưu được bằng {EncodingName}.";
+            if (round[i] != text[i]) return L.F("Character '{0}' (position {1}) cannot be saved in {2}.", text[i], i, EncodingName);
+        return L.F("Some characters cannot be saved in {0}.", EncodingName);
     }
 
     private static int CountOf(string s, string what)
@@ -86,7 +86,7 @@ public sealed class RawDataFile : DataFile
 {
     public byte[] Data { get; set; } = [];
     public string Reason { get; init; } = "";
-    public override string FormatName => "Chưa giải mã (xem hex)";
+    public override string FormatName => L.T("Not decoded (hex view)");
     public static RawDataFile Parse(byte[] data, string path, string reason) => new() { Path = path, Data = data, Reason = reason };
     public override byte[] ToBytes() => Data;
 }

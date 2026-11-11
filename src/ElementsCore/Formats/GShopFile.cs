@@ -36,12 +36,12 @@ public sealed class GShopFile : DataFile
 
     private static readonly IReadOnlyDictionary<long, string> PropsEnum = new Dictionary<long, string>
     {
-        [0] = "Thường", [1] = "Mới", [2] = "Đề cử", [3] = "Mới + Đề cử",
+        [0] = L.T("Normal"), [1] = L.T("New"), [2] = L.T("Recommended"), [3] = L.T("New + Recommended"),
     };
 
     private static readonly IReadOnlyDictionary<long, string> ValidTypeEnum = new Dictionary<long, string>
     {
-        [0] = "Khoảng ngày (bắt đầu → kết thúc)", [1] = "Từ ngày bắt đầu, lặp lại?",
+        [0] = L.T("Date range (start → end)"), [1] = L.T("From start date, repeating?"),
     };
 
     private static ColumnDef I32(string n, string? note = null, bool hide = false, IReadOnlyDictionary<long, string>? e = null) =>
@@ -54,41 +54,41 @@ public sealed class GShopFile : DataFile
         new() { Name = n, Type = ColType.WStr, Length = len, Note = note, HideInGrid = hide };
     private static ColumnDef Str(string n, int len, string? note = null, bool hide = false) =>
         new() { Name = n, Type = ColType.Str, Length = len, Note = note, HideInGrid = hide };
-    private static ColumnDef Pad(string n, int len, string note = "Chưa rõ (luôn 0 trong file mẫu)") =>
-        new() { Name = n, Type = ColType.Bytes, Length = len, Note = note, HideInGrid = true };
+    private static ColumnDef Pad(string n, int len, string? note = null) =>
+        new() { Name = n, Type = ColType.Bytes, Length = len, Note = note ?? L.T("Unknown (always 0 in the sample files)"), HideInGrid = true };
 
     /// <summary>GSHOP_ITEM of the C++ source, packed (2630 B).</summary>
     private static List<ColumnDef> SourceColumns() =>
     [
-        U32("id", "ID vật phẩm bán (elements.data)"),
-        U32("num", "Số lượng mỗi lần mua"),
-        Str("icon", 128, "Ảnh icon trong shop (GBK)", hide: true),
-        U32("price", "Giá (thường tính theo 1/100 nguyên bảo)"),
-        U32("time", "Thời hạn sử dụng, giây (0 = vĩnh viễn)"),
-        I32("discount", "Chiết khấu % (100 = giá gốc, 50 = nửa giá)"),
-        I32("bonus", "Thưởng (chưa thấy dùng, luôn 0)", hide: true),
-        U8("props", "Nhãn: 1 = Mới, 2 = Đề cử", e: PropsEnum),
-        U8("props_b1", "Byte 2 của props (luôn 0)", hide: true),
-        U8("props_b2", "Byte 3 của props (luôn 255)", hide: true),
-        U8("props_b3", "Byte 4 của props: 128 khi đang giảm giá 50%", hide: true),
-        I32("main_type", "Danh mục chính (chỉ số trong bảng Categories)"),
-        I32("sub_type", "Danh mục con (chỉ số trong danh mục chính)"),
-        I32("local_id", "ID nội bộ / thứ tự (mỗi món khác nhau)"),
-        WStr("description", 512, "Mô tả (mã màu ^RRGGBB, xuống dòng \\r\\n)", hide: true),
-        WStr("name", 32, "Tên hiển thị trong shop"),
-        new() { Name = "has_present", Type = ColType.Bool, Note = "Có quà tặng kèm (luôn 0 trong mẫu)", HideInGrid = true },
-        WStr("present_name", 32, "Tên quà tặng kèm", hide: true),
-        U32("present_id", "ID quà tặng kèm", hide: true),
-        U32("present_count", "Số lượng quà", hide: true),
-        U32("present_time", "Thời hạn quà, giây", hide: true),
-        Str("present_icon", 128, "Icon quà (GBK)", hide: true),
-        new() { Name = "present_bind", Type = ColType.Bool, Note = "Quà bị khoá (bind)", HideInGrid = true },
-        WStr("present_description", 512, "Mô tả quà", hide: true),
-        I32("valid_type", "Kiểu thời gian bán", hide: true, e: ValidTypeEnum),
-        I32("valid_start", "Bắt đầu bán (Unix time, 0 = luôn bán)", hide: true),
-        I32("valid_end", "Kết thúc bán (Unix time) / độ dài khi kiểu 1", hide: true),
-        I32("valid_param", "Tham số thời gian bán", hide: true),
-        WStr("search_keys", 64, "Từ khoá tìm kiếm (phân cách bằng dấu phẩy)", hide: true),
+        U32("id", L.T("Item ID sold (elements.data)")),
+        U32("num", L.T("Quantity per purchase")),
+        Str("icon", 128, L.T("Shop icon image (GBK)"), hide: true),
+        U32("price", L.T("Price (usually in 1/100 yuanbao)")),
+        U32("time", L.T("Duration, seconds (0 = permanent)")),
+        I32("discount", L.T("Discount % (100 = full price, 50 = half price)")),
+        I32("bonus", L.T("Bonus (not seen in use, always 0)"), hide: true),
+        U8("props", L.T("Label: 1 = New, 2 = Recommended"), e: PropsEnum),
+        U8("props_b1", L.T("Byte 2 of props (always 0)"), hide: true),
+        U8("props_b2", L.T("Byte 3 of props (always 255)"), hide: true),
+        U8("props_b3", L.T("Byte 4 of props: 128 when 50% off"), hide: true),
+        I32("main_type", L.T("Main category (index in the Categories table)")),
+        I32("sub_type", L.T("Subcategory (index within the main category)")),
+        I32("local_id", L.T("Internal ID / order (different for each item)")),
+        WStr("description", 512, L.T("Description (color codes ^RRGGBB, line break \\r\\n)"), hide: true),
+        WStr("name", 32, L.T("Shop display name")),
+        new() { Name = "has_present", Type = ColType.Bool, Note = L.T("Has a bundled gift (always 0 in the samples)"), HideInGrid = true },
+        WStr("present_name", 32, L.T("Bundled gift name"), hide: true),
+        U32("present_id", L.T("Bundled gift ID"), hide: true),
+        U32("present_count", L.T("Gift quantity"), hide: true),
+        U32("present_time", L.T("Gift duration, seconds"), hide: true),
+        Str("present_icon", 128, L.T("Gift icon (GBK)"), hide: true),
+        new() { Name = "present_bind", Type = ColType.Bool, Note = L.T("Gift is bound"), HideInGrid = true },
+        WStr("present_description", 512, L.T("Gift description"), hide: true),
+        I32("valid_type", L.T("Sale time type"), hide: true, e: ValidTypeEnum),
+        I32("valid_start", L.T("Sale start (Unix time, 0 = always on sale)"), hide: true),
+        I32("valid_end", L.T("Sale end (Unix time) / duration for type 1"), hide: true),
+        I32("valid_param", L.T("Sale time parameter"), hide: true),
+        WStr("search_keys", 64, L.T("Search keywords (comma-separated)"), hide: true),
     ];
 
     /// <summary>TT3 2660 B: Source + 30 extra bytes.</summary>
@@ -97,96 +97,96 @@ public sealed class GShopFile : DataFile
         var c = SourceColumns();
         c.AddRange(
         [
-            U8("x_flag1", "Chưa rõ: 1 cùng lúc với x_flag2 (thú cưng, mặt nạ…)", hide: true),
-            U32("x_price1", "Chưa rõ: thường bằng giá hoặc giá gốc (12800, 9900, 2500…)", hide: true),
-            U8("x_flag2", "Chưa rõ: cờ thứ 2", hide: true),
-            U32("x_price2", "Chưa rõ: giá thứ 2", hide: true),
-            U32("x_value", "Chưa rõ: 1 ở vài món (gói Thập niên)", hide: true),
-            I32("valid2_type", "Thời gian bán (bản 2) – kiểu", hide: true, e: ValidTypeEnum),
-            I32("valid2_start", "Thời gian bán (bản 2) – bắt đầu (Unix time)", hide: true),
-            I32("valid2_end", "Thời gian bán (bản 2) – kết thúc (Unix time)", hide: true),
-            I32("valid2_param", "Thời gian bán (bản 2) – tham số", hide: true),
+            U8("x_flag1", L.T("Unknown: 1 together with x_flag2 (pets, masks…)"), hide: true),
+            U32("x_price1", L.T("Unknown: usually equals the price or the original price (12800, 9900, 2500…)"), hide: true),
+            U8("x_flag2", L.T("Unknown: second flag"), hide: true),
+            U32("x_price2", L.T("Unknown: second price"), hide: true),
+            U32("x_value", L.T("Unknown: 1 on a few items (Decade pack)"), hide: true),
+            I32("valid2_type", L.T("Sale time (copy 2) – type"), hide: true, e: ValidTypeEnum),
+            I32("valid2_start", L.T("Sale time (copy 2) – start (Unix time)"), hide: true),
+            I32("valid2_end", L.T("Sale time (copy 2) – end (Unix time)"), hide: true),
+            I32("valid2_param", L.T("Sale time (copy 2) – parameter"), hide: true),
         ]);
         return c;
     }
 
     private static List<ColumnDef> OldClientColumns() =>
     [
-        U32("id", "ID vật phẩm bán (elements.data)"),
-        U32("num", "Số lượng mỗi lần mua"),
-        Str("icon", 128, "Ảnh icon trong shop (GBK)", hide: true),
-        U32("price", "Giá"),
-        U32("time", "Thời hạn sử dụng, giây (0 = vĩnh viễn)"),
-        I32("unknown_144", "Chưa rõ (luôn 0; có thể là chiết khấu)", hide: true),
-        new() { Name = "props", Type = ColType.U32, Note = "Nhãn: 1 = Mới, 2 = Đề cử", Enum = PropsEnum },
-        I32("main_type", "Danh mục chính (chỉ số trong bảng Categories)"),
-        I32("sub_type", "Danh mục con (chỉ số trong danh mục chính)"),
-        I32("local_id", "ID nội bộ / thứ tự"),
-        WStr("description", 512, "Mô tả", hide: true),
-        WStr("name", 32, "Tên hiển thị trong shop"),
+        U32("id", L.T("Item ID sold (elements.data)")),
+        U32("num", L.T("Quantity per purchase")),
+        Str("icon", 128, L.T("Shop icon image (GBK)"), hide: true),
+        U32("price", L.T("Price")),
+        U32("time", L.T("Duration, seconds (0 = permanent)")),
+        I32("unknown_144", L.T("Unknown (always 0; possibly the discount)"), hide: true),
+        new() { Name = "props", Type = ColType.U32, Note = L.T("Label: 1 = New, 2 = Recommended"), Enum = PropsEnum },
+        I32("main_type", L.T("Main category (index in the Categories table)")),
+        I32("sub_type", L.T("Subcategory (index within the main category)")),
+        I32("local_id", L.T("Internal ID / order")),
+        WStr("description", 512, L.T("Description"), hide: true),
+        WStr("name", 32, L.T("Shop display name")),
     ];
 
     private static List<ColumnDef> LuckyBagColumns() =>
     [
-        I32("place", "Vị trí trong shop"),
-        I32("main_type", "Danh mục chính (chỉ số trong bảng Categories)"),
-        I32("sub_type", "Danh mục con"),
-        Str("name", 128, "Tên hộp (GBK)"),
-        U32("id", "ID hộp phúc túi bán (elements.data)"),
-        U32("num", "Số lượng mỗi lần mua"),
-        U32("price_item", "ID vật phẩm dùng để trả (token)"),
-        U32("price_item_count", "Số token phải trả"),
+        I32("place", L.T("Position in the shop")),
+        I32("main_type", L.T("Main category (index in the Categories table)")),
+        I32("sub_type", L.T("Subcategory")),
+        Str("name", 128, L.T("Box name (GBK)")),
+        U32("id", L.T("Lucky bag box ID sold (elements.data)")),
+        U32("num", L.T("Quantity per purchase")),
+        U32("price_item", L.T("ID of the item used as payment (token)")),
+        U32("price_item_count", L.T("Number of tokens to pay")),
         Pad("unknown_156", 36),
-        U8("flag_192", "Cờ: 1 ở các món mục Mới (chưa rõ)"),
-        Str("icon", 128, "Ảnh icon (GBK)", hide: true),
-        I32("valid_type", "Kiểu thời gian bán", hide: true, e: ValidTypeEnum),
-        I32("valid_start", "Bắt đầu bán (Unix time)", hide: true),
-        I32("valid_end", "Kết thúc bán (Unix time) / độ dài khi kiểu 1", hide: true),
-        I32("valid_param", "Tham số thời gian bán", hide: true),
+        U8("flag_192", L.T("Flag: 1 on items in the New section (unclear)")),
+        Str("icon", 128, L.T("Icon image (GBK)"), hide: true),
+        I32("valid_type", L.T("Sale time type"), hide: true, e: ValidTypeEnum),
+        I32("valid_start", L.T("Sale start (Unix time)"), hide: true),
+        I32("valid_end", L.T("Sale end (Unix time) / duration for type 1"), hide: true),
+        I32("valid_param", L.T("Sale time parameter"), hide: true),
         Pad("unknown_337", 20),
     ];
 
     private static List<ColumnDef> ExchangeColumns() =>
     [
-        I32("place", "Vị trí trong shop"),
-        I32("main_type", "Danh mục chính (chỉ số trong bảng Categories)"),
-        I32("sub_type", "Danh mục con"),
-        Str("name", 128, "Tên hiển thị (GBK)"),
-        U32("id", "ID vật phẩm bán (elements.data)"),
-        U32("num", "Số lượng mỗi lần mua"),
-        U32("price", "Giá"),
+        I32("place", L.T("Position in the shop")),
+        I32("main_type", L.T("Main category (index in the Categories table)")),
+        I32("sub_type", L.T("Subcategory")),
+        Str("name", 128, L.T("Display name (GBK)")),
+        U32("id", L.T("Item ID sold (elements.data)")),
+        U32("num", L.T("Quantity per purchase")),
+        U32("price", L.T("Price")),
         Pad("unknown_152", 20),
-        I32("value_172", "Chưa rõ (1–20; có thể là giới hạn mua)"),
+        I32("value_172", L.T("Unknown (1–20; possibly a purchase limit)")),
         Pad("unknown_176", 16),
-        I32("local_id", "ID nội bộ / thứ tự (chưa chắc)"),
-        I32("value_196", "Chưa rõ (luôn 1 trong mẫu)"),
+        I32("local_id", L.T("Internal ID / order (uncertain)")),
+        I32("value_196", L.T("Unknown (always 1 in the samples)")),
     ];
 
     /// <summary>Known item layouts, in detection priority.</summary>
     public static readonly IReadOnlyList<Layout> Layouts =
     [
-        new() { Key = "tt3", Title = "Shop TT3", Columns = Tt3Columns() },          // 2660
-        new() { Key = "source", Title = "Source", Columns = SourceColumns() },      // 2630
-        new() { Key = "oldclient", Title = "Client cũ", Columns = OldClientColumns() }, // 1252
-        new() { Key = "luckybag", Title = "Phúc túi", Columns = LuckyBagColumns() }, // 357
-        new() { Key = "exchange", Title = "Đổi điểm", Columns = ExchangeColumns() },  // 200
+        new() { Key = "tt3", Title = L.T("TT3 shop"), Columns = Tt3Columns() },          // 2660
+        new() { Key = "source", Title = L.T("Source"), Columns = SourceColumns() },      // 2630
+        new() { Key = "oldclient", Title = L.T("Old client"), Columns = OldClientColumns() }, // 1252
+        new() { Key = "luckybag", Title = L.T("Lucky bag"), Columns = LuckyBagColumns() }, // 357
+        new() { Key = "exchange", Title = L.T("Point exchange"), Columns = ExchangeColumns() },  // 200
     ];
 
     public static readonly IReadOnlyList<ColumnDef> HeaderColumns =
     [
-        new() { Name = "timestamp", Type = ColType.U32, Note = "Mốc phiên bản (Unix time); gshop client và server phải khớp" },
+        new() { Name = "timestamp", Type = ColType.U32, Note = L.T("Version stamp (Unix time); client and server gshop must match") },
     ];
 
     public static readonly IReadOnlyList<ColumnDef> SubCategoryColumns =
     [
-        WStr("name", 64, "Tên danh mục con"),
+        WStr("name", 64, L.T("Subcategory name")),
     ];
 
     public static readonly IReadOnlyList<ColumnDef> CategoryColumns =
     [
-        I32("id", "ID danh mục chính (thường = thứ tự 0,1,2…)"),
-        WStr("name", 64, "Tên danh mục chính"),
-        new() { Name = "subs", Type = ColType.Table, SubColumns = SubCategoryColumns, Note = "Các danh mục con (main/sub_type của món = chỉ số)" },
+        I32("id", L.T("Main category ID (usually = order 0,1,2…)")),
+        WStr("name", 64, L.T("Main category name")),
+        new() { Name = "subs", Type = ColType.Table, SubColumns = SubCategoryColumns, Note = L.T("Subcategories (an item's main/sub_type = index)") },
     ];
 
     private const int MaxMain = 256, MaxSub = 4096;
@@ -199,7 +199,7 @@ public sealed class GShopFile : DataFile
     public RecordTable Categories => Tables[2];
 
     public override string FormatName =>
-        $"gshop ({ItemLayout.Title}, {ItemLayout.Size} B/món{(LayoutGuessed ? ", chưa có món – kiểu mặc định" : "")})";
+        L.F("gshop ({0}, {1} B/item{2})", ItemLayout.Title, ItemLayout.Size, LayoutGuessed ? L.T(", no items yet – default layout") : "");
 
     // ---------- detection ----------
 
@@ -257,28 +257,28 @@ public sealed class GShopFile : DataFile
     public static GShopFile Parse(byte[] data, string path)
     {
         int size = DetectSize(data, out var layout);
-        if (size < 0) throw new InvalidDataException("Không tìm thấy danh sách danh mục ở cuối file với bất kỳ kích thước món nào: không phải file gshop.");
+        if (size < 0) throw new InvalidDataException(L.T("No category list found at the end of the file for any item size: not a gshop file."));
         var f = new GShopFile { Path = path };
         uint count = BitConverter.ToUInt32(data, 4);
         if (layout == null && count == 0)
         {
             layout = Layouts[0];
             f.LayoutGuessed = true;
-            f.Warnings.Add($"File chưa có món nào: dùng kiểu mặc định {layout.Title} ({layout.Size} B/món) nếu thêm món mới.");
+            f.Warnings.Add(L.F("The file has no items: the default layout {0} ({1} B/item) is used if you add new items.", layout.Title, layout.Size));
         }
         else if (layout == null)
         {
             layout = new Layout
             {
-                Key = "raw" + size, Title = "Chưa biết",
-                Columns = [new() { Name = "data", Type = ColType.Bytes, Length = size, Note = "Dữ liệu thô của món (kiểu chưa giải mã)" }],
+                Key = "raw" + size, Title = L.T("Unknown"),
+                Columns = [new() { Name = "data", Type = ColType.Bytes, Length = size, Note = L.T("Raw item data (layout not decoded)") }],
             };
-            f.Warnings.Add($"Kiểu món {size} B chưa được giải mã: chỉ sửa được dạng hex.");
+            f.Warnings.Add(L.F("Item layout of {0} B is not decoded: it can only be edited as hex.", size));
         }
         f.ItemLayout = layout;
 
         var r = new BinReader(data);
-        var header = new RecordTable { Name = "Header", Columns = HeaderColumns, CanAddRemove = false, Note = "Đầu file" };
+        var header = new RecordTable { Name = "Header", Columns = HeaderColumns, CanAddRemove = false, Note = L.T("File header") };
         var h = new Record(1);
         h.Values[0] = r.U32();
         header.Rows.Add(h);
@@ -287,14 +287,14 @@ public sealed class GShopFile : DataFile
         var items = new RecordTable
         {
             Name = "Items", Columns = layout.Columns, KeyColumn = layout.KeyColumn, NameColumn = layout.NameColumn,
-            Note = $"Các món bán ({layout.Title}, {layout.Size} byte/món)",
+            Note = L.F("Items for sale ({0}, {1} bytes/item)", layout.Title, layout.Size),
         };
         for (uint i = 0; i < count; i++) items.Rows.Add(RecordIO.ReadFixed(r, layout.Columns));
 
         var cats = new RecordTable
         {
             Name = "Categories", Columns = CategoryColumns, KeyColumn = 0, NameColumn = 1,
-            Note = "Danh mục chính và danh mục con (shop cần ít nhất 1 danh mục chính)",
+            Note = L.T("Main categories and subcategories (the shop needs at least 1 main category)"),
         };
         uint main = r.U32();
         for (uint i = 0; i < main; i++)
@@ -308,7 +308,7 @@ public sealed class GShopFile : DataFile
             c.Values[2] = subs;
             cats.Rows.Add(c);
         }
-        if (!r.AtEnd) throw new InvalidDataException($"Còn {r.Remaining} byte sau danh sách danh mục.");
+        if (!r.AtEnd) throw new InvalidDataException(L.F("{0} bytes left after the category list.", r.Remaining));
 
         f.Tables.Add(header);
         f.Tables.Add(items);
@@ -329,12 +329,12 @@ public sealed class GShopFile : DataFile
             bool ok = m >= 0 && m < Categories.Rows.Count && s >= 0 && s < Categories.Rows[(int)m].Table(2).Count;
             if (!ok && bad.Count < 5) bad.Add($"{(Items.KeyColumn >= 0 ? it.Long(Items.KeyColumn) : 0)} ({m}/{s})");
         }
-        if (bad.Count > 0) Warnings.Add("Món trỏ tới danh mục không tồn tại: " + string.Join(", ", bad));
+        if (bad.Count > 0) Warnings.Add(L.F("Items pointing to a non-existent category: {0}", string.Join(", ", bad)));
     }
 
     public override byte[] ToBytes()
     {
-        if (Categories.Rows.Count == 0) throw new InvalidDataException("Shop cần ít nhất một danh mục chính.");
+        if (Categories.Rows.Count == 0) throw new InvalidDataException(L.T("The shop needs at least one main category."));
         var w = new BinWriter();
         w.U32(Convert.ToUInt32(Header.Rows.Count > 0 ? Header.Rows[0].Values[0] ?? 0u : 0u));
         w.I32(Items.Rows.Count);

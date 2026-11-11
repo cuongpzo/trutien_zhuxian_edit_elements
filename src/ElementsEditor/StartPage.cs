@@ -1,3 +1,4 @@
+using ElementsCore;
 using ElementsCore.Formats;
 
 namespace ElementsEditor;
@@ -33,14 +34,14 @@ public sealed class StartPage : Panel
         Controls.Add(_card);
 
         var logo = new PictureBox { Image = AppIcon.Logo, SizeMode = PictureBoxSizeMode.Zoom, Size = new Size(64, 64), BackColor = Color.Transparent };
-        var title = new Label { Text = $"Mở file {string.Join(" / ", m.Patterns.Take(2))}", Font = new Font("Segoe UI", 14F, FontStyle.Bold), AutoSize = false, Height = 32, TextAlign = ContentAlignment.MiddleCenter, UseMnemonic = false };
+        var title = new Label { Text = L.F("Open {0}", string.Join(" / ", m.Patterns.Take(2))), Font = new Font("Segoe UI", 14F, FontStyle.Bold), AutoSize = false, Height = 32, TextAlign = ContentAlignment.MiddleCenter, UseMnemonic = false };
         var desc = new Label
         {
-            Text = m.Description + (m.ServerSide ? "\nĐây là file phía server (nằm trong máy chủ, không có trong client) – hãy chép file ra máy rồi mở." : "")
-                 + "\nKéo thả file vào cửa sổ này, hoặc chọn file.",
+            Text = m.Description + (m.ServerSide ? "\n" + L.T("This is a server-side file (on the server, not in the client) – copy it to this computer, then open it.") : "")
+                 + "\n" + L.T("Drag and drop a file onto this window, or choose a file."),
             ForeColor = Color.DimGray, AutoSize = false, Height = 58, TextAlign = ContentAlignment.TopCenter, UseMnemonic = false,
         };
-        var btnChoose = new Button { Text = "Chọn file…", Width = 130, Height = 32 };
+        var btnChoose = new Button { Text = L.T("Choose file…"), Width = 130, Height = 32 };
         btnChoose.Click += (_, _) => _browse();
         _btnReopen = new Button { Height = 32, AutoSize = false, Width = 300, AutoEllipsis = true };
         _btnReopen.Click += (_, _) => { if (_btnReopen.Tag is string p) _open(p); };
@@ -48,19 +49,19 @@ public sealed class StartPage : Panel
         buttons.Controls.Add(btnChoose);
         buttons.Controls.Add(_btnReopen);
 
-        var recentHeader = Header("GẦN ĐÂY  ·  lưu trong Documents\\TruTien Elements Editor");
+        var recentHeader = Header(L.T("RECENT  ·  kept in Documents\\TruTien Elements Editor"));
         _recentList = MakeList();
-        _recentList.Columns.Add("File", 200);
-        _recentList.Columns.Add("Thư mục", 290);
-        _recentList.Columns.Add("Mở lúc", 120);
+        _recentList.Columns.Add(L.T("File"), 200);
+        _recentList.Columns.Add(L.T("Folder"), 290);
+        _recentList.Columns.Add(L.T("Opened"), 120);
 
-        _clientHeader = Header("TRONG THƯ MỤC CLIENT");
-        _clientFilter = new TextBox { PlaceholderText = "Lọc theo tên / thư mục…", Height = 26 };
+        _clientHeader = Header(L.T("IN THE CLIENT FOLDER"));
+        _clientFilter = new TextBox { PlaceholderText = L.T("Filter by name / folder…"), Height = 26 };
         _clientFilter.TextChanged += (_, _) => FillClientList();
         _clientList = MakeList();
-        _clientList.Columns.Add("File", 200);
-        _clientList.Columns.Add("Thư mục", 330);
-        _clientList.Columns.Add("Kích thước", 80, HorizontalAlignment.Right);
+        _clientList.Columns.Add(L.T("File"), 200);
+        _clientList.Columns.Add(L.T("Folder"), 330);
+        _clientList.Columns.Add(L.T("Size"), 80, HorizontalAlignment.Right);
 
         _recentList.Height = 150;
         _clientList.Height = 170;
@@ -130,25 +131,25 @@ public sealed class StartPage : Panel
         {
             bool exists = File.Exists(e.Path);
             var it = new ListViewItem([Path.GetFileName(e.Path), Path.GetDirectoryName(e.Path) ?? "", e.LastOpened.ToString("dd/MM HH:mm")]) { Tag = e.Path };
-            if (!exists) { it.ForeColor = Color.Gray; it.ToolTipText = "File không còn tồn tại"; }
+            if (!exists) { it.ForeColor = Color.Gray; it.ToolTipText = L.T("The file no longer exists"); }
             _recentList.Items.Add(it);
         }
-        if (rec.Count == 0) _recentList.Items.Add(new ListViewItem(["(chưa có)", "", ""]) { ForeColor = Color.Gray });
+        if (rec.Count == 0) _recentList.Items.Add(new ListViewItem([L.T("(none yet)"), "", ""]) { ForeColor = Color.Gray });
         _recentList.EndUpdate();
 
         var last = rec.FirstOrDefault(e => File.Exists(e.Path));
         _btnReopen.Visible = last != null;
         if (last != null)
         {
-            _btnReopen.Text = $"Mở lại {Path.GetFileName(last.Path)}";
+            _btnReopen.Text = L.F("Reopen {0}", Path.GetFileName(last.Path));
             _btnReopen.Tag = last.Path;
         }
 
         _clientFiles = FindClientFiles();
         var root = _clientRoot();
         _clientHeader.Text = _m.ClientFolder == null
-            ? (_m.ServerSide ? "TRONG THƯ MỤC CLIENT  ·  (file phía server – không có trong client)" : "TRONG THƯ MỤC CLIENT  ·  (không có file rời – mở file bất kỳ bằng “Chọn file…”)")
-            : $"TRONG THƯ MỤC CLIENT  ·  {(root ?? "chưa biết thư mục client – hãy mở elements.data trước")}  ·  {_clientFiles.Count} file";
+            ? (_m.ServerSide ? L.T("IN THE CLIENT FOLDER  ·  (server-side file – not in the client)") : L.T("IN THE CLIENT FOLDER  ·  (no separate files – open any file with “Choose file…”)"))
+            : L.F("IN THE CLIENT FOLDER  ·  {0}  ·  {1} files", root ?? L.T("client folder unknown – open elements.data first"), _clientFiles.Count);
         FillClientList();
     }
 

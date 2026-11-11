@@ -39,71 +39,71 @@ public sealed class DynTasksFile : DataFile
 
     public static readonly IReadOnlyDictionary<long, string> DynTypeEnum = new Dictionary<long, string>
     {
-        [0] = "Không", [1] = "Thưởng đặc biệt", [2] = "Thường",
+        [0] = L.T("None"), [1] = L.T("Special award"), [2] = L.T("Normal"),
     };
     public static readonly IReadOnlyDictionary<long, string> MethodEnum = new Dictionary<long, string>
     {
-        [0] = "Không", [1] = "Giết quái", [2] = "Thu thập vật phẩm", [3] = "Nói chuyện NPC", [4] = "Đến địa điểm", [5] = "Chờ thời gian",
+        [0] = L.T("None"), [1] = L.T("Kill monsters"), [2] = L.T("Collect items"), [3] = L.T("Talk to NPC"), [4] = L.T("Reach a location"), [5] = L.T("Wait for a time"),
     };
     public static readonly IReadOnlyDictionary<long, string> FinishEnum = new Dictionary<long, string>
     {
-        [0] = "Tự hoàn thành", [1] = "Gặp NPC trả",
+        [0] = L.T("Auto-complete"), [1] = L.T("Hand in at NPC"),
     };
     public static readonly IReadOnlyDictionary<long, string> TalkEnum = new Dictionary<long, string>
     {
-        [0] = "Giao NV", [1] = "Chưa đủ điều kiện", [2] = "Giao vật phẩm", [3] = "Đang làm", [4] = "Trao thưởng",
+        [0] = L.T("Give task"), [1] = L.T("Requirements not met"), [2] = L.T("Hand in items"), [3] = L.T("In progress"), [4] = L.T("Give reward"),
     };
     public static readonly IReadOnlyDictionary<long, string> OptionEnum = new Dictionary<long, string>
     {
-        [0x80000006] = "Nhận nhiệm vụ", [0x80000007] = "Hoàn thành / nhận thưởng", [0x80000011] = "Thoát / từ chối",
+        [0x80000006] = L.T("Accept task"), [0x80000007] = L.T("Complete / claim reward"), [0x80000011] = L.T("Exit / decline"),
     };
 
     public const int TtType = 0, TtStart = 1, TtEnd = 7;
     private static readonly string[] TmParts = ["year", "month", "day", "hour", "minute", "wday"];
-    private static readonly string[] TmNotes = ["Năm", "Tháng", "Ngày", "Giờ", "Phút", "Thứ (0 = CN)"];
+    private static readonly string[] TmNotes = [L.T("Year"), L.T("Month"), L.T("Day"), L.T("Hour"), L.T("Minute"), L.T("Weekday (0 = Sunday)")];
     public static readonly IReadOnlyList<ColumnDef> TimetableColumns =
     [
-        new() { Name = "type", Type = ColType.U8, Note = "Kiểu khung giờ (mẫu = 0)" },
-        .. TmParts.Select((p, i) => new ColumnDef { Name = "start_" + p, Type = ColType.I32, Note = "Bắt đầu: " + TmNotes[i] }),
-        .. TmParts.Select((p, i) => new ColumnDef { Name = "end_" + p, Type = ColType.I32, Note = "Kết thúc: " + TmNotes[i] }),
+        new() { Name = "type", Type = ColType.U8, Note = L.T("Time slot type (0 in samples)") },
+        .. TmParts.Select((p, i) => new ColumnDef { Name = "start_" + p, Type = ColType.I32, Note = L.F("Start: {0}", TmNotes[i]) }),
+        .. TmParts.Select((p, i) => new ColumnDef { Name = "end_" + p, Type = ColType.I32, Note = L.F("End: {0}", TmNotes[i]) }),
     ];
 
     public const int ChRandom = 0;
     public static readonly IReadOnlyList<ColumnDef> ChoiceColumns =
     [
-        new() { Name = "random", Type = ColType.U8, Note = "Byte đầu nhóm (mẫu luôn 0; có lẽ = chọn ngẫu nhiên). Vật phẩm của nhóm ở tab items (cột choice = số thứ tự nhóm)" },
+        new() { Name = "random", Type = ColType.U8, Note = L.T("First byte of the group (always 0 in samples; probably = random pick). The group's items are on the items tab (choice column = group number)") },
     ];
 
     public const int ItChoice = 0, ItId = 1, ItCommon = 2, ItCount = 3, ItProb = 4, ItFlag = 5, ItPeriod = 6, ItExtra = 7;
     public static readonly IReadOnlyList<ColumnDef> ItemColumns =
     [
-        new() { Name = "choice", Type = ColType.U8, Note = "Thuộc nhóm lựa chọn số mấy (đếm từ 0, xem tab choices)" },
-        new() { Name = "item_id", Type = ColType.U32, Note = "ID vật phẩm (elements.data)" },
-        new() { Name = "common", Type = ColType.U8, Note = "Vật phẩm thường (0/1)" },
-        new() { Name = "count", Type = ColType.U32, Note = "Số lượng" },
-        new() { Name = "prob", Type = ColType.F32, Note = "Xác suất (1 = 100%)" },
-        new() { Name = "flag", Type = ColType.U8, Note = "Cờ (0/1, có thể là khoá/bind – chưa chắc)" },
-        new() { Name = "period", Type = ColType.I32, Note = "Thời hạn (giây, 0 = vĩnh viễn; 604800 = 7 ngày)" },
-        new() { Name = "extra", Type = ColType.Bytes, Length = ItemExtraSize, HideInGrid = true, Note = "13 byte chưa rõ (giữ nguyên)" },
+        new() { Name = "choice", Type = ColType.U8, Note = L.T("Choice group it belongs to (from 0, see the choices tab)") },
+        new() { Name = "item_id", Type = ColType.U32, Note = L.T("Item ID (elements.data)") },
+        new() { Name = "common", Type = ColType.U8, Note = L.T("Common item (0/1)") },
+        new() { Name = "count", Type = ColType.U32, Note = L.T("Quantity") },
+        new() { Name = "prob", Type = ColType.F32, Note = L.T("Probability (1 = 100%)") },
+        new() { Name = "flag", Type = ColType.U8, Note = L.T("Flag (0/1, maybe locked/bound – unsure)") },
+        new() { Name = "period", Type = ColType.I32, Note = L.T("Duration (seconds, 0 = permanent; 604800 = 7 days)") },
+        new() { Name = "extra", Type = ColType.Bytes, Length = ItemExtraSize, HideInGrid = true, Note = L.T("13 unknown bytes (kept as is)") },
     ];
 
     public const int WTalk = 0, WId = 1, WParent = 2, WText = 3;
     public static readonly IReadOnlyList<ColumnDef> WindowColumns =
     [
-        new() { Name = "talk", Type = ColType.U8, Enum = TalkEnum, Note = "Thuộc hội thoại nào (0–4)" },
-        new() { Name = "id", Type = ColType.U8, Note = "ID cửa sổ" },
-        new() { Name = "parent", Type = ColType.U8, Note = "Cửa sổ cha (255 = gốc)" },
-        new() { Name = "text", Type = ColType.WStr, Note = "Lời thoại NPC" },
+        new() { Name = "talk", Type = ColType.U8, Enum = TalkEnum, Note = L.T("Dialogue it belongs to (0–4)") },
+        new() { Name = "id", Type = ColType.U8, Note = L.T("Window ID") },
+        new() { Name = "parent", Type = ColType.U8, Note = L.T("Parent window (255 = root)") },
+        new() { Name = "text", Type = ColType.WStr, Note = L.T("NPC dialogue text") },
     ];
 
     public const int OTalk = 0, OWindow = 1, OId = 2, OParam = 3, OText = 4;
     public static readonly IReadOnlyList<ColumnDef> OptionColumns =
     [
-        new() { Name = "talk", Type = ColType.U8, Enum = TalkEnum, Note = "Thuộc hội thoại nào (0–4)" },
-        new() { Name = "window", Type = ColType.U8, Note = "Cửa sổ thứ mấy trong hội thoại đó (đếm từ 0)" },
-        new() { Name = "id", Type = ColType.U32, Enum = OptionEnum, Note = "Lệnh của lựa chọn" },
-        new() { Name = "param", Type = ColType.U32, Note = "Tham số (thường = ID nhiệm vụ)" },
-        new() { Name = "text", Type = ColType.WStr, Note = "Chữ trên nút lựa chọn" },
+        new() { Name = "talk", Type = ColType.U8, Enum = TalkEnum, Note = L.T("Dialogue it belongs to (0–4)") },
+        new() { Name = "window", Type = ColType.U8, Note = L.T("Window index within that dialogue (from 0)") },
+        new() { Name = "id", Type = ColType.U32, Enum = OptionEnum, Note = L.T("Option command") },
+        new() { Name = "param", Type = ColType.U32, Note = L.T("Parameter (usually the task ID)") },
+        new() { Name = "text", Type = ColType.WStr, Note = L.T("Option button text") },
     ];
 
     public const int CDepth = 0, CMask = 1, CMask2 = 2, CType = 3, CSpecial = 4, CId = 5, CName = 6, CFlags = 7,
@@ -113,57 +113,57 @@ public sealed class DynTasksFile : DataFile
 
     public static readonly IReadOnlyList<ColumnDef> TaskColumns =
     [
-        new() { Name = "depth", Type = ColType.U8, HideInGrid = true, Note = "Cấp lồng: 0 = NV gốc, 1 = NV con của dòng cấp 0 phía trên…" },
-        new() { Name = "mask", Type = ColType.U32, HideInGrid = true, Note = "Mặt nạ trường tuỳ chọn (0x1000 = có lịch thời gian, tự bật khi có dòng timetable)" },
-        new() { Name = "mask2", Type = ColType.U32, HideInGrid = true, Note = "Mặt nạ thứ hai (mẫu luôn 0; khác 0 chưa hỗ trợ)" },
-        new() { Name = "dyn_type", Type = ColType.U8, Enum = DynTypeEnum, Note = "Loại NV động" },
-        new() { Name = "special_award", Type = ColType.U32, Note = "Số thưởng đặc biệt (chỉ ghi khi dyn_type = 1)" },
-        new() { Name = "id", Type = ColType.U32, Note = "ID nhiệm vụ" },
-        new() { Name = "name", Type = ColType.WStr, Note = "Tên nhiệm vụ (tối đa 255 ký tự)" },
-        new() { Name = "flags", Type = ColType.Bytes, Length = FlagCount, HideInGrid = true, Note = "17 cờ 0/1 (chưa đặt tên)" },
-        new() { Name = "level_a", Type = ColType.U8, Note = "Byte cấp độ A (có vẻ là giới hạn cấp – chưa chắc min hay max)" },
-        new() { Name = "level_b", Type = ColType.U8, Note = "Byte cấp độ B (có vẻ là giới hạn cấp – chưa chắc min hay max)" },
-        new() { Name = "timetable", Type = ColType.Table, SubColumns = TimetableColumns, HideInGrid = true, Note = "Khung thời gian mở NV" },
-        new() { Name = "method", Type = ColType.U8, Enum = MethodEnum, Note = "Cách hoàn thành (hỗ trợ 0, 3, 5)" },
-        new() { Name = "wait_time", Type = ColType.U32, HideInGrid = true, Note = "Thời gian chờ (giây), chỉ ghi khi method = 5" },
-        new() { Name = "finish_type", Type = ColType.U8, Enum = FinishEnum, Note = "Kiểu trả nhiệm vụ" },
-        new() { Name = "award_mask", Type = ColType.U32, HideInGrid = true, Note = "Bit thưởng: 1 vàng, 2 KN, 4 SP, 8 danh vọng (suy đoán), 0x20 vật phẩm (tự bật khi có nhóm)" },
-        new() { Name = "award_gold", Type = ColType.U32, HideInGrid = true, Note = "Thưởng vàng (chỉ ghi khi award_mask có bit 1 – suy đoán)" },
-        new() { Name = "award_exp", Type = ColType.U32, HideInGrid = true, Note = "Thưởng kinh nghiệm (bit 2 – suy đoán)" },
-        new() { Name = "award_sp", Type = ColType.U32, HideInGrid = true, Note = "Thưởng SP (bit 4 – suy đoán)" },
-        new() { Name = "award_reputation", Type = ColType.I32, HideInGrid = true, Note = "Thưởng danh vọng (bit 8 – suy đoán)" },
-        new() { Name = "choices", Type = ColType.Table, SubColumns = ChoiceColumns, Note = "Các nhóm phần thưởng (người chơi chọn 1 nhóm)" },
-        new() { Name = "items", Type = ColType.Table, SubColumns = ItemColumns, Note = "Vật phẩm thưởng, gắn vào nhóm bằng cột choice" },
-        new() { Name = "description", Type = ColType.WStr, HideInGrid = true, Note = "Mô tả nhiệm vụ" },
-        new() { Name = "success_text", Type = ColType.WStr, HideInGrid = true, Note = "Lời khi thành công" },
-        new() { Name = "failure_text", Type = ColType.WStr, HideInGrid = true, Note = "Lời khi thất bại" },
+        new() { Name = "depth", Type = ColType.U8, HideInGrid = true, Note = L.T("Nesting level: 0 = root task, 1 = subtask of the level-0 row above…") },
+        new() { Name = "mask", Type = ColType.U32, HideInGrid = true, Note = L.T("Optional-field mask (0x1000 = has a timetable, set automatically when there are timetable rows)") },
+        new() { Name = "mask2", Type = ColType.U32, HideInGrid = true, Note = L.T("Second mask (always 0 in samples; non-zero not supported)") },
+        new() { Name = "dyn_type", Type = ColType.U8, Enum = DynTypeEnum, Note = L.T("Dynamic task type") },
+        new() { Name = "special_award", Type = ColType.U32, Note = L.T("Special award number (only written when dyn_type = 1)") },
+        new() { Name = "id", Type = ColType.U32, Note = L.T("Task ID") },
+        new() { Name = "name", Type = ColType.WStr, Note = L.T("Task name (max 255 characters)") },
+        new() { Name = "flags", Type = ColType.Bytes, Length = FlagCount, HideInGrid = true, Note = L.T("17 flags 0/1 (unnamed)") },
+        new() { Name = "level_a", Type = ColType.U8, Note = L.T("Level byte A (looks like a level limit – unsure whether min or max)") },
+        new() { Name = "level_b", Type = ColType.U8, Note = L.T("Level byte B (looks like a level limit – unsure whether min or max)") },
+        new() { Name = "timetable", Type = ColType.Table, SubColumns = TimetableColumns, HideInGrid = true, Note = L.T("Time windows when the task is open") },
+        new() { Name = "method", Type = ColType.U8, Enum = MethodEnum, Note = L.T("Completion method (0, 3, 5 supported)") },
+        new() { Name = "wait_time", Type = ColType.U32, HideInGrid = true, Note = L.T("Wait time (seconds), only written when method = 5") },
+        new() { Name = "finish_type", Type = ColType.U8, Enum = FinishEnum, Note = L.T("Task hand-in type") },
+        new() { Name = "award_mask", Type = ColType.U32, HideInGrid = true, Note = L.T("Award bits: 1 gold, 2 EXP, 4 SP, 8 reputation (guessed), 0x20 items (set automatically when there are groups)") },
+        new() { Name = "award_gold", Type = ColType.U32, HideInGrid = true, Note = L.T("Gold reward (only written when award_mask has bit 1 – guessed)") },
+        new() { Name = "award_exp", Type = ColType.U32, HideInGrid = true, Note = L.T("EXP reward (bit 2 – guessed)") },
+        new() { Name = "award_sp", Type = ColType.U32, HideInGrid = true, Note = L.T("SP reward (bit 4 – guessed)") },
+        new() { Name = "award_reputation", Type = ColType.I32, HideInGrid = true, Note = L.T("Reputation reward (bit 8 – guessed)") },
+        new() { Name = "choices", Type = ColType.Table, SubColumns = ChoiceColumns, Note = L.T("Reward groups (the player picks 1 group)") },
+        new() { Name = "items", Type = ColType.Table, SubColumns = ItemColumns, Note = L.T("Reward items, attached to a group by the choice column") },
+        new() { Name = "description", Type = ColType.WStr, HideInGrid = true, Note = L.T("Task description") },
+        new() { Name = "success_text", Type = ColType.WStr, HideInGrid = true, Note = L.T("Text on success") },
+        new() { Name = "failure_text", Type = ColType.WStr, HideInGrid = true, Note = L.T("Text on failure") },
         .. Enumerable.Range(0, TalkCount).Select(t => new ColumnDef
         {
-            Name = $"prompt_{t}", Type = ColType.WStr, HideInGrid = true, Note = $"Tên hội thoại {t} ({TalkEnum[t]}), vd \"RootNode\"",
+            Name = $"prompt_{t}", Type = ColType.WStr, HideInGrid = true, Note = L.F("Dialogue {0} name ({1}), e.g. \"RootNode\"", t, TalkEnum[t]),
         }),
-        new() { Name = "windows", Type = ColType.Table, SubColumns = WindowColumns, Note = "Cửa sổ thoại của 5 hội thoại" },
-        new() { Name = "options", Type = ColType.Table, SubColumns = OptionColumns, Note = "Nút lựa chọn, gắn vào cửa sổ bằng talk + window" },
-        new() { Name = "subtasks", Type = ColType.U32, ReadOnly = true, HideInGrid = true, Note = "Số NV con (tính lại khi lưu từ cột depth)" },
+        new() { Name = "windows", Type = ColType.Table, SubColumns = WindowColumns, Note = L.T("Dialogue windows of the 5 dialogues") },
+        new() { Name = "options", Type = ColType.Table, SubColumns = OptionColumns, Note = L.T("Option buttons, attached to a window by talk + window") },
+        new() { Name = "subtasks", Type = ColType.U32, ReadOnly = true, HideInGrid = true, Note = L.T("Subtask count (recomputed from the depth column when saving)") },
     ];
 
     public const int HSize = 0, HTimestamp = 1, HVersion = 2, HCount = 3;
     public static readonly IReadOnlyList<ColumnDef> HeaderColumns =
     [
-        new() { Name = "file_size", Type = ColType.U32, ReadOnly = true, Note = "Kích thước file (tính lại khi lưu)" },
-        new() { Name = "timestamp", Type = ColType.U32, Note = "Thời điểm xuất file (Unix time)" },
-        new() { Name = "version", Type = ColType.U16, Note = "Phiên bản định dạng (client TT3 = 13)" },
-        new() { Name = "task_count", Type = ColType.U16, ReadOnly = true, Note = "Số NV gốc (tính lại khi lưu)" },
+        new() { Name = "file_size", Type = ColType.U32, ReadOnly = true, Note = L.T("File size (recomputed when saving)") },
+        new() { Name = "timestamp", Type = ColType.U32, Note = L.T("Export time (Unix time)") },
+        new() { Name = "version", Type = ColType.U16, Note = L.T("Format version (TT3 client = 13)") },
+        new() { Name = "task_count", Type = ColType.U16, ReadOnly = true, Note = L.T("Root task count (recomputed when saving)") },
     ];
 
     public static readonly IReadOnlyList<ColumnDef> RawColumns =
     [
-        new() { Name = "data", Type = ColType.Bytes, ReadOnly = true, Note = "Toàn bộ vùng nhiệm vụ (chưa giải mã được, giữ nguyên)" },
+        new() { Name = "data", Type = ColType.Bytes, ReadOnly = true, Note = L.T("Whole task area (could not be decoded, kept as is)") },
     ];
 
     // ---------------- model ----------------
 
     public bool IsRaw { get; private set; }
-    public override string FormatName => IsRaw ? "dyn_tasks.data (thô – chưa giải mã)" : $"dyn_tasks.data (v{Header.Rows[0].Long(HVersion)}, {Tasks.Rows.Count} NV)";
+    public override string FormatName => IsRaw ? L.T("dyn_tasks.data (raw – not decoded)") : L.F("dyn_tasks.data (v{0}, {1} tasks)", Header.Rows[0].Long(HVersion), Tasks.Rows.Count);
     public RecordTable Tasks => Tables[0];
     public RecordTable Header => Tables[^1];
 
@@ -180,7 +180,7 @@ public sealed class DynTasksFile : DataFile
 
     public static DynTasksFile Parse(byte[] data, string path)
     {
-        if (data.Length < HeaderSize) throw new InvalidDataException("File quá ngắn so với header dyn_tasks.data (12 byte).");
+        if (data.Length < HeaderSize) throw new InvalidDataException(L.T("File is shorter than the dyn_tasks.data header (12 bytes)."));
         var r = new BinReader(data);
         var h = new Record(HeaderColumns.Count);
         h.Values[HSize] = r.U32();
@@ -189,10 +189,10 @@ public sealed class DynTasksFile : DataFile
         h.Values[HCount] = r.U16();
         var f = new DynTasksFile { Path = path };
         if ((uint)h.Values[HSize]! != (uint)data.Length)
-            f.Warnings.Add($"Header ghi kích thước {h.Values[HSize]} nhưng file dài {data.Length} byte (sẽ sửa khi lưu).");
+            f.Warnings.Add(L.F("Header says size {0} but the file is {1} bytes long (fixed when saving).", h.Values[HSize], data.Length));
         if ((ushort)h.Values[HVersion]! != 13)
-            f.Warnings.Add($"Phiên bản {h.Values[HVersion]} (client TT3 dùng 13) – có thể đọc sai.");
-        var header = new RecordTable { Name = "Header", Columns = HeaderColumns, CanAddRemove = false, Note = "Giá trị chung của file." };
+            f.Warnings.Add(L.F("Version {0} (the TT3 client uses 13) – may be read incorrectly.", h.Values[HVersion]));
+        var header = new RecordTable { Name = "Header", Columns = HeaderColumns, CanAddRemove = false, Note = L.T("File-wide values.") };
         header.Rows.Add(h);
 
         int count = (ushort)h.Values[HCount]!;
@@ -201,7 +201,7 @@ public sealed class DynTasksFile : DataFile
         try
         {
             for (int i = 0; i < count; i++) ReadTask(r, 0, tasks);
-            if (!r.AtEnd) throw new InvalidDataException($"Còn {r.Remaining} byte sau nhiệm vụ cuối (offset {r.Pos}).");
+            if (!r.AtEnd) throw new InvalidDataException(L.F("{0} bytes left after the last task (offset {1}).", r.Remaining, r.Pos));
         }
         catch (Exception ex) when (ex is InvalidDataException or ArgumentException or IndexOutOfRangeException)
         {
@@ -213,18 +213,18 @@ public sealed class DynTasksFile : DataFile
             f.Tables.Add(new RecordTable
             {
                 Name = "Tasks", Columns = TaskColumns, Rows = tasks, KeyColumn = CId, NameColumn = CName,
-                Note = "Mỗi dòng một nhiệm vụ động (NV con nằm ngay sau NV cha, cột depth lớn hơn).",
+                Note = L.T("One dynamic task per row (subtasks follow right after their parent, with a larger depth)."),
             });
             var dup = tasks.GroupBy(x => x.Long(CId)).Where(g => g.Count() > 1).Select(g => g.Key).Take(5).ToList();
-            if (dup.Count > 0) f.Warnings.Add("ID nhiệm vụ trùng: " + string.Join(", ", dup));
+            if (dup.Count > 0) f.Warnings.Add(L.F("Duplicate task IDs: {0}", string.Join(", ", dup)));
         }
         else
         {
             f.IsRaw = true;
-            f.Warnings.Add("Không giải mã được vùng nhiệm vụ (" + error + ") – chỉ giữ nguyên dạng thô, vẫn lưu đúng từng byte.");
+            f.Warnings.Add(L.F("Could not decode the task area ({0}) – kept as raw data only, still saved byte-exact.", error));
             var raw = new Record(1);
             raw.Values[0] = data.AsSpan(HeaderSize).ToArray();
-            f.Tables.Add(new RecordTable { Name = "Raw", Columns = RawColumns, CanAddRemove = false, Note = "Dữ liệu thô." });
+            f.Tables.Add(new RecordTable { Name = "Raw", Columns = RawColumns, CanAddRemove = false, Note = L.T("Raw data.") });
             f.Tables[0].Rows.Add(raw);
         }
         f.Tables.Add(header);
@@ -235,7 +235,7 @@ public sealed class DynTasksFile : DataFile
 
     private static void ReadTask(BinReader r, int depth, List<Record> output)
     {
-        if (depth > 32) throw new InvalidDataException("Nhiệm vụ con lồng quá sâu.");
+        if (depth > 32) throw new InvalidDataException(L.T("Subtasks nested too deep."));
         int start = r.Pos;
         var t = Record.CreateDefault(TaskColumns);
         t.Values[CDepth] = (byte)depth;
@@ -243,7 +243,7 @@ public sealed class DynTasksFile : DataFile
         t.Values[CMask] = mask;
         t.Values[CMask2] = mask2;
         if ((mask & ~MaskTimetable) != 0 || mask2 != 0)
-            throw new InvalidDataException($"NV tại offset {start}: mask 0x{mask:X}/0x{mask2:X} có bit chưa hỗ trợ.");
+            throw new InvalidDataException(L.F("Task at offset {0}: mask 0x{1:X}/0x{2:X} has unsupported bits.", start, mask, mask2));
         byte type = r.U8();
         t.Values[CType] = type;
         if (type == 1) t.Values[CSpecial] = r.U32();
@@ -266,12 +266,12 @@ public sealed class DynTasksFile : DataFile
         {
             case 0: case 3: break;
             case 5: t.Values[CWait] = r.U32(); break;
-            default: throw new InvalidDataException($"NV {t.Values[CId]}: method {method} chưa hỗ trợ.");
+            default: throw new InvalidDataException(L.F("Task {0}: method {1} is not supported.", t.Values[CId], method));
         }
         t.Values[CFinish] = r.U8();
         uint am = r.U32();
         t.Values[CAwardMask] = am;
-        if ((am & ~(0xFu | AwardChoicesBit)) != 0) throw new InvalidDataException($"NV {t.Values[CId]}: award_mask 0x{am:X} có bit chưa hỗ trợ.");
+        if ((am & ~(0xFu | AwardChoicesBit)) != 0) throw new InvalidDataException(L.F("Task {0}: award_mask 0x{1:X} has unsupported bits.", t.Values[CId], am));
         if ((am & 1) != 0) t.Values[CGold] = r.U32();
         if ((am & 2) != 0) t.Values[CExp] = r.U32();
         if ((am & 4) != 0) t.Values[CSp] = r.U32();
@@ -330,7 +330,7 @@ public sealed class DynTasksFile : DataFile
         }
 
         uint subs = r.U32();
-        if (subs > 10000) throw new InvalidDataException($"NV {t.Values[CId]}: số NV con không hợp lệ ({subs}).");
+        if (subs > 10000) throw new InvalidDataException(L.F("Task {0}: invalid subtask count ({1}).", t.Values[CId], subs));
         t.Values[CSubtasks] = subs;
         output.Add(t);
         for (int i = 0; i < subs; i++) ReadTask(r, depth + 1, output);
@@ -340,7 +340,7 @@ public sealed class DynTasksFile : DataFile
     private static int CheckedLen(BinReader r, int unit)
     {
         uint n = r.U32();
-        if ((long)n * unit > r.Remaining) throw new InvalidDataException($"Độ dài chuỗi {n} vượt quá dữ liệu còn lại (offset {r.Pos - 4}).");
+        if ((long)n * unit > r.Remaining) throw new InvalidDataException(L.F("String length {0} exceeds the remaining data (offset {1}).", n, r.Pos - 4));
         return (int)n * unit;
     }
 
@@ -373,13 +373,13 @@ public sealed class DynTasksFile : DataFile
         {
             var rows = Tasks.Rows;
             int top = rows.Count(x => x.Long(CDepth) == 0);
-            if (top > ushort.MaxValue) throw new InvalidDataException($"Một gói chứa tối đa {ushort.MaxValue} NV gốc.");
+            if (top > ushort.MaxValue) throw new InvalidDataException(L.F("A pack holds at most {0} root tasks.", ushort.MaxValue));
             w.U16((ushort)top);
             h.Values[HCount] = (ushort)top;
             int i = 0;
             while (i < rows.Count)
             {
-                if (rows[i].Long(CDepth) != 0) throw new InvalidDataException($"Dòng {i}: NV đầu tiên / sau NV gốc phải có depth = 0 hoặc lớn hơn dòng trước tối đa 1.");
+                if (rows[i].Long(CDepth) != 0) throw new InvalidDataException(L.F("Row {0}: the first task / a task after a root task must have depth = 0 or at most 1 more than the row before.", i));
                 i = WriteTask(w, rows, i, 0);
             }
         }
@@ -392,12 +392,12 @@ public sealed class DynTasksFile : DataFile
     private static int WriteTask(BinWriter w, List<Record> rows, int i, int depth)
     {
         var t = rows[i];
-        string who = $"NV {t.Values[CId]} (dòng {i})";
+        string who = L.F("Task {0} (row {1})", t.Values[CId], i);
         uint mask = Convert.ToUInt32(t.Values[CMask]);
         uint mask2 = Convert.ToUInt32(t.Values[CMask2]);
         var timetable = t.Table(CTimetable);
         if (timetable.Count > 0) mask |= MaskTimetable;
-        if ((mask & ~MaskTimetable) != 0 || mask2 != 0) throw new InvalidDataException($"{who}: mask có bit chưa hỗ trợ.");
+        if ((mask & ~MaskTimetable) != 0 || mask2 != 0) throw new InvalidDataException(L.F("{0}: mask has unsupported bits.", who));
         w.U32(mask);
         w.U32(mask2);
         byte type = Convert.ToByte(t.Values[CType]);
@@ -406,7 +406,7 @@ public sealed class DynTasksFile : DataFile
         w.U32(Convert.ToUInt32(t.Values[CId]));
 
         var name = TextBytes(t, CName);
-        if (name.Length / 2 > 255) throw new InvalidDataException($"{who}: tên dài quá 255 ký tự.");
+        if (name.Length / 2 > 255) throw new InvalidDataException(L.F("{0}: name longer than 255 characters.", who));
         w.U8((byte)(name.Length / 2));
         w.Bytes(name);
         RecordIO.WriteCell(w, TaskColumns[CFlags], t, CFlags);
@@ -415,13 +415,13 @@ public sealed class DynTasksFile : DataFile
 
         if ((mask & MaskTimetable) != 0)
         {
-            if (timetable.Count > 255) throw new InvalidDataException($"{who}: tối đa 255 khung thời gian.");
+            if (timetable.Count > 255) throw new InvalidDataException(L.F("{0}: at most 255 time windows.", who));
             w.U8((byte)timetable.Count);
             foreach (var e in timetable) RecordIO.WriteFixed(w, TimetableColumns, e);
         }
 
         byte method = Convert.ToByte(t.Values[CMethod]);
-        if (method is not (0 or 3 or 5)) throw new InvalidDataException($"{who}: method {method} chưa hỗ trợ (chỉ 0, 3, 5).");
+        if (method is not (0 or 3 or 5)) throw new InvalidDataException(L.F("{0}: method {1} is not supported (only 0, 3, 5).", who, method));
         w.U8(method);
         if (method == 5) w.U32(Convert.ToUInt32(t.Values[CWait]));
         w.U8(Convert.ToByte(t.Values[CFinish]));
@@ -430,7 +430,7 @@ public sealed class DynTasksFile : DataFile
         var items = t.Table(CItems);
         uint am = Convert.ToUInt32(t.Values[CAwardMask]);
         if (choices.Count > 0) am |= AwardChoicesBit;
-        if ((am & ~(0xFu | AwardChoicesBit)) != 0) throw new InvalidDataException($"{who}: award_mask có bit chưa hỗ trợ.");
+        if ((am & ~(0xFu | AwardChoicesBit)) != 0) throw new InvalidDataException(L.F("{0}: award_mask has unsupported bits.", who));
         w.U32(am);
         if ((am & 1) != 0) w.U32(Convert.ToUInt32(t.Values[CGold]));
         if ((am & 2) != 0) w.U32(Convert.ToUInt32(t.Values[CExp]));
@@ -438,21 +438,21 @@ public sealed class DynTasksFile : DataFile
         if ((am & 8) != 0) w.I32(Convert.ToInt32(t.Values[CRep]));
         if ((am & AwardChoicesBit) != 0)
         {
-            if (choices.Count > 255) throw new InvalidDataException($"{who}: tối đa 255 nhóm thưởng.");
+            if (choices.Count > 255) throw new InvalidDataException(L.F("{0}: at most 255 reward groups.", who));
             if (items.FirstOrDefault(x => x.Long(ItChoice) >= choices.Count) is { } bad)
-                throw new InvalidDataException($"{who}: vật phẩm {bad.Values[ItId]} gắn vào nhóm {bad.Values[ItChoice]} không tồn tại (có {choices.Count} nhóm).");
+                throw new InvalidDataException(L.F("{0}: item {1} is attached to group {2}, which does not exist ({3} groups).", who, bad.Values[ItId], bad.Values[ItChoice], choices.Count));
             w.U8((byte)choices.Count);
             for (int c = 0; c < choices.Count; c++)
             {
                 w.U8(Convert.ToByte(choices[c].Values[ChRandom]));
                 var list = items.Where(x => x.Long(ItChoice) == c).ToList();
-                if (list.Count > 255) throw new InvalidDataException($"{who}: nhóm {c} có quá 255 vật phẩm.");
+                if (list.Count > 255) throw new InvalidDataException(L.F("{0}: group {1} has more than 255 items.", who, c));
                 w.U8((byte)list.Count);
                 foreach (var it in list)
                     for (int k = ItId; k < ItemColumns.Count; k++) RecordIO.WriteCell(w, ItemColumns[k], it, k);
             }
         }
-        else if (items.Count > 0) throw new InvalidDataException($"{who}: có vật phẩm thưởng nhưng chưa có nhóm (choices).");
+        else if (items.Count > 0) throw new InvalidDataException(L.F("{0}: has reward items but no groups (choices).", who));
 
         foreach (int col in new[] { CDesc, CSuccess, CFailure })
         {
@@ -464,17 +464,17 @@ public sealed class DynTasksFile : DataFile
         var windows = t.Table(CWindows);
         var options = t.Table(COptions);
         if (windows.FirstOrDefault(x => x.Long(WTalk) >= TalkCount) is not null || options.FirstOrDefault(x => x.Long(OTalk) >= TalkCount) is not null)
-            throw new InvalidDataException($"{who}: cột talk phải từ 0 đến 4.");
+            throw new InvalidDataException(L.F("{0}: the talk column must be 0 to 4.", who));
         for (int talk = 0; talk < TalkCount; talk++)
         {
             var prompt = TextBytes(t, CPrompt0 + talk);
             w.I32(prompt.Length);
             w.Bytes(prompt);
             var wins = windows.Where(x => x.Long(WTalk) == talk).ToList();
-            if (wins.Count > 255) throw new InvalidDataException($"{who}: hội thoại {talk} có quá 255 cửa sổ.");
+            if (wins.Count > 255) throw new InvalidDataException(L.F("{0}: dialogue {1} has more than 255 windows.", who, talk));
             var opts = options.Where(x => x.Long(OTalk) == talk).ToList();
             if (opts.FirstOrDefault(x => x.Long(OWindow) >= wins.Count) is { } badOpt)
-                throw new InvalidDataException($"{who}: lựa chọn \"{badOpt.Text(OText)}\" trỏ tới cửa sổ {badOpt.Values[OWindow]} không có trong hội thoại {talk}.");
+                throw new InvalidDataException(L.F("{0}: option \"{1}\" points to window {2}, which is not in dialogue {3}.", who, badOpt.Text(OText), badOpt.Values[OWindow], talk));
             w.U8((byte)wins.Count);
             for (int k = 0; k < wins.Count; k++)
             {
@@ -485,7 +485,7 @@ public sealed class DynTasksFile : DataFile
                 w.I32(text.Length / 2);
                 w.Bytes(text);
                 var mine = opts.Where(x => x.Long(OWindow) == k).ToList();
-                if (mine.Count > 255) throw new InvalidDataException($"{who}: cửa sổ có quá 255 lựa chọn.");
+                if (mine.Count > 255) throw new InvalidDataException(L.F("{0}: a window has more than 255 options.", who));
                 w.U8((byte)mine.Count);
                 foreach (var o in mine)
                 {
@@ -505,7 +505,7 @@ public sealed class DynTasksFile : DataFile
         {
             long d = rows[next].Long(CDepth);
             if (d <= depth) break;
-            if (d != depth + 1) throw new InvalidDataException($"Dòng {next}: depth {d} nhảy cóc (dòng cha có depth {depth}).");
+            if (d != depth + 1) throw new InvalidDataException(L.F("Row {0}: depth {1} skips a level (the parent row has depth {2}).", next, d, depth));
             children.Add(next);
             next = SkipSubtree(rows, next, depth + 1);
         }

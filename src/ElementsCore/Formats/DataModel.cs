@@ -183,7 +183,7 @@ public sealed class BinReader
 
     private ReadOnlySpan<byte> Take(int n)
     {
-        if (n < 0 || Pos + n > Data.Length) throw new InvalidDataException($"Hết dữ liệu ở offset {Pos} (cần {n} byte, còn {Remaining}).");
+        if (n < 0 || Pos + n > Data.Length) throw new InvalidDataException(L.F("Out of data at offset {0} (need {1} bytes, {2} left).", Pos, n, Remaining));
         var s = Data.AsSpan(Pos, n);
         Pos += n;
         return s;
@@ -277,7 +277,7 @@ public static class RecordIO
                 rec.Values[i] = r.Bytes(c.Length);
                 break;
             default:
-                throw new InvalidOperationException($"Cột {c.Name}: kiểu {c.Type} không đọc tự động được.");
+                throw new InvalidOperationException(L.F("Column {0}: type {1} cannot be read automatically.", c.Name, c.Type));
         }
     }
 
@@ -314,7 +314,7 @@ public static class RecordIO
                     break;
                 }
             default:
-                throw new InvalidOperationException($"Cột {c.Name}: kiểu {c.Type} không ghi tự động được.");
+                throw new InvalidOperationException(L.F("Column {0}: type {1} cannot be written automatically.", c.Name, c.Type));
         }
     }
 
@@ -340,7 +340,7 @@ public static class RecordIO
         var bytes = enc.GetBytes(text);
         int size = c.ByteSize;
         int room = size - (c.Type == ColType.WStr ? 2 : 1);
-        if (bytes.Length > room) throw new InvalidDataException($"\"{c.Name}\": văn bản quá dài ({TextLength(c, text)}/{c.MaxChars}).");
+        if (bytes.Length > room) throw new InvalidDataException(L.F("\"{0}\": text too long ({1}/{2}).", c.Name, TextLength(c, text), c.MaxChars));
         var buf = new byte[size];
         bytes.CopyTo(buf, 0);
         return buf;
@@ -370,7 +370,7 @@ public static class RecordIO
         }
     }
 
-    /// <summary>Value plus enum meaning, e.g. "3 (Vật phẩm mới)".</summary>
+    /// <summary>Value plus enum meaning, e.g. "3 (New item)".</summary>
     public static string Describe(ColumnDef c, object? v)
     {
         var s = Format(c, v);
@@ -399,37 +399,37 @@ public static class RecordIO
                 case ColType.F32: value = float.Parse(t, NumberStyles.Float, Inv); return true;
                 case ColType.F64: value = double.Parse(t, NumberStyles.Float, Inv); return true;
                 case ColType.Bool:
-                    if (t is "1" or "true" or "True" or "có") { value = true; return true; }
-                    if (t is "0" or "false" or "False" or "không" or "") { value = false; return true; }
-                    error = "Chỉ nhận 0 hoặc 1."; return false;
+                    if (t is "1" or "true" or "True" or "yes" or "có") { value = true; return true; }
+                    if (t is "0" or "false" or "False" or "no" or "không" or "") { value = false; return true; }
+                    error = L.T("Only 0 or 1 is accepted."); return false;
                 case ColType.WStr:
                 case ColType.Str:
                     if (c.Length > 0 && TextLength(c, text) > c.MaxChars)
                     {
-                        error = $"Quá dài: {TextLength(c, text)}/{c.MaxChars} {(c.Type == ColType.Str ? "byte GBK" : "ký tự")}.";
+                        error = L.F("Too long: {0}/{1} {2}.", TextLength(c, text), c.MaxChars, c.Type == ColType.Str ? L.T("GBK bytes") : L.T("characters"));
                         return false;
                     }
                     if (c.Type == ColType.Str && FieldCodec.Gbk.GetString(FieldCodec.Gbk.GetBytes(text)) != text)
                     {
-                        error = "Có ký tự không mã hoá được bằng GBK (trường này không chứa được tiếng Việt có dấu).";
+                        error = L.T("Contains characters that cannot be encoded in GBK (this field cannot hold accented Vietnamese).");
                         return false;
                     }
                     value = text; return true;
                 case ColType.Bytes:
                     {
                         var hex = new string(t.Where(Uri.IsHexDigit).ToArray());
-                        if (hex.Length % 2 != 0) { error = "Số chữ số hex phải chẵn."; return false; }
+                        if (hex.Length % 2 != 0) { error = L.T("The number of hex digits must be even."); return false; }
                         var b = Convert.FromHexString(hex);
-                        if (c.Length > 0 && b.Length != c.Length) { error = $"Cần đúng {c.Length} byte."; return false; }
+                        if (c.Length > 0 && b.Length != c.Length) { error = L.F("Exactly {0} bytes required.", c.Length); return false; }
                         value = b; return true;
                     }
                 default:
-                    error = "Không sửa trực tiếp được kiểu này."; return false;
+                    error = L.T("This type cannot be edited directly."); return false;
             }
         }
         catch (Exception ex) when (ex is FormatException or OverflowException)
         {
-            error = $"Giá trị không hợp lệ cho {c.TypeLabel}.";
+            error = L.F("Invalid value for {0}.", c.TypeLabel);
             return false;
         }
     }

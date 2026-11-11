@@ -25,36 +25,36 @@ public sealed class DomainFile : DataFile
 
     public static readonly IReadOnlyDictionary<long, string> TypeEnum = new Dictionary<long, string>
     {
-        [0] = "Không",
-        [1] = "Cấp 1 (nhỏ)",
-        [2] = "Cấp 2 (vừa)",
-        [3] = "Cấp 3 (lớn / chủ thành)",
+        [0] = L.T("None"),
+        [1] = L.T("Level 1 (small)"),
+        [2] = L.T("Level 2 (medium)"),
+        [3] = L.T("Level 3 (large / capital)"),
     };
 
     public static readonly IReadOnlyDictionary<long, string> WeekdayEnum = new Dictionary<long, string>
     {
         // counted from Monday 00:00 (as JD IDE / the server's domain.sev): the samples' slots are
         // Sat/Sun/Mon 20:00, Sun/Mon 14:00, Sun/Mon 09:00
-        [0] = "Thứ 2", [1] = "Thứ 3", [2] = "Thứ 4", [3] = "Thứ 5",
-        [4] = "Thứ 6", [5] = "Thứ 7", [6] = "Chủ nhật",
+        [0] = L.T("Monday"), [1] = L.T("Tuesday"), [2] = L.T("Wednesday"), [3] = L.T("Thursday"),
+        [4] = L.T("Friday"), [5] = L.T("Saturday"), [6] = L.T("Sunday"),
     };
 
     public static readonly IReadOnlyList<ColumnDef> VertColumns =
     [
-        new() { Name = "x", Type = ColType.I32, Note = "Toạ độ X trên ảnh bản đồ (pixel)" },
-        new() { Name = "y", Type = ColType.I32, Note = "Toạ độ Y trên ảnh bản đồ (pixel)" },
+        new() { Name = "x", Type = ColType.I32, Note = L.T("X on the map image (pixels)") },
+        new() { Name = "y", Type = ColType.I32, Note = L.T("Y on the map image (pixels)") },
     ];
 
     public static readonly IReadOnlyList<ColumnDef> FaceColumns =
     [
-        new() { Name = "v0", Type = ColType.I32, Note = "Chỉ số đỉnh thứ nhất (đếm từ 0)" },
-        new() { Name = "v1", Type = ColType.I32, Note = "Chỉ số đỉnh thứ hai (đếm từ 0)" },
-        new() { Name = "v2", Type = ColType.I32, Note = "Chỉ số đỉnh thứ ba (đếm từ 0)" },
+        new() { Name = "v0", Type = ColType.I32, Note = L.T("First vertex index (from 0)") },
+        new() { Name = "v1", Type = ColType.I32, Note = L.T("Second vertex index (from 0)") },
+        new() { Name = "v2", Type = ColType.I32, Note = L.T("Third vertex index (from 0)") },
     ];
 
     public static readonly IReadOnlyList<ColumnDef> NeighbourColumns =
     [
-        new() { Name = "domain_id", Type = ColType.I32, Note = "ID lãnh địa kề bên (phải có trong file)" },
+        new() { Name = "domain_id", Type = ColType.I32, Note = L.T("Adjacent domain ID (must exist in the file)") },
     ];
 
     // Column indices of the "Domains" table.
@@ -63,30 +63,30 @@ public sealed class DomainFile : DataFile
 
     public static readonly IReadOnlyList<ColumnDef> DomainColumns =
     [
-        new() { Name = "id", Type = ColType.I32, Note = "ID lãnh địa (server dùng)" },
-        new() { Name = "name", Type = ColType.WStr, Length = NameChars, Note = "Tên lãnh địa (tối đa 15 ký tự)" },
-        new() { Name = "type", Type = ColType.I32, Enum = TypeEnum, Note = "Cấp lãnh địa (1–3)" },
-        new() { Name = "reward", Type = ColType.I32, Note = "Thưởng (mọi file mẫu đều = 0)" },
-        new() { Name = "center_x", Type = ColType.I32, Note = "Tâm X: chỗ hiện tên / bấm chọn" },
-        new() { Name = "center_y", Type = ColType.I32, Note = "Tâm Y: chỗ hiện tên / bấm chọn" },
-        new() { Name = "verts", Type = ColType.Table, SubColumns = VertColumns, HideInGrid = true, Note = "Các đỉnh đường viền (đa giác, ≥ 3 đỉnh)" },
-        new() { Name = "faces", Type = ColType.Table, SubColumns = FaceColumns, HideInGrid = true, Note = "Tam giác phủ vùng (thường = số đỉnh − 2)" },
-        new() { Name = "neighbours", Type = ColType.Table, SubColumns = NeighbourColumns, Note = "Lãnh địa kề bên (nên khai báo hai chiều)" },
+        new() { Name = "id", Type = ColType.I32, Note = L.T("Domain ID (used by the server)") },
+        new() { Name = "name", Type = ColType.WStr, Length = NameChars, Note = L.T("Domain name (max 15 characters)") },
+        new() { Name = "type", Type = ColType.I32, Enum = TypeEnum, Note = L.T("Domain level (1–3)") },
+        new() { Name = "reward", Type = ColType.I32, Note = L.T("Reward (0 in every sample file)") },
+        new() { Name = "center_x", Type = ColType.I32, Note = L.T("Center X: where the name is shown / click point") },
+        new() { Name = "center_y", Type = ColType.I32, Note = L.T("Center Y: where the name is shown / click point") },
+        new() { Name = "verts", Type = ColType.Table, SubColumns = VertColumns, HideInGrid = true, Note = L.T("Outline vertices (polygon, ≥ 3 vertices)") },
+        new() { Name = "faces", Type = ColType.Table, SubColumns = FaceColumns, HideInGrid = true, Note = L.T("Triangles covering the area (usually vertex count − 2)") },
+        new() { Name = "neighbours", Type = ColType.Table, SubColumns = NeighbourColumns, Note = L.T("Adjacent domains (should be declared both ways)") },
     ];
 
     public static readonly IReadOnlyList<ColumnDef> BattleTimeColumns =
     [
-        new() { Name = "weekday", Type = ColType.I32, Enum = WeekdayEnum, Note = "Thứ trong tuần (0 = Thứ 2 … 6 = Chủ nhật)" },
-        new() { Name = "hour", Type = ColType.I32, Note = "Giờ (0–23)" },
-        new() { Name = "minute", Type = ColType.I32, Note = "Phút (0–59)" },
+        new() { Name = "weekday", Type = ColType.I32, Enum = WeekdayEnum, Note = L.T("Day of week (0 = Monday … 6 = Sunday)") },
+        new() { Name = "hour", Type = ColType.I32, Note = L.T("Hour (0–23)") },
+        new() { Name = "minute", Type = ColType.I32, Note = L.T("Minute (0–59)") },
     ];
 
     public const int HdrBattlesPerSlot = 0, HdrTrailing = 1;
 
     public static readonly IReadOnlyList<ColumnDef> HeaderColumns =
     [
-        new() { Name = "battles_per_slot", Type = ColType.I32, Note = "Số trận tối đa mỗi khung giờ" },
-        new() { Name = "trailing", Type = ColType.Bytes, ReadOnly = true, HideInGrid = true, Note = "Byte thừa cuối file (giữ nguyên)" },
+        new() { Name = "battles_per_slot", Type = ColType.I32, Note = L.T("Max battles per time slot") },
+        new() { Name = "trailing", Type = ColType.Bytes, ReadOnly = true, HideInGrid = true, Note = L.T("Extra bytes at the end of the file (kept as is)") },
     ];
 
     /// <summary>False when the file ended right after the domains (no battle-time section).</summary>
@@ -103,15 +103,15 @@ public sealed class DomainFile : DataFile
             var n = System.IO.Path.GetFileName(Path).ToLowerInvariant();
             string kind = n switch
             {
-                "domain.data" => "bản đồ bang hội",
-                "domain1.data" => "chiến lãnh thổ",
-                "domain2.data" => "bản đồ liên server",
-                "domain3.data" => "bản đồ tổng",
-                "domain4.data" => "bản đồ thượng cổ",
-                "domainlandwar.data" => "chiến địa",
-                _ => "lãnh địa",
+                "domain.data" => L.T("guild map"),
+                "domain1.data" => L.T("territory war"),
+                "domain2.data" => L.T("cross-server map"),
+                "domain3.data" => L.T("world map"),
+                "domain4.data" => L.T("ancient world map"),
+                "domainlandwar.data" => L.T("land war"),
+                _ => L.T("domain"),
             };
-            return $"{(n.Length > 0 ? n : "domain.data")} ({kind}, {Domains.Rows.Count} lãnh địa)";
+            return L.F("{0} ({1}, {2} domains)", n.Length > 0 ? n : "domain.data", kind, Domains.Rows.Count);
         }
     }
 
@@ -120,25 +120,25 @@ public sealed class DomainFile : DataFile
     public static DomainFile Parse(byte[] data, string path)
     {
         var r = new BinReader(data);
-        if (r.U32() != Magic) throw new InvalidDataException("Không phải file domain (thiếu chữ ký MOXB).");
+        if (r.U32() != Magic) throw new InvalidDataException(L.T("Not a domain file (missing MOXB signature)."));
         int count = r.I32();
-        if (count < 0 || count > 100000) throw new InvalidDataException($"Số lãnh địa không hợp lệ: {count}.");
+        if (count < 0 || count > 100000) throw new InvalidDataException(L.F("Invalid domain count: {0}.", count));
 
         var f = new DomainFile { Path = path };
         var domains = new RecordTable
         {
             Name = "Domains", Columns = DomainColumns, KeyColumn = ColId, NameColumn = ColName,
-            Note = "Mỗi dòng một lãnh địa: đường viền, tam giác và lãnh địa kề bên.",
+            Note = L.T("One domain per row: outline, triangles and adjacent domains."),
         };
         var times = new RecordTable
         {
             Name = "Battle times", Columns = BattleTimeColumns,
-            Note = "Các khung giờ khai chiến trong tuần.",
+            Note = L.T("Weekly battle time slots."),
         };
         var header = new RecordTable
         {
             Name = "Header", Columns = HeaderColumns, CanAddRemove = false,
-            Note = "Giá trị chung của file.",
+            Note = L.T("File-wide values."),
         };
 
         for (int i = 0; i < count; i++)
@@ -150,9 +150,9 @@ public sealed class DomainFile : DataFile
             rec.Values[ColReward] = r.I32();
             rec.Values[ColCenterX] = r.I32();
             rec.Values[ColCenterY] = r.I32();
-            rec.Values[ColVerts] = ReadList(r, VertColumns, $"lãnh địa #{i}: số đỉnh");
-            rec.Values[ColFaces] = ReadList(r, FaceColumns, $"lãnh địa #{i}: số tam giác");
-            rec.Values[ColNeighbours] = ReadList(r, NeighbourColumns, $"lãnh địa #{i}: số lãnh địa kề");
+            rec.Values[ColVerts] = ReadList(r, VertColumns, L.F("domain #{0}: vertex count", i));
+            rec.Values[ColFaces] = ReadList(r, FaceColumns, L.F("domain #{0}: triangle count", i));
+            rec.Values[ColNeighbours] = ReadList(r, NeighbourColumns, L.F("domain #{0}: adjacent domain count", i));
             domains.Rows.Add(rec);
         }
 
@@ -165,12 +165,12 @@ public sealed class DomainFile : DataFile
         }
         else
         {
-            foreach (var t in ReadList(r, BattleTimeColumns, "số khung giờ khai chiến")) times.Rows.Add(t);
+            foreach (var t in ReadList(r, BattleTimeColumns, L.T("battle time slot count"))) times.Rows.Add(t);
             hdr.Values[HdrBattlesPerSlot] = r.I32();
             if (!r.AtEnd)
             {
                 hdr.Values[HdrTrailing] = r.Bytes(r.Remaining);
-                f.Warnings.Add($"Có {((byte[])hdr.Values[HdrTrailing]!).Length} byte sau phần giờ khai chiến (giữ nguyên khi lưu).");
+                f.Warnings.Add(L.F("{0} bytes after the battle-time section (kept when saving).", ((byte[])hdr.Values[HdrTrailing]!).Length));
             }
         }
         header.Rows.Add(hdr);
@@ -187,7 +187,7 @@ public sealed class DomainFile : DataFile
         int n = r.I32();
         int size = RecordIO.FixedSize(cols);
         if (n < 0 || (long)n * size > r.Remaining)
-            throw new InvalidDataException($"{what} không hợp lệ ({n}) ở offset {r.Pos - 4}.");
+            throw new InvalidDataException(L.F("{0} is invalid ({1}) at offset {2}.", what, n, r.Pos - 4));
         var list = new List<Record>(n);
         for (int k = 0; k < n; k++) list.Add(RecordIO.ReadFixed(r, cols));
         return list;
@@ -242,26 +242,26 @@ public sealed class DomainFile : DataFile
         foreach (var d in Domains.Rows)
         {
             long id = d.Long(ColId);
-            if (!ids.TryAdd(id, d)) Add($"ID lãnh địa {id} bị trùng: client chỉ tìm thấy dòng đầu.");
+            if (!ids.TryAdd(id, d)) Add(L.F("Domain ID {0} is duplicated: the client only finds the first row.", id));
         }
 
         foreach (var d in Domains.Rows)
         {
             long id = d.Long(ColId);
-            string tag = $"Lãnh địa {id} ({d.Text(ColName)})";
+            string tag = L.F("Domain {0} ({1})", id, d.Text(ColName));
             var verts = d.Values[ColVerts] as List<Record> ?? [];
             var faces = d.Values[ColFaces] as List<Record> ?? [];
             var nbs = d.Values[ColNeighbours] as List<Record> ?? [];
 
             if (verts.Count < 3 || faces.Count == 0)
-                Add($"{tag}: không có diện tích (ít hơn 3 đỉnh hoặc không có tam giác) — không thấy/không bấm được trên bản đồ.");
+                Add(L.F("{0}: has no area (fewer than 3 vertices or no triangles) — not visible / not clickable on the map.", tag));
             for (int k = 0; k < faces.Count; k++)
                 for (int j = 0; j < 3; j++)
                 {
                     long v = faces[k].Long(j);
                     if (v < 0 || v >= verts.Count)
                     {
-                        Add($"{tag}: tam giác #{k} dùng đỉnh {v} ngoài danh sách ({verts.Count} đỉnh).");
+                        Add(L.F("{0}: triangle #{1} uses vertex {2}, outside the list ({3} vertices).", tag, k, v, verts.Count));
                         j = 3;
                     }
                 }
@@ -270,11 +270,11 @@ public sealed class DomainFile : DataFile
             foreach (var n in nbs)
             {
                 long nid = n.Long(0);
-                if (nid == id) { Add($"{tag}: tự liệt kê mình là lãnh địa kề."); continue; }
-                if (!seen.Add(nid)) { Add($"{tag}: lãnh địa kề {nid} bị lặp."); continue; }
-                if (!ids.TryGetValue(nid, out var other)) { Add($"{tag}: lãnh địa kề {nid} không có trong file."); continue; }
+                if (nid == id) { Add(L.F("{0}: lists itself as an adjacent domain.", tag)); continue; }
+                if (!seen.Add(nid)) { Add(L.F("{0}: adjacent domain {1} is repeated.", tag, nid)); continue; }
+                if (!ids.TryGetValue(nid, out var other)) { Add(L.F("{0}: adjacent domain {1} is not in the file.", tag, nid)); continue; }
                 var back = other.Values[ColNeighbours] as List<Record> ?? [];
-                if (!back.Any(x => x.Long(0) == id)) Add($"{tag}: lãnh địa kề {nid} không khai báo ngược lại.");
+                if (!back.Any(x => x.Long(0) == id)) Add(L.F("{0}: adjacent domain {1} does not list it back.", tag, nid));
             }
         }
 
@@ -282,7 +282,7 @@ public sealed class DomainFile : DataFile
         {
             long wd = t.Long(0), h = t.Long(1), m = t.Long(2);
             if (wd is < 0 or > 6 || h is < 0 or > 23 || m is < 0 or > 59)
-                Add($"Giờ khai chiến không hợp lệ: thứ {wd}, {h}:{m:00}.");
+                Add(L.F("Invalid battle time: day {0}, {1}:{2:00}.", wd, h, m));
         }
         return res;
     }

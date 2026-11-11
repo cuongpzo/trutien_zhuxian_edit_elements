@@ -9,6 +9,11 @@ C# .NET 10 – WinForms. Đã kiểm chứng trên Client0619 (version 165): đ�
 - Phiên bản `vMYY.DDMM.{A|P}N` (vd `v226.0610.A4`): M = năm − 2024, YY = năm, DDMM = ngày+tháng, A/P = sáng/chiều, N = lần thay đổi thứ N trong ngày (sang ngày mới về 1). Lưu trong `version.props`.
 - Build thử (Debug): `dotnet build`.
 
+## Ngôn ngữ / Language
+- Giao diện mặc định **tiếng Anh**. Menu **🌐 Language** (góc phải thanh menu): English, Tiếng Việt, 简体中文, 한국어, ไทย, 日本語, Bahasa Indonesia → chọn rồi khởi động lại.
+- Mỗi ngôn ngữ là một file JSON `src\ElementsEditor\lang\<mã>.json` (được chép vào `lang\` cạnh exe): `{"code","name","englishName","strings":{"English text":"bản dịch"}}`. Chuỗi thiếu → hiện tiếng Anh. Thêm ngôn ngữ mới = thả thêm file JSON (vd `fr.json`), không cần build lại.
+- Trong code: `L.T("English")` / `L.F("Saved {0}", path)` (src\ElementsCore\L.cs).
+
 ## Tính năng
 - 318 list + **NPC Dialogs** (204 hội thoại, dạng cây cửa sổ/lựa chọn, sửa được, độ dài tự do).
 - Field theo schema JSON: enum/mask hiện ý nghĩa, field đổi kiểu theo điều kiện (vd addon param → float).

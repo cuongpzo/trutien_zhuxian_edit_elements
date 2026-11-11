@@ -52,14 +52,14 @@ public static class DataSheets
     };
 
     public const string FileFilter = "Excel (*.xlsx)|*.xlsx|CSV UTF-8 (*.csv)|*.csv|JSON (*.json)|*.json";
-    public const string OpenFilter = "Dữ liệu (*.xlsx;*.csv;*.json)|*.xlsx;*.csv;*.json|Tất cả|*.*";
+    public static string OpenFilter => L.T("Data") + " (*.xlsx;*.csv;*.json)|*.xlsx;*.csv;*.json|" + L.T("All files") + "|*.*";
 
     public static void Write(string path, IReadOnlyList<Sheet> sheets, string kind, string source)
     {
         switch (FormatOf(path))
         {
             case SheetFormat.Csv:
-                if (sheets.Count != 1) throw new InvalidOperationException("CSV chỉ chứa được một bảng – hãy dùng XLSX hoặc JSON cho nhiều bảng.");
+                if (sheets.Count != 1) throw new InvalidOperationException(L.T("CSV can hold only one table – use XLSX or JSON for several tables."));
                 using (var w = Csv.CreateWriter(path))
                 {
                     Csv.WriteRow(w, sheets[0].Header);
@@ -85,7 +85,7 @@ public static class DataSheets
     private static Sheet ReadCsv(string path)
     {
         var rows = Csv.Read(path).ToList();
-        if (rows.Count == 0) throw new InvalidDataException("File CSV trống.");
+        if (rows.Count == 0) throw new InvalidDataException(L.T("The CSV file is empty."));
         var s = new Sheet { Name = Path.GetFileNameWithoutExtension(path), Header = rows[0].Select(h => h.Trim().TrimStart('﻿')).ToList() };
         foreach (var r in rows.Skip(1))
             if (r.Any(c => c.Length > 0)) s.Rows.Add(r.Cast<object?>().ToArray());
@@ -154,7 +154,7 @@ public static class DataSheets
             if (root.TryGetProperty(name, out var c) && c.ValueKind == JsonValueKind.Object) { container = c; break; }
         foreach (var p in container.EnumerateObject())
             if (p.Value.ValueKind == JsonValueKind.Array) result.Add(ToSheet(p.Name, p.Value));
-        if (result.Count == 0) throw new InvalidDataException("JSON không có bảng nào (cần mảng các object, hoặc \"sheets\": { tên: [...] }).");
+        if (result.Count == 0) throw new InvalidDataException(L.T("The JSON has no table (expected an array of objects, or \"sheets\": { name: [...] })."));
         return result;
     }
 
@@ -382,7 +382,7 @@ public static class MiniXlsx
         using var zip = ZipFile.OpenRead(path);
         XmlDocument Load(string name)
         {
-            var e = zip.GetEntry(name) ?? throw new InvalidDataException($"File xlsx thiếu {name}.");
+            var e = zip.GetEntry(name) ?? throw new InvalidDataException(L.F("The xlsx file is missing {0}.", name));
             using var st = e.Open();
             var d = new XmlDocument();
             d.Load(st);

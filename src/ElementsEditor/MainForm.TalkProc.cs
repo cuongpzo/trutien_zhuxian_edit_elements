@@ -25,8 +25,8 @@ public sealed partial class MainForm
 
         // Left: Dialogs list
         var leftTop = new Panel { Dock = DockStyle.Top, Height = 36, Padding = new Padding(4) };
-        _talkSearchBox = new TextBox { Left = 4, Top = 6, Width = 240, PlaceholderText = "Tìm ID / tên / nội dung hội thoại..." };
-        _chkTalkCjkOnly = new CheckBox { Text = "Chỉ CJK", Left = 250, Top = 8, Width = 75 };
+        _talkSearchBox = new TextBox { Left = 4, Top = 6, Width = 240, PlaceholderText = L.T("Search ID / name / dialog text...") };
+        _chkTalkCjkOnly = new CheckBox { Text = L.T("CJK only"), Left = 250, Top = 8, Width = 75 };
         leftTop.Controls.AddRange([_talkSearchBox, _chkTalkCjkOnly]);
 
         _talkDialogsGrid = CreateFastGrid();
@@ -35,8 +35,8 @@ public sealed partial class MainForm
         _talkDialogsGrid.MultiSelect = false;
         _talkDialogsGrid.Columns.Add("tdRow", "#");
         _talkDialogsGrid.Columns.Add("tdId", "ID");
-        _talkDialogsGrid.Columns.Add("tdName", "Tên Dialog");
-        _talkDialogsGrid.Columns.Add("tdWins", "Cửa sổ");
+        _talkDialogsGrid.Columns.Add("tdName", L.T("Dialog name"));
+        _talkDialogsGrid.Columns.Add("tdWins", L.T("Windows"));
         _talkDialogsGrid.Columns[0].Width = 42;
         _talkDialogsGrid.Columns[1].Width = 55;
         _talkDialogsGrid.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
@@ -46,7 +46,7 @@ public sealed partial class MainForm
 
         // Right: Dialog Name + Windows Tree + Window Text + Options
         var nameBar = new Panel { Dock = DockStyle.Top, Height = 38, Padding = new Padding(6) };
-        nameBar.Controls.Add(new Label { Text = "Tên Dialog:", Left = 6, Top = 10, Width = 78 });
+        nameBar.Controls.Add(new Label { Text = L.T("Dialog name:"), Left = 6, Top = 10, Width = 78 });
         _talkNameBox = new TextBox { Left = 88, Top = 7, Width = 340 };
         _talkNameCounter = new Label { Left = 436, Top = 10, AutoSize = true, Text = "0/63" };
         nameBar.Controls.AddRange([_talkNameBox, _talkNameCounter]);
@@ -58,16 +58,16 @@ public sealed partial class MainForm
 
         var winTextHost = new Panel { Dock = DockStyle.Top, Height = 200, Padding = new Padding(4) };
         var textSplitter = new Splitter { Dock = DockStyle.Top, Height = 5, BackColor = SystemColors.ControlDark };
-        winTextHost.Controls.Add(new Label { Dock = DockStyle.Top, Height = 22, Text = "Nội dung cửa sổ (UTF-16LE, hỗ trợ mã màu ^ff6000):" });
+        winTextHost.Controls.Add(new Label { Dock = DockStyle.Top, Height = 22, Text = L.T("Window text (UTF-16LE, supports colour codes ^ff6000):") });
         _talkWinTextBox = new TextBox { Dock = DockStyle.Fill, Multiline = true, ScrollBars = ScrollBars.Vertical, Font = new Font("Segoe UI", 10.5f) };
         winTextHost.Controls.Add(_talkWinTextBox);
         _talkWinTextBox.BringToFront();
 
         var optHost = new Panel { Dock = DockStyle.Fill, Padding = new Padding(4) };
-        optHost.Controls.Add(new Label { Dock = DockStyle.Top, Height = 22, Text = "Các lựa chọn (Options - tối đa 63 ký tự):" });
+        optHost.Controls.Add(new Label { Dock = DockStyle.Top, Height = 22, Text = L.T("Options (max 63 characters):") });
         _talkOptionsGrid = CreateFastGrid();
         _talkOptionsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "opId", HeaderText = "ID", Width = 60, ReadOnly = true });
-        _talkOptionsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "opText", HeaderText = "Nội dung nút chọn", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = false });
+        _talkOptionsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "opText", HeaderText = L.T("Option text"), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = false });
         _talkOptionsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "opParam", HeaderText = "Param", Width = 90, ReadOnly = false });
         optHost.Controls.Add(_talkOptionsGrid);
         _talkOptionsGrid.BringToFront();
@@ -219,7 +219,7 @@ public sealed partial class MainForm
         }
         catch (Exception ex)
         {
-            Msg.Show(ex.Message, "Lỗi độ dài", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Msg.Show(ex.Message, L.T("Length error"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             _talkNameBox.Text = _currentDialog.Name;
         }
     }
@@ -270,7 +270,7 @@ public sealed partial class MainForm
         }
         catch (Exception ex)
         {
-            Msg.Show(ex.Message, "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Msg.Show(ex.Message, L.T("Input error"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             _syncingUi = true;
             row.Cells[1].Value = opt.Text;
             row.Cells[2].Value = opt.Param;

@@ -11,6 +11,8 @@ public sealed class AppSettings
     public string? HanVietDict { get; set; }
     /// <summary>Index of the elements list open last time (reopened at start).</summary>
     public int? LastList { get; set; }
+    /// <summary>UI language code (lang\&lt;code&gt;.json); null / "en" = English.</summary>
+    public string? Language { get; set; }
 
     private static string FilePath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ElementsEditor", "settings.json");

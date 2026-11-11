@@ -14,12 +14,12 @@ public sealed class PathTableFile : DataFile
     public const uint Magic = 0x504D4944; // "DIMP"
     public static readonly IReadOnlyList<ColumnDef> Columns =
     [
-        new() { Name = "id", Type = ColType.U32, Note = "ID mà elements.data / server dùng để tham chiếu" },
-        new() { Name = "path", Type = ColType.Str, Note = "Đường dẫn file trong các gói .pck (GBK)" },
+        new() { Name = "id", Type = ColType.U32, Note = L.T("ID that elements.data / the server uses to refer to it") },
+        new() { Name = "path", Type = ColType.Str, Note = L.T("File path inside the .pck packages (GBK)") },
     ];
 
     public bool IsDynamicObjects { get; private set; }
-    public override string FormatName => IsDynamicObjects ? "dynamicobjects.data (ID → model)" : "path.data (ID → đường dẫn)";
+    public override string FormatName => IsDynamicObjects ? L.T("dynamicobjects.data (ID → model)") : L.T("path.data (ID → path)");
     public RecordTable Entries => Tables[0];
 
     public static bool Sniff(byte[] d) => d.Length >= 8 && BitConverter.ToUInt32(d, 0) == Magic;
@@ -27,7 +27,7 @@ public sealed class PathTableFile : DataFile
     public static PathTableFile Parse(byte[] data, string path)
     {
         var r = new BinReader(data);
-        if (r.U32() != Magic) throw new InvalidDataException("Không phải bảng đường dẫn (thiếu chữ ký DIMP).");
+        if (r.U32() != Magic) throw new InvalidDataException(L.T("Not a path table (missing DIMP signature)."));
         int count = r.I32();
         var f = new PathTableFile { Path = path, IsDynamicObjects = System.IO.Path.GetFileName(path).Contains("dynamic", StringComparison.OrdinalIgnoreCase) };
         var t = new RecordTable
@@ -45,9 +45,9 @@ public sealed class PathTableFile : DataFile
             rec.Raw[1] = raw;
             t.Rows.Add(rec);
         }
-        if (!r.AtEnd) f.Warnings.Add($"Còn {r.Remaining} byte thừa sau bảng (sẽ bị bỏ khi lưu).");
+        if (!r.AtEnd) f.Warnings.Add(L.F("{0} extra bytes after the table (dropped on save).", r.Remaining));
         var dup = t.Rows.GroupBy(x => x.Long(0)).Where(g => g.Count() > 1).Select(g => g.Key).Take(5).ToList();
-        if (dup.Count > 0) f.Warnings.Add("ID trùng: " + string.Join(", ", dup));
+        if (dup.Count > 0) f.Warnings.Add(L.F("Duplicate IDs: {0}", string.Join(", ", dup)));
         f.Tables.Add(t);
         return f;
     }

@@ -18,7 +18,7 @@ public static class TextureDecoder
 
     public static DdsInfo ReadDdsInfo(byte[] d)
     {
-        if (!IsDds(d)) throw new InvalidDataException("Không phải DDS.");
+        if (!IsDds(d)) throw new InvalidDataException(L.T("Not a DDS file."));
         int h = BinaryPrimitives.ReadInt32LittleEndian(d.AsSpan(12));
         int w = BinaryPrimitives.ReadInt32LittleEndian(d.AsSpan(16));
         uint pfFlags = BinaryPrimitives.ReadUInt32LittleEndian(d.AsSpan(80));
@@ -48,7 +48,7 @@ public static class TextureDecoder
             case "DXT5": DecodeBlocks(d, info, r, outp, 16, Dxt5Block); break;
             default:
                 if (info.Format.StartsWith("RGB")) DecodeRgb(d, info, r, outp);
-                else throw new NotSupportedException($"DDS kiểu {info.Format} chưa hỗ trợ.");
+                else throw new NotSupportedException(L.F("DDS format {0} is not supported yet.", info.Format));
                 break;
         }
         return new Bgra(r.W, r.H, outp);

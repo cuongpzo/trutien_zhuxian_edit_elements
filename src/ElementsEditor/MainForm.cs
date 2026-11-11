@@ -57,7 +57,7 @@ public sealed partial class MainForm : ThemedForm
     private readonly Label _lblCharCount;
     private readonly DataGridView _fieldsGrid;
 
-    // Tab 2: Quick Viet Hoa Text
+    // Tab 2: Quick localization text
     private readonly DataGridView _textFieldsGrid;
     private readonly TextBox _quickTextEditor;
     private readonly Label _lblQuickCounter;
@@ -77,7 +77,7 @@ public sealed partial class MainForm : ThemedForm
         _settings = AppSettings.Load();
         _repo = new SchemaRepository(SchemaRepository.FindDefaultRoot());
 
-        Text = $"Tru Tiên 3 - Elements Editor (Việt hóa & Edit Data) {ElementsCore.BuildInfo.Tag}";
+        Text = $"Tru Tiên 3 - Elements Editor ({L.T("Localization & Data Editing")}) {ElementsCore.BuildInfo.Tag}";
         Size = new Size(1480, 900);
         MinimumSize = new Size(1050, 650);
         StartPosition = FormStartPosition.CenterScreen;
@@ -85,66 +85,66 @@ public sealed partial class MainForm : ThemedForm
 
         // 1. MenuStrip
         var menu = new MenuStrip();
-        var mFile = new ToolStripMenuItem("&Tệp (File)");
-        mFile.DropDownItems.Add("&Mở elements.data...\tCtrl+O", null, (_, _) => OpenFileDialog());
-        var mOpenDefault = new ToolStripMenuItem("Mở nhanh &Client0619\\elements.data", null, (_, _) => { if (File.Exists(DefaultClientFile)) LoadFileAsync(DefaultClientFile); })
+        var mFile = new ToolStripMenuItem(L.T("&File")) { Name = "mnuFile" };
+        mFile.DropDownItems.Add(L.T("&Open elements.data...\tCtrl+O"), null, (_, _) => OpenFileDialog());
+        var mOpenDefault = new ToolStripMenuItem(L.T("Quick open &Client0619\\elements.data"), null, (_, _) => { if (File.Exists(DefaultClientFile)) LoadFileAsync(DefaultClientFile); })
         {
             Enabled = File.Exists(DefaultClientFile)
         };
         mFile.DropDownItems.Add(mOpenDefault);
         mFile.DropDownItems.Add(new ToolStripSeparator());
-        mFile.DropDownItems.Add("&Lưu (Tạo backup tự động)\tCtrl+S", null, (_, _) => SaveFile(false));
-        mFile.DropDownItems.Add("Lưu &thành...\tCtrl+Shift+S", null, (_, _) => SaveFile(true));
+        mFile.DropDownItems.Add(L.T("&Save (automatic backup)\tCtrl+S"), null, (_, _) => SaveFile(false));
+        mFile.DropDownItems.Add(L.T("Save &As...\tCtrl+Shift+S"), null, (_, _) => SaveFile(true));
         mFile.DropDownItems.Add(new ToolStripSeparator());
-        mFile.DropDownItems.Add("T&hoát", null, (_, _) => Close());
+        mFile.DropDownItems.Add(L.T("E&xit"), null, (_, _) => Close());
 
-        var mEdit = new ToolStripMenuItem("&Tìm kiếm & Chỉnh sửa");
-        mEdit.DropDownItems.Add("Tìm kiếm &toàn cục...\tCtrl+F", null, (_, _) => ShowGlobalSearch());
-        mEdit.DropDownItems.Add("Tìm & &Thay thế hàng loạt...\tCtrl+H", null, (_, _) => ShowBatchReplace());
+        var mEdit = new ToolStripMenuItem(L.T("&Search && Edit")) { Name = "mnuEdit" };
+        mEdit.DropDownItems.Add(L.T("&Global search...\tCtrl+F"), null, (_, _) => ShowGlobalSearch());
+        mEdit.DropDownItems.Add(L.T("Find && batch &replace...\tCtrl+H"), null, (_, _) => ShowBatchReplace());
         mEdit.DropDownItems.Add(new ToolStripSeparator());
-        mEdit.DropDownItems.Add("&Nhân bản mục đang chọn", null, (_, _) => CloneSelectedItem());
-        mEdit.DropDownItems.Add("&Xóa mục đang chọn", null, (_, _) => DeleteSelectedItem());
+        mEdit.DropDownItems.Add(L.T("&Clone selected item"), null, (_, _) => CloneSelectedItem());
+        mEdit.DropDownItems.Add(L.T("&Delete selected item"), null, (_, _) => DeleteSelectedItem());
 
-        var mLoc = new ToolStripMenuItem("&Việt hóa (CSV)");
-        mLoc.DropDownItems.Add("Xuất CSV &Chi tiết (chỉ tiếng Trung)...", null, (_, _) => ExportCsv(glossary: false, onlyCjk: true, currentListOnly: false));
-        mLoc.DropDownItems.Add("Xuất CSV Chi tiết (&List đang chọn)...", null, (_, _) => ExportCsv(glossary: false, onlyCjk: true, currentListOnly: true));
-        mLoc.DropDownItems.Add("Xuất CSV Chi tiết (&Tất cả chuỗi)...", null, (_, _) => ExportCsv(glossary: false, onlyCjk: false, currentListOnly: false));
+        var mLoc = new ToolStripMenuItem(L.T("&Localization (CSV)")) { Name = "mnuLoc" };
+        mLoc.DropDownItems.Add(L.T("Export &detailed CSV (Chinese only)..."), null, (_, _) => ExportCsv(glossary: false, onlyCjk: true, currentListOnly: false));
+        mLoc.DropDownItems.Add(L.T("Export detailed CSV (selected &list)..."), null, (_, _) => ExportCsv(glossary: false, onlyCjk: true, currentListOnly: true));
+        mLoc.DropDownItems.Add(L.T("Export detailed CSV (&all strings)..."), null, (_, _) => ExportCsv(glossary: false, onlyCjk: false, currentListOnly: false));
         mLoc.DropDownItems.Add(new ToolStripSeparator());
-        mLoc.DropDownItems.Add("Xuất CSV &Glossary - Gộp chuỗi trùng (chỉ tiếng Trung)...", null, (_, _) => ExportCsv(glossary: true, onlyCjk: true, currentListOnly: false));
+        mLoc.DropDownItems.Add(L.T("Export CSV &glossary - merge duplicate strings (Chinese only)..."), null, (_, _) => ExportCsv(glossary: true, onlyCjk: true, currentListOnly: false));
         mLoc.DropDownItems.Add(new ToolStripSeparator());
-        mLoc.DropDownItems.Add("&Nhập CSV Bản dịch (tự nhận dạng Chi tiết / Glossary)...", null, (_, _) => ImportCsv());
+        mLoc.DropDownItems.Add(L.T("&Import translated CSV (auto-detects detailed / glossary)..."), null, (_, _) => ImportCsv());
 
-        var mTools = new ToolStripMenuItem("&Công cụ");
-        mTools.DropDownItems.Add("Xuất List đang chọn ra &JSON...", null, (_, _) => ExportCurrentListJson());
-        mTools.DropDownItems.Add("&So sánh (Diff) với file gốc / backup...", null, (_, _) => CompareWithBaseline());
-        mTools.DropDownItems.Add("&Kiểm tra toàn vẹn (Verify Round-Trip)", null, (_, _) => VerifyRoundTrip());
+        var mTools = new ToolStripMenuItem(L.T("&Tools")) { Name = "mnuTools" };
+        mTools.DropDownItems.Add(L.T("Export selected list to &JSON..."), null, (_, _) => ExportCurrentListJson());
+        mTools.DropDownItems.Add(L.T("&Compare (diff) with original / backup file..."), null, (_, _) => CompareWithBaseline());
+        mTools.DropDownItems.Add(L.T("&Verify integrity (round-trip)"), null, (_, _) => VerifyRoundTrip());
         mTools.DropDownItems.Add(new ToolStripSeparator());
-        mTools.DropDownItems.Add(Theme.Dark ? "Chuyển sang giao diện &sáng" : "Chuyển sang giao diện &tối", null, (_, _) => ToggleTheme());
+        mTools.DropDownItems.Add(Theme.Dark ? L.T("Switch to &light theme") : L.T("Switch to &dark theme"), null, (_, _) => ToggleTheme());
 
         menu.Items.AddRange([mFile, mEdit, mLoc, mTools]);
         MainMenuStrip = menu;
 
         // 2. ToolStrip
         var ts = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
-        var btnOpen = new ToolStripButton("Mở file");
+        var btnOpen = new ToolStripButton(L.T("Open file"));
         btnOpen.Click += (_, _) => OpenFileDialog();
-        var btnClient = new ToolStripButton("Mở Client0619") { Enabled = File.Exists(DefaultClientFile) };
+        var btnClient = new ToolStripButton(L.T("Open Client0619")) { Enabled = File.Exists(DefaultClientFile) };
         btnClient.Click += (_, _) => LoadFileAsync(DefaultClientFile);
-        _btnSave = new ToolStripButton("Lưu (Backup)") { Enabled = false };
+        _btnSave = new ToolStripButton(L.T("Save (backup)")) { Enabled = false };
         _btnSave.Click += (_, _) => SaveFile(false);
-        var btnSearch = new ToolStripButton("Tìm toàn cục");
+        var btnSearch = new ToolStripButton(L.T("Global search"));
         btnSearch.Click += (_, _) => ShowGlobalSearch();
-        var btnReplace = new ToolStripButton("Thay thế hàng loạt");
+        var btnReplace = new ToolStripButton(L.T("Batch replace"));
         btnReplace.Click += (_, _) => ShowBatchReplace();
-        var btnExpGlossary = new ToolStripButton("Xuất Việt hóa (Glossary)");
+        var btnExpGlossary = new ToolStripButton(L.T("Export localization (glossary)"));
         btnExpGlossary.Click += (_, _) => ExportCsv(glossary: true, onlyCjk: true, currentListOnly: false);
-        var btnImpCsv = new ToolStripButton("Nhập CSV dịch");
+        var btnImpCsv = new ToolStripButton(L.T("Import translated CSV"));
         btnImpCsv.Click += (_, _) => ImportCsv();
         ts.Items.AddRange([btnOpen, btnClient, _btnSave, new ToolStripSeparator(), btnSearch, btnReplace, new ToolStripSeparator(), btnExpGlossary, btnImpCsv]);
 
         // 3. StatusStrip
         var status = new StatusStrip();
-        _lblStatus = new ToolStripStatusLabel("Sẵn sàng. Hãy mở elements.data.") { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
+        _lblStatus = new ToolStripStatusLabel(L.T("Ready. Open elements.data.")) { Spring = true, TextAlign = ContentAlignment.MiddleLeft };
         _progressBar = new ToolStripProgressBar { Visible = false, Width = 160 };
         status.Items.AddRange([_lblStatus, _progressBar]);
 
@@ -164,12 +164,12 @@ public sealed partial class MainForm : ThemedForm
 
         // Left Pane: Lists Explorer
         var leftTop = new Panel { Dock = DockStyle.Top, Height = 62, Padding = new Padding(4) };
-        _listSearchBox = new TextBox { Dock = DockStyle.Top, PlaceholderText = "Lọc list (số hoặc tên struct)..." };
+        _listSearchBox = new TextBox { Dock = DockStyle.Top, PlaceholderText = L.T("Filter lists (number or struct name)...") };
         _listFilterCombo = new ComboBox { Dock = DockStyle.Bottom, DropDownStyle = ComboBoxStyle.DropDownList };
         _listFilterCombo.Items.AddRange([
-            "Tất cả (318 list + Dialogs)",
-            "Có dữ liệu (count > 0)",
-            "Còn tiếng Trung (CJK)",
+            L.T("All (318 lists + Dialogs)"),
+            L.T("With data (count > 0)"),
+            L.T("Still has Chinese (CJK)"),
             "Schema Exact",
             "Schema Borrowed / Auto"
         ]);
@@ -186,7 +186,7 @@ public sealed partial class MainForm : ThemedForm
         };
         _listsView.Columns.Add("#", 36);
         _listsView.Columns.Add("Struct / List", 150);
-        _listsView.Columns.Add("Mục", 58, HorizontalAlignment.Right);
+        _listsView.Columns.Add(L.T("Items"), 58, HorizontalAlignment.Right);
         _listsView.Columns.Add("Schema", 54);
         leftPanel.Controls.Add(_listsView);
         leftPanel.Controls.Add(leftTop);
@@ -195,10 +195,10 @@ public sealed partial class MainForm : ThemedForm
         // Center Pane: Items Grid
         _listCenterHost = new Panel { Dock = DockStyle.Fill };
         var centerTop = new Panel { Dock = DockStyle.Top, Height = 62, Padding = new Padding(4) };
-        _itemSearchBox = new TextBox { Left = 4, Top = 4, Width = 240, PlaceholderText = "Tìm ID hoặc Tên trong list..." };
-        _chkItemCjkOnly = new CheckBox { Text = "Chỉ CJK", Left = 250, Top = 6, Width = 72 };
-        var btnClone = new Button { Text = "+ Nhân bản", Left = 4, Top = 32, Width = 86, Height = 25 };
-        var btnDelete = new Button { Text = "- Xóa", Left = 94, Top = 32, Width = 62, Height = 25 };
+        _itemSearchBox = new TextBox { Left = 4, Top = 4, Width = 240, PlaceholderText = L.T("Search ID or name in the list...") };
+        _chkItemCjkOnly = new CheckBox { Text = L.T("CJK only"), Left = 250, Top = 6, Width = 72 };
+        var btnClone = new Button { Text = L.T("+ Clone"), Left = 4, Top = 32, Width = 86, Height = 25 };
+        var btnDelete = new Button { Text = L.T("- Delete"), Left = 94, Top = 32, Width = 62, Height = 25 };
         _lblListSummary = new Label { Left = 162, Top = 37, AutoSize = true, ForeColor = Color.DimGray, Text = "" };
         centerTop.Controls.AddRange([_itemSearchBox, _chkItemCjkOnly, btnClone, btnDelete, _lblListSummary]);
 
@@ -209,7 +209,7 @@ public sealed partial class MainForm : ThemedForm
         _itemsGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         _itemsGrid.Columns.Add("colRow", "#");
         _itemsGrid.Columns.Add("colId", "ID");
-        _itemsGrid.Columns.Add("colName", "Tên (Name)");
+        _itemsGrid.Columns.Add("colName", L.T("Name"));
         _itemsGrid.Columns.Add("colDirty", "*");
         _itemsGrid.Columns[0].Width = 48;
         _itemsGrid.Columns[1].Width = 68;
@@ -223,41 +223,41 @@ public sealed partial class MainForm : ThemedForm
         _inspectorTabs = new ThemedTabControl { Dock = DockStyle.Fill };
 
         // Tab 1: Structured Fields
-        var tabFields = new TabPage("Chi tiết Fields");
+        var tabFields = new TabPage(L.T("Field details"));
         var fieldBar = new Panel { Dock = DockStyle.Top, Height = 36, Padding = new Padding(4) };
-        _fieldSearchBox = new TextBox { Left = 4, Top = 6, Width = 185, PlaceholderText = "Lọc tên field..." };
-        _chkFieldTextOnly = new CheckBox { Text = "Chỉ Text", Left = 195, Top = 8, Width = 74 };
+        _fieldSearchBox = new TextBox { Left = 4, Top = 6, Width = 185, PlaceholderText = L.T("Filter field name...") };
+        _chkFieldTextOnly = new CheckBox { Text = L.T("Text only"), Left = 195, Top = 8, Width = 74 };
         _btnEnumMask = new Button { Text = "Enum/Mask...", Left = 274, Top = 5, Width = 92, Height = 25, Enabled = false };
-        _btnJumpRef = new Button { Text = "Tới Ref ->", Left = 370, Top = 5, Width = 82, Height = 25, Enabled = false };
+        _btnJumpRef = new Button { Text = L.T("Go to ref ->"), Left = 370, Top = 5, Width = 82, Height = 25, Enabled = false };
         _lblCharCount = new Label { Left = 460, Top = 10, AutoSize = true, ForeColor = Color.DimGray, Text = "" };
         fieldBar.Controls.AddRange([_fieldSearchBox, _chkFieldTextOnly, _btnEnumMask, _btnJumpRef, _lblCharCount]);
 
         _fieldsGrid = CreateFastGrid();
         _fieldsGrid.VirtualMode = false;
         _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fOff", HeaderText = "Off", Width = 70, ReadOnly = true });
-        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fGrp", HeaderText = "Nhóm", Width = 105, ReadOnly = true });
-        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fPath", HeaderText = "Trường (Field)", Width = 180, ReadOnly = true });
-        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fVal", HeaderText = "Giá trị (Sửa trực tiếp)", Width = 210, ReadOnly = false });
-        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fType", HeaderText = "Kiểu", Width = 72, ReadOnly = true });
-        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fNote", HeaderText = "Enum / Chú thích", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = true });
+        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fGrp", HeaderText = L.T("Group"), Width = 105, ReadOnly = true });
+        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fPath", HeaderText = L.T("Field"), Width = 180, ReadOnly = true });
+        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fVal", HeaderText = L.T("Value (edit directly)"), Width = 210, ReadOnly = false });
+        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fType", HeaderText = L.T("Type"), Width = 72, ReadOnly = true });
+        _fieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "fNote", HeaderText = L.T("Enum / Note"), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = true });
         tabFields.Controls.Add(_fieldsGrid);
         tabFields.Controls.Add(fieldBar);
 
-        // Tab 2: Quick Viet Hoa Text
-        var tabText = new TabPage("Việt hóa Text");
+        // Tab 2: Quick localization text
+        var tabText = new TabPage(L.T("Localize text"));
         var textTopPanel = new Panel { Dock = DockStyle.Top, Height = 260 };
         var textSplitter = new Splitter { Dock = DockStyle.Top, Height = 5, BackColor = SystemColors.ControlDark };
         _textFieldsGrid = CreateFastGrid();
         _textFieldsGrid.ReadOnly = false;
-        _textFieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "tField", HeaderText = "Trường Text", Width = 170, ReadOnly = true });
-        _textFieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "tLimit", HeaderText = "Giới hạn", Width = 75, ReadOnly = true });
-        _textFieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "tVal", HeaderText = "Nội dung", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = false });
+        _textFieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "tField", HeaderText = L.T("Text field"), Width = 170, ReadOnly = true });
+        _textFieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "tLimit", HeaderText = L.T("Limit"), Width = 75, ReadOnly = true });
+        _textFieldsGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "tVal", HeaderText = L.T("Content"), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, ReadOnly = false });
         textTopPanel.Controls.Add(_textFieldsGrid);
 
         var quickPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(6) };
         var quickTop = new Panel { Dock = DockStyle.Top, Height = 30 };
-        _lblQuickCounter = new Label { Left = 0, Top = 6, AutoSize = true, Text = "Chọn một trường text ở trên để dịch nhanh." };
-        _btnQuickApplyNext = new Button { Text = "Áp dụng && Sang mục tiếp (Ctrl+Enter)", Width = 240, Height = 26, Dock = DockStyle.Right, Enabled = false };
+        _lblQuickCounter = new Label { Left = 0, Top = 6, AutoSize = true, Text = L.T("Select a text field above to translate it quickly.") };
+        _btnQuickApplyNext = new Button { Text = L.T("Apply && go to next item (Ctrl+Enter)"), Width = 240, Height = 26, Dock = DockStyle.Right, Enabled = false };
         quickTop.Controls.Add(_lblQuickCounter);
         quickTop.Controls.Add(_btnQuickApplyNext);
         _quickTextEditor = new TextBox { Dock = DockStyle.Fill, Multiline = true, ScrollBars = ScrollBars.Vertical, Font = new Font("Segoe UI", 11f) };
@@ -335,6 +335,8 @@ public sealed partial class MainForm : ThemedForm
         SetupDataExchange();
         // game icons from surfaces.pck (MainForm.Icons.cs)
         SetupIcons();
+        // UI language menu (MainForm.Language.cs)
+        SetupLanguageMenu();
     }
 
     private static DataGridView CreateFastGrid()
@@ -388,15 +390,15 @@ public sealed partial class MainForm : ThemedForm
         if (_dirty && _ef != null)
         {
             int n = _dirtyRecords.Count + _dirtyDialogs.Count;
-            lines.Add($"• Elements: {Path.GetFileName(_ef.Path)}" + (n > 0 ? $" – {n:N0} bản ghi đã sửa" : " – có thay đổi"));
+            lines.Add($"• Elements: {Path.GetFileName(_ef.Path)} – " + (n > 0 ? L.F("{0:N0} records changed", n) : L.T("has changes")));
         }
         foreach (var p in _pages.Values.Where(p => p.Dirty && p.File != null))
-            lines.Add($"• {p.Module.Title}: {Path.GetFileName(p.File!.Path)}" + (p.ChangeCount > 0 ? $" – {p.ChangeCount:N0} thay đổi" : " – có thay đổi"));
+            lines.Add($"• {p.Module.Title}: {Path.GetFileName(p.File!.Path)} – " + (p.ChangeCount > 0 ? L.F("{0:N0} changes", p.ChangeCount) : L.T("has changes")));
         if (lines.Count == 0) return;
 
-        var res = Msg.Show("Còn thay đổi CHƯA LƯU – thoát bây giờ sẽ mất các thay đổi này:\n\n" + string.Join("\n", lines)
-            + "\n\nCó  = Lưu tất cả (tự backup) rồi thoát\nKhông  = Thoát, bỏ các thay đổi\nHủy  = Ở lại chương trình",
-            "Chưa lưu – xác nhận thoát", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+        var res = Msg.Show(L.T("There are UNSAVED changes – exiting now will lose them:") + "\n\n" + string.Join("\n", lines)
+            + "\n\n" + L.T("Yes  = Save all (with backup), then exit\nNo  = Exit and discard the changes\nCancel  = Stay in the program"),
+            L.T("Unsaved – confirm exit"), MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
         if (res == DialogResult.Cancel) { e.Cancel = true; return; }
         if (res == DialogResult.No) { _closingDiscard = true; return; }
 
@@ -413,12 +415,12 @@ public sealed partial class MainForm : ThemedForm
 
     private void OpenFileDialog()
     {
-        if (_dirty && Msg.Show("Chưa lưu thay đổi. Mở file khác sẽ mất các thay đổi chưa lưu. Tiếp tục?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+        if (_dirty && Msg.Show(L.T("Changes are not saved. Opening another file will lose the unsaved changes. Continue?"), L.T("Confirm"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
             return;
         using var ofd = new OpenFileDialog
         {
-            Filter = "elements.data|elements.data;*.data|Tất cả|*.*",
-            Title = "Chọn file elements.data",
+            Filter = "elements.data|elements.data;*.data|" + L.T("All files") + "|*.*",
+            Title = L.T("Select the elements.data file"),
         };
         if (ofd.ShowDialog(this) == DialogResult.OK) LoadFileAsync(ofd.FileName);
     }
@@ -428,7 +430,7 @@ public sealed partial class MainForm : ThemedForm
         Enabled = false;
         _progressBar.Visible = true;
         _progressBar.Value = 0;
-        _lblStatus.Text = $"Đang đọc {path}...";
+        _lblStatus.Text = L.F("Reading {0}...", path);
         var prog = new Progress<int>(v => _progressBar.Value = Math.Clamp(v, 0, 100));
 
         try
@@ -453,12 +455,12 @@ public sealed partial class MainForm : ThemedForm
             UpdateSummaryStatus();
 
             if (ef.Warnings.Count > 0)
-                if (_activeModule == "elements") _lblStatus.Text += " | Cảnh báo: " + string.Join("; ", ef.Warnings);
+                if (_activeModule == "elements") _lblStatus.Text += " | " + L.F("Warning: {0}", string.Join("; ", ef.Warnings));
         }
         catch (Exception ex)
         {
-            Msg.Show($"Lỗi đọc file:\n{ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            _lblStatus.Text = "Đọc file thất bại.";
+            Msg.Show(L.F("Error reading file:\n{0}", ex.Message), L.T("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+            _lblStatus.Text = L.T("Failed to read the file.");
         }
         finally
         {
@@ -484,7 +486,7 @@ public sealed partial class MainForm : ThemedForm
         int borrowed = _ef.Lists.Count(l => l.Schema.Match == SchemaMatch.Borrowed);
         int auto = _ef.Lists.Count(l => l.Schema.Match == SchemaMatch.Auto);
         int mod = _dirtyRecords.Count + _dirtyDialogs.Count;
-        _lblStatus.Text = $"{_ef.Path} | Version {_ef.Version} ({_ef.Layout?.Version ?? "auto"}) | {_ef.Lists.Count} list (Exact:{exact}, Borrowed:{borrowed}, Auto:{auto}) | Dialogs: {_ef.Dialogs?.Count ?? 0} | Đã sửa: {mod}";
+        _lblStatus.Text = $"{_ef.Path} | " + L.F("Version {0} ({1}) | {2} lists (Exact:{3}, Borrowed:{4}, Auto:{5}) | Dialogs: {6}", _ef.Version, _ef.Layout?.Version ?? "auto", _ef.Lists.Count, exact, borrowed, auto, _ef.Dialogs?.Count ?? 0) + " | " + L.F("Modified: {0}", mod);
     }
 
     private void PopulateListsView()
@@ -496,7 +498,7 @@ public sealed partial class MainForm : ThemedForm
         _visibleLists.Clear();
         if (_ef.Dialogs != null && (mode == 0 || mode == 1 || (mode == 2 && _ef.Dialogs.Any(DialogHasCjk))))
         {
-            if (string.IsNullOrEmpty(q) || "talk_proc npc dialog hội thoại".Contains(q, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(q) || ("talk_proc npc dialog " + L.T("conversation")).Contains(q, StringComparison.OrdinalIgnoreCase))
                 _visibleLists.Add(new ListEntry(true, null, "NPC_DIALOG (TALK_PROC)", _ef.Dialogs.Count, "Tree"));
         }
 
@@ -613,7 +615,7 @@ public sealed partial class MainForm : ThemedForm
 
         _itemsGrid.RowCount = 0;
         _itemsGrid.RowCount = _filteredItemIndices.Count;
-        _lblListSummary.Text = $"{_filteredItemIndices.Count:N0} / {_currentList.Items.Count:N0} mục (size={_currentList.ItemSize}B)";
+        _lblListSummary.Text = L.F("{0:N0} / {1:N0} items (size={2}B)", _filteredItemIndices.Count, _currentList.Items.Count, _currentList.ItemSize);
         if (_filteredItemIndices.Count > 0)
         {
             _itemsGrid.CurrentCell = _itemsGrid.Rows[0].Cells[0];
@@ -732,7 +734,7 @@ public sealed partial class MainForm : ThemedForm
         {
             int curLen = FieldCodec.GetText(item, f).Length;
             int max = FieldCodec.MaxTextLength(f);
-            _lblCharCount.Text = $"Độ dài: {curLen}/{max} ký tự";
+            _lblCharCount.Text = L.F("Length: {0}/{1} characters", curLen, max);
         }
         else _lblCharCount.Text = $"Byte offset: 0x{f.Offset:X} ({f.ByteSize}B)";
 
@@ -776,7 +778,7 @@ public sealed partial class MainForm : ThemedForm
         }
         catch (Exception ex)
         {
-            Msg.Show($"Giá trị không hợp lệ cho '{f.Path}':\n{ex.Message}", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Msg.Show(L.F("Invalid value for '{0}':\n{1}", f.Path, ex.Message), L.T("Input error"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             _syncingUi = true;
             _fieldsGrid.Rows[e.RowIndex].Cells[3].Value = FieldCodec.Format(item, f, _currentList.Schema);
             _syncingUi = false;
@@ -790,7 +792,7 @@ public sealed partial class MainForm : ThemedForm
         {
             _quickTextEditor.Text = "";
             _btnQuickApplyNext.Enabled = false;
-            _lblQuickCounter.Text = "Không có trường text.";
+            _lblQuickCounter.Text = L.T("No text field.");
             return;
         }
 
@@ -811,7 +813,7 @@ public sealed partial class MainForm : ThemedForm
         var tf = _textFields[_textFieldsGrid.CurrentRow.Index];
         int max = FieldCodec.MaxTextLength(tf);
         int len = _quickTextEditor.Text.Length;
-        _lblQuickCounter.Text = $"[{tf.Path}] Độ dài: {len} / {max} ký tự";
+        _lblQuickCounter.Text = L.F("[{0}] Length: {1} / {2} characters", tf.Path, len, max);
         _lblQuickCounter.ForeColor = len > max ? Color.Firebrick : Color.DarkGreen;
     }
 
@@ -833,7 +835,7 @@ public sealed partial class MainForm : ThemedForm
         }
         catch (Exception ex)
         {
-            Msg.Show(ex.Message, "Quá độ dài", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Msg.Show(ex.Message, L.T("Too long"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             _syncingUi = true;
             _textFieldsGrid.Rows[e.RowIndex].Cells[2].Value = FieldCodec.GetText(item, tf);
             _syncingUi = false;
@@ -868,7 +870,7 @@ public sealed partial class MainForm : ThemedForm
         }
         catch (Exception ex)
         {
-            Msg.Show(ex.Message, "Quá độ dài cho phép", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Msg.Show(ex.Message, L.T("Exceeds the allowed length"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }
 
@@ -899,7 +901,7 @@ public sealed partial class MainForm : ThemedForm
         if (f.Refs == null || f.Refs.Count == 0) return;
 
         long targetId = FieldCodec.ReadInteger(_currentList.Items[_currentItemIndex], f);
-        if (targetId <= 0) { Msg.Show("ID tham chiếu đang là 0.", "Thông báo"); return; }
+        if (targetId <= 0) { Msg.Show(L.T("The referenced ID is 0."), L.T("Notice")); return; }
 
         foreach (var refStruct in f.Refs)
         {
@@ -914,7 +916,7 @@ public sealed partial class MainForm : ThemedForm
                 }
             }
         }
-        Msg.Show($"Không tìm thấy ID {targetId} trong [{string.Join(", ", f.Refs)}].", "Không tìm thấy");
+        Msg.Show(L.F("ID {0} not found in [{1}].", targetId, string.Join(", ", f.Refs)), L.T("Not found"));
     }
 
     private void JumpTo(bool isDialog, int listIndex, int itemIndex, string? fieldPath)
@@ -1006,7 +1008,7 @@ public sealed partial class MainForm : ThemedForm
         if (_currentList == null || _currentItemIndex < 0) return;
         long id = _currentList.GetId(_currentItemIndex);
         string name = _currentList.GetName(_currentItemIndex);
-        if (Msg.Show($"Xóa mục ID={id} '{name}' khỏi {_currentList.Name}?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+        if (Msg.Show(L.F("Delete item ID={0} '{1}' from {2}?", id, name, _currentList.Name), L.T("Confirm delete"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
             return;
 
         _currentList.Items.RemoveAt(_currentItemIndex);
@@ -1032,7 +1034,7 @@ public sealed partial class MainForm : ThemedForm
         {
             using var sfd = new SaveFileDialog
             {
-                Filter = "elements.data|elements.data;*.data|Tất cả|*.*",
+                Filter = "elements.data|elements.data;*.data|" + L.T("All files") + "|*.*",
                 FileName = Path.GetFileName(target ?? "elements.data"),
                 InitialDirectory = target != null ? Path.GetDirectoryName(target) : null,
             };
@@ -1053,13 +1055,13 @@ public sealed partial class MainForm : ThemedForm
             UpdateWindowTitle();
             UpdateSummaryStatus();
             _itemsGrid.Invalidate();
-            Msg.Show($"Đã lưu thành công:\n{target}" + (bak != null ? $"\n\nĐã sao lưu bản cũ:\n{bak}" : ""),
-                "Đã lưu", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Msg.Show(L.F("Saved successfully:\n{0}", target) + (bak != null ? "\n\n" + L.F("Old version backed up to:\n{0}", bak) : ""),
+                L.T("Saved"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             return true;
         }
         catch (Exception ex)
         {
-            Msg.Show($"Lỗi khi lưu file:\n{ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Msg.Show(L.F("Error saving file:\n{0}", ex.Message), L.T("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
     }
@@ -1093,7 +1095,7 @@ public sealed partial class MainForm : ThemedForm
         ISet<int>? lists = currentListOnly && _currentList != null ? new HashSet<int> { _currentList.Index } : null;
         if (currentListOnly && _currentList == null && !_inTalkMode)
         {
-            Msg.Show("Hãy chọn một list trước.", "Thông báo");
+            Msg.Show(L.T("Select a list first."), L.T("Notice"));
             return;
         }
 
@@ -1108,14 +1110,14 @@ public sealed partial class MainForm : ThemedForm
         int n = glossary
             ? TextExchange.ExportGlossary(entries, sfd.FileName, onlyCjk)
             : TextExchange.ExportDetailed(entries, sfd.FileName, onlyCjk);
-        Msg.Show($"Đã xuất {n:N0} dòng ra:\n{sfd.FileName}\n\nMẹo: File lưu định dạng UTF-8 BOM — mở trực tiếp bằng Excel hoặc Google Sheets không bị lỗi font tiếng Việt/Trung.",
-            "Xuất CSV thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        Msg.Show(L.F("Exported {0:N0} rows to:\n{1}\n\nTip: the file is saved as UTF-8 with BOM — it opens directly in Excel or Google Sheets without garbled Vietnamese/Chinese characters.", n, sfd.FileName),
+            L.T("CSV exported"), MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
     private void ImportCsv()
     {
         if (_ef == null) return;
-        using var ofd = new OpenFileDialog { Filter = "CSV|*.csv|Tất cả|*.*", Title = "Chọn file CSV bản dịch" };
+        using var ofd = new OpenFileDialog { Filter = "CSV|*.csv|" + L.T("All files") + "|*.*", Title = L.T("Select the translated CSV file") };
         if (ofd.ShowDialog(this) != DialogResult.OK) return;
 
         var rep = TextExchange.Import(_ef, ofd.FileName);
@@ -1137,13 +1139,13 @@ public sealed partial class MainForm : ThemedForm
         using var sfd = new SaveFileDialog { Filter = "JSON|*.json", FileName = $"{_currentList.Name}.json" };
         if (sfd.ShowDialog(this) != DialogResult.OK) return;
         ElementsOps.ExportListToJson(_currentList, _ef, sfd.FileName);
-        Msg.Show($"Đã xuất {_currentList.Items.Count:N0} bản ghi ra {sfd.FileName}.", "Thành công");
+        Msg.Show(L.F("Exported {0:N0} records to {1}.", _currentList.Items.Count, sfd.FileName), L.T("Success"));
     }
 
     private void CompareWithBaseline()
     {
         if (_ef == null) return;
-        using var ofd = new OpenFileDialog { Filter = "elements.data|elements.data;*.data;*.bak_*|Tất cả|*.*", Title = "Chọn file elements.data gốc để so sánh" };
+        using var ofd = new OpenFileDialog { Filter = "elements.data|elements.data;*.data;*.bak_*|" + L.T("All files") + "|*.*", Title = L.T("Select the original elements.data to compare with") };
         if (ofd.ShowDialog(this) != DialogResult.OK) return;
 
         var baseline = ElementsFile.Load(ofd.FileName, _repo);
@@ -1165,10 +1167,10 @@ public sealed partial class MainForm : ThemedForm
         _settings.Save();
         if (_dirty)
         {
-            Msg.Show("Đã lưu lựa chọn giao diện. Hãy lưu file rồi mở lại chương trình để áp dụng.", "Giao diện");
+            Msg.Show(L.T("Theme choice saved. Save your file, then restart the program to apply it."), L.T("Theme"));
             return;
         }
-        if (Msg.Show("Khởi động lại chương trình để đổi giao diện?", "Giao diện", MessageBoxButtons.YesNo) == DialogResult.Yes)
+        if (Msg.Show(L.T("Restart the program to change the theme?"), L.T("Theme"), MessageBoxButtons.YesNo) == DialogResult.Yes)
             Application.Restart();
     }
 
@@ -1178,8 +1180,8 @@ public sealed partial class MainForm : ThemedForm
         var orig = File.ReadAllBytes(_ef.Path);
         var re = _ef.ToBytes();
         if (orig.Length == re.Length && orig.AsSpan().SequenceEqual(re))
-            Msg.Show($"KHỚP 100% ({orig.Length:N0} byte giống hệt file gốc trên đĩa).", "Kiểm tra thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Msg.Show(L.F("100% MATCH ({0:N0} bytes identical to the original file on disk).", orig.Length), L.T("Verification passed"), MessageBoxButtons.OK, MessageBoxIcon.Information);
         else
-            Msg.Show($"File trong bộ nhớ ({re.Length:N0} byte) khác với file gốc trên đĩa ({orig.Length:N0} byte) — bình thường nếu bạn vừa sửa dữ liệu.", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Msg.Show(L.F("The file in memory ({0:N0} bytes) differs from the original on disk ({1:N0} bytes) — normal if you have just edited data.", re.Length, orig.Length), L.T("Information"), MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 }

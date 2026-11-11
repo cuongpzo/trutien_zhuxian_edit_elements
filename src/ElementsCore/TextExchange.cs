@@ -23,7 +23,7 @@ public sealed class ImportReport
     public int Applied, Unchanged, NotFound, TooLong, IdMismatch, SourceChanged;
     public List<string> Log { get; } = new();
     public override string ToString() =>
-        $"Áp dụng: {Applied}, không đổi: {Unchanged}, không tìm thấy: {NotFound}, quá dài: {TooLong}, sai ID: {IdMismatch}, nguồn đã khác: {SourceChanged}";
+        L.F("Applied: {0}, unchanged: {1}, not found: {2}, too long: {3}, wrong ID: {4}, source changed: {5}", Applied, Unchanged, NotFound, TooLong, IdMismatch, SourceChanged);
 }
 
 public static class TextExchange
@@ -126,11 +126,11 @@ public static class TextExchange
     {
         var rows = Csv.Read(path).ToList();
         var rep = new ImportReport();
-        if (rows.Count == 0) { rep.Log.Add("File rỗng"); return rep; }
+        if (rows.Count == 0) { rep.Log.Add(L.T("Empty file")); return rep; }
         var header = rows[0].Select(h => h.Trim().TrimStart('﻿')).ToList();
         int Col(string name) => header.FindIndex(h => h.Equals(name, StringComparison.OrdinalIgnoreCase));
         int cSrc = Col("Source"), cTr = Col("Translation"), cKey = Col("Key"), cId = Col("ID");
-        if (cSrc < 0 || cTr < 0) { rep.Log.Add("Thiếu cột Source/Translation"); return rep; }
+        if (cSrc < 0 || cTr < 0) { rep.Log.Add(L.T("Missing column Source/Translation")); return rep; }
         string Cell(List<string> r, int c) => c >= 0 && c < r.Count ? r[c] : "";
 
         var all = Enumerate(ef).ToList();
@@ -143,11 +143,11 @@ public static class TextExchange
                 var tr = Cell(r, cTr);
                 if (tr.Length == 0) continue;
                 var key = Cell(r, cKey);
-                if (!byKey.TryGetValue(key, out var e)) { rep.NotFound++; rep.Log.Add($"{key}: không tìm thấy"); continue; }
+                if (!byKey.TryGetValue(key, out var e)) { rep.NotFound++; rep.Log.Add(key + ": " + L.T("not found")); continue; }
                 if (cId >= 0 && long.TryParse(Cell(r, cId), out var id) && id != e.Id)
-                { rep.IdMismatch++; rep.Log.Add($"{key}: ID {id} ≠ {e.Id} (file đã thay đổi?) – bỏ qua"); continue; }
+                { rep.IdMismatch++; rep.Log.Add(L.F("{0}: ID {1} ≠ {2} (file changed?) – skipped", key, id, e.Id)); continue; }
                 if (Cell(r, cSrc) != e.Value && e.Value != tr)
-                { rep.SourceChanged++; rep.Log.Add($"{key}: nguồn hiện tại '{e.Value}' khác CSV – vẫn áp dụng"); }
+                { rep.SourceChanged++; rep.Log.Add(L.F("{0}: current source '{1}' differs from the CSV – applied anyway", key, e.Value)); }
                 Apply(e, tr, rep);
             }
         }
@@ -171,7 +171,7 @@ public static class TextExchange
         if (e.MaxLength >= 0 && tr.Length > e.MaxLength)
         {
             rep.TooLong++;
-            rep.Log.Add($"{e.Key} [{e.Field}]: '{tr}' dài {tr.Length} > {e.MaxLength} – bỏ qua");
+            rep.Log.Add(L.F("{0} [{1}]: '{2}' is {3} long > {4} – skipped", e.Key, e.Field, tr, tr.Length, e.MaxLength));
             return;
         }
         try { e.Set(tr); rep.Applied++; }

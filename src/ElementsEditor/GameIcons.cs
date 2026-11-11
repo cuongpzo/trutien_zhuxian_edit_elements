@@ -1,6 +1,7 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using ElementsCore;
 using ElementsCore.Assets;
 
 namespace ElementsEditor;
@@ -23,8 +24,8 @@ public static class GameIcons
     public static Func<long, long?>? ItemIcon { get; set; }
 
     public static bool Loaded => _lib?.Surfaces != null;
-    public static string Status => _lib == null ? (_loading != null ? "đang nạp icon…" : "chưa nạp icon")
-        : _lib.Messages.Count > 0 ? string.Join("; ", _lib.Messages) : $"{_lib.IconCount:N0} icon từ surfaces.pck";
+    public static string Status => _lib == null ? (_loading != null ? L.T("loading icons…") : L.T("icons not loaded"))
+        : _lib.Messages.Count > 0 ? string.Join("; ", _lib.Messages) : L.F("{0:N0} icons from surfaces.pck", _lib.IconCount);
 
     /// <summary>Starts loading the icons of a client (no-op when that client is already loaded / loading).</summary>
     public static void EnsureLoaded(string? clientRoot)

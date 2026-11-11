@@ -1,5 +1,6 @@
 ﻿using System.Drawing.Drawing2D;
 using System.Reflection;
+using ElementsCore;
 using ElementsCore.Exchange;
 using ElementsCore.Formats;
 
@@ -8,7 +9,7 @@ namespace ElementsEditor;
 /// <summary>
 /// Domains tab, JD IDE style: tabs for every domain*.data of the folder, the domain list, a map of the
 /// outlines with names (zoom / pan / click to select / drag the centre to move it), details, neighbours
-/// and battle times on the right. "Bảng" switches to the generic table editor of the same file.
+/// and battle times on the right. "Table" switches to the generic table editor of the same file.
 /// </summary>
 public sealed class DomainMapView : Panel, IModuleView
 {
@@ -42,8 +43,8 @@ public sealed class DomainMapView : Panel, IModuleView
 
     public static readonly (string File, string Title)[] KnownFiles =
     [
-        ("domain.data", "Bang hội"), ("domain1.data", "Lãnh thổ"), ("domain2.data", "Liên server"),
-        ("domain3.data", "Tổng"), ("domain4.data", "Thượng cổ"), ("domain5.data", "Lãnh địa 5"), ("domainlandwar.data", "Chiến địa"),
+        ("domain.data", L.T("Guild")), ("domain1.data", L.T("Territory")), ("domain2.data", L.T("Cross-server")),
+        ("domain3.data", L.T("General")), ("domain4.data", L.T("Ancient")), ("domain5.data", L.T("Domain 5")), ("domainlandwar.data", L.T("Battlefield")),
     ];
 
     public static Color TypeColor(long t) => t switch
@@ -72,8 +73,8 @@ public sealed class DomainMapView : Panel, IModuleView
             files.Controls.Add(b);
         }
         var sw = new FlowLayoutPanel { Dock = DockStyle.Right, AutoSize = true, WrapContents = false };
-        _btnMap = new Button { Text = "🗺 Bản đồ", Width = 92, Height = 28 };
-        _btnTable = new Button { Text = "▦ Bảng", Width = 80, Height = 28 };
+        _btnMap = new Button { Text = L.T("🗺 Map"), Width = 92, Height = 28 };
+        _btnTable = new Button { Text = L.T("▦ Table"), Width = 80, Height = 28 };
         sw.Controls.AddRange([_btnMap, _btnTable]);
         top.Controls.Add(files);
         top.Controls.Add(sw);
@@ -87,13 +88,13 @@ public sealed class DomainMapView : Panel, IModuleView
 
         // ── left: search + list
         var left = new Panel { Dock = DockStyle.Left, Width = 250, Padding = new Padding(8, 8, 4, 6) };
-        _search = new TextBox { Dock = DockStyle.Top, PlaceholderText = "Tên hoặc ID…" };
+        _search = new TextBox { Dock = DockStyle.Top, PlaceholderText = L.T("Name or ID…") };
         _list = new ListBox { Dock = DockStyle.Fill, DrawMode = DrawMode.OwnerDrawFixed, ItemHeight = 44, IntegralHeight = false, BorderStyle = BorderStyle.None };
         _listCount = new Label { Dock = DockStyle.Bottom, Height = 24, ForeColor = Color.DimGray, TextAlign = ContentAlignment.MiddleLeft };
         var listBtns = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 36, WrapContents = false };
-        var bAdd = new Button { Text = "+ Thêm", Width = 72, Height = 28 };
-        var bClone = new Button { Text = "Nhân bản", Width = 80, Height = 28 };
-        var bDel = new Button { Text = "Xoá", Width = 56, Height = 28 };
+        var bAdd = new Button { Text = L.T("+ Add"), Width = 72, Height = 28 };
+        var bClone = new Button { Text = L.T("Clone"), Width = 80, Height = 28 };
+        var bDel = new Button { Text = L.T("Delete"), Width = 56, Height = 28 };
         listBtns.Controls.AddRange([bAdd, bClone, bDel]);
         left.Controls.Add(_list);
         left.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 6 });
@@ -137,44 +138,44 @@ public sealed class DomainMapView : Panel, IModuleView
             };
             return row;
         }
-        var rowName = Row(("Tên", _tbName));
-        var rowId = Row(("ID", _tbId), ("Cấp", _cbType));
-        var rowCenter = Row(("Tâm X", _tbCx), ("Tâm Y", _tbCy));
-        var nbHead = new Label { Text = "Lãnh địa kề bên", Dock = DockStyle.Top, Height = 26, Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), TextAlign = ContentAlignment.BottomLeft };
+        var rowName = Row((L.T("Name"), _tbName));
+        var rowId = Row(("ID", _tbId), (L.T("Level"), _cbType));
+        var rowCenter = Row((L.T("Center X"), _tbCx), (L.T("Center Y"), _tbCy));
+        var nbHead = new Label { Text = L.T("Adjacent domains"), Dock = DockStyle.Top, Height = 26, Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), TextAlign = ContentAlignment.BottomLeft };
         _nbList = new ListBox { Dock = DockStyle.Top, Height = 110, IntegralHeight = false };
         var nbRow = new Panel { Dock = DockStyle.Top, Height = 34, Padding = new Padding(0, 4, 0, 0) };
         _nbAdd = new ComboBox { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList };
-        var nbAddBtn = new Button { Text = "+ Thêm", Dock = DockStyle.Right, Width = 66 };
-        var nbDelBtn = new Button { Text = "Bỏ", Dock = DockStyle.Right, Width = 46 };
+        var nbAddBtn = new Button { Text = L.T("+ Add"), Dock = DockStyle.Right, Width = 66 };
+        var nbDelBtn = new Button { Text = L.T("Remove"), Dock = DockStyle.Right, Width = 46 };
         nbRow.Controls.Add(_nbAdd);
         nbRow.Controls.Add(nbAddBtn);
         nbRow.Controls.Add(nbDelBtn);
-        _nbBoth = new CheckBox { Text = "Thêm / bỏ cả hai chiều (khuyên dùng)", Dock = DockStyle.Top, Height = 24, Checked = true };
+        _nbBoth = new CheckBox { Text = L.T("Add / remove in both directions (recommended)"), Dock = DockStyle.Top, Height = 24, Checked = true };
         _selWarn = new Label { Dock = DockStyle.Top, Height = 38, ForeColor = Color.DarkGoldenrod, UseMnemonic = false };
-        var rewardRow = Row(("Thưởng", _tbReward));
+        var rewardRow = Row((L.T("Reward"), _tbReward));
         _detail.Controls.AddRange([_selWarn, _nbBoth, nbRow, _nbList, nbHead, rewardRow, rowCenter, rowId, rowName, _selInfo, _selTitle]);
 
-        var timesHead = new Label { Text = "Giờ chiến (tính từ Thứ 2 00:00)", Dock = DockStyle.Top, Height = 30, Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), TextAlign = ContentAlignment.BottomLeft };
+        var timesHead = new Label { Text = L.T("Battle times (counted from Monday 00:00)"), Dock = DockStyle.Top, Height = 30, Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), TextAlign = ContentAlignment.BottomLeft };
         _times = TableFileView.MakeGrid();
         _times.Dock = DockStyle.Top;
         _times.Height = 230;
         _times.EditMode = DataGridViewEditMode.EditOnEnter;
-        var dayCol = new DataGridViewComboBoxColumn { HeaderText = "Thứ", Width = 110, FlatStyle = FlatStyle.Flat, DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox };
+        var dayCol = new DataGridViewComboBoxColumn { HeaderText = L.T("Day"), Width = 110, FlatStyle = FlatStyle.Flat, DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox };
         foreach (var kv in DomainFile.WeekdayEnum) dayCol.Items.Add(kv.Value);
         _times.Columns.Add(dayCol);
-        _times.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Giờ", Width = 60 });
-        _times.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Phút", Width = 60 });
+        _times.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Hour"), Width = 60 });
+        _times.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Minute"), Width = 60 });
         _times.Columns.Add(new DataGridViewButtonColumn { HeaderText = "", Text = "✕", UseColumnTextForButtonValue = true, Width = 40, FlatStyle = FlatStyle.Flat });
         var timesRow = new Panel { Dock = DockStyle.Top, Height = 36, Padding = new Padding(0, 6, 0, 0) };
-        var addTime = new Button { Text = "+ Thêm giờ", Dock = DockStyle.Left, Width = 96 };
+        var addTime = new Button { Text = L.T("+ Add time"), Dock = DockStyle.Left, Width = 96 };
         _tbPerSlot = new TextBox { Dock = DockStyle.Right, Width = 60 };
-        timesRow.Controls.Add(new Label { Text = "Số trận mỗi khung", Dock = DockStyle.Right, Width = 120, TextAlign = ContentAlignment.MiddleRight, ForeColor = Color.DimGray });
+        timesRow.Controls.Add(new Label { Text = L.T("Battles per slot"), Dock = DockStyle.Right, Width = 120, TextAlign = ContentAlignment.MiddleRight, ForeColor = Color.DimGray });
         timesRow.Controls.Add(_tbPerSlot);
         timesRow.Controls.Add(addTime);
         var note = new Label
         {
             Dock = DockStyle.Top, Height = 64, ForeColor = Color.DimGray, UseMnemonic = false,
-            Text = "Server đọc giờ chiến từ domain.sev (xuất từ domain1.data). Sửa đường viền / tam giác chi tiết ở chế độ ▦ Bảng.",
+            Text = L.T("The server reads battle times from domain.sev (exported from domain1.data). Edit outlines / triangles in detail in ▦ Table mode."),
         };
         _side.Controls.AddRange([note, timesRow, _times, timesHead, _detail]);
 
@@ -272,7 +273,7 @@ public sealed class DomainMapView : Panel, IModuleView
         _list.EndUpdate();
         if (_sel != null && _shown.IndexOf(_sel) is >= 0 and var i) _list.SelectedIndex = i;
         _syncing = false;
-        _listCount.Text = $"{_shown.Count} / {D.Rows.Count} lãnh địa";
+        _listCount.Text = L.F("{0} / {1} domains", _shown.Count, D.Rows.Count);
     }
 
     private void DrawListItem(object? sender, DrawItemEventArgs e)
@@ -290,7 +291,7 @@ public sealed class DomainMapView : Panel, IModuleView
         long type = r.Long(DomainFile.ColRank);
         using (var b = new SolidBrush(TypeColor(type))) g.FillEllipse(b, e.Bounds.Left + 62, e.Bounds.Top + 10, 8, 8);
         TextRenderer.DrawText(g, r.Text(DomainFile.ColName), _list.Font, new Rectangle(e.Bounds.Left + 76, e.Bounds.Top + 3, e.Bounds.Width - 80, 20), fg, TextFormatFlags.Left | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
-        var sub = $"{(type == 0 ? "Không cấp" : $"Cấp {type}")} · {r.Table(DomainFile.ColNeighbours).Count} lãnh địa kề";
+        var sub = L.F("{0} · {1} adjacent domains", type == 0 ? L.T("No level") : L.F("Level {0}", type), r.Table(DomainFile.ColNeighbours).Count);
         using var small = new Font(_list.Font.FontFamily, 8F);
         TextRenderer.DrawText(g, sub, small, new Rectangle(e.Bounds.Left + 76, e.Bounds.Top + 23, e.Bounds.Width - 80, 18), dim, TextFormatFlags.Left | TextFormatFlags.EndEllipsis);
     }
@@ -324,8 +325,8 @@ public sealed class DomainMapView : Panel, IModuleView
             {
                 _sel = null;
                 foreach (Control c in _detail.Controls) c.Visible = c == _selTitle || c == _selInfo;
-                _selTitle.Text = "Chọn một lãnh địa";
-                _selInfo.Text = "trong danh sách hoặc bấm vào bản đồ.";
+                _selTitle.Text = L.T("Select a domain");
+                _selInfo.Text = L.T("in the list or click it on the map.");
                 _detail.Height = 70;
                 return;
             }
@@ -334,7 +335,7 @@ public sealed class DomainMapView : Panel, IModuleView
             var r = _sel;
             long type = r.Long(DomainFile.ColRank);
             _selTitle.Text = r.Text(DomainFile.ColName);
-            _selInfo.Text = $"ID {r.Long(DomainFile.ColId)} · {DomainFile.TypeEnum.GetValueOrDefault(type, $"Cấp {type}")} · {r.Table(DomainFile.ColVerts).Count} đỉnh · {r.Table(DomainFile.ColFaces).Count} tam giác";
+            _selInfo.Text = L.F("ID {0} · {1} · {2} vertices · {3} triangles", r.Long(DomainFile.ColId), DomainFile.TypeEnum.GetValueOrDefault(type, L.F("Level {0}", type)), r.Table(DomainFile.ColVerts).Count, r.Table(DomainFile.ColFaces).Count);
             _tbId.Text = r.Long(DomainFile.ColId).ToString();
             _tbName.Text = r.Text(DomainFile.ColName);
             _tbReward.Text = r.Long(DomainFile.ColReward).ToString();
@@ -347,16 +348,16 @@ public sealed class DomainMapView : Panel, IModuleView
                 long id = n.Long(0);
                 var other = Find(id);
                 bool back = other != null && other.Table(DomainFile.ColNeighbours).Any(x => x.Long(0) == r.Long(DomainFile.ColId));
-                _nbList.Items.Add(new NbItem(id, other?.Text(DomainFile.ColName) ?? "(không có trong file)", back));
+                _nbList.Items.Add(new NbItem(id, other?.Text(DomainFile.ColName) ?? L.T("(not in the file)"), back));
             }
             _nbAdd.Items.Clear();
             var have = r.Table(DomainFile.ColNeighbours).Select(n => n.Long(0)).ToHashSet();
             foreach (var o in D.Rows.Where(o => o != r && !have.Contains(o.Long(DomainFile.ColId))))
                 _nbAdd.Items.Add(new NbItem(o.Long(DomainFile.ColId), o.Text(DomainFile.ColName), true));
             var warns = new List<string>();
-            if (r.Table(DomainFile.ColVerts).Count < 3 || r.Table(DomainFile.ColFaces).Count == 0) warns.Add("Không có vùng (ít hơn 3 đỉnh / không có tam giác) – không thấy, không bấm được trên bản đồ.");
-            if (_nbList.Items.Cast<NbItem>().Any(n => !n.Back)) warns.Add("Có lãnh địa kề chỉ khai báo một chiều.");
-            if (D.Rows.Count(x => x.Long(DomainFile.ColId) == r.Long(DomainFile.ColId)) > 1) warns.Add("ID bị trùng – client chỉ tìm thấy lãnh địa đầu tiên.");
+            if (r.Table(DomainFile.ColVerts).Count < 3 || r.Table(DomainFile.ColFaces).Count == 0) warns.Add(L.T("No area (fewer than 3 vertices / no triangles) – not visible or clickable on the map."));
+            if (_nbList.Items.Cast<NbItem>().Any(n => !n.Back)) warns.Add(L.T("Some adjacent domains are declared in one direction only."));
+            if (D.Rows.Count(x => x.Long(DomainFile.ColId) == r.Long(DomainFile.ColId)) > 1) warns.Add(L.T("Duplicate ID – the client only finds the first domain."));
             _selWarn.Text = string.Join("\n", warns);
         }
         finally { _syncing = false; }
@@ -364,7 +365,7 @@ public sealed class DomainMapView : Panel, IModuleView
 
     private sealed record NbItem(long Id, string Name, bool Back)
     {
-        public override string ToString() => $"{Id}  {Name}{(Back ? "" : "   ⚠ một chiều")}";
+        public override string ToString() => $"{Id}  {Name}{(Back ? "" : "   " + L.T("⚠ one-way"))}";
     }
 
     private bool Set(Record r, int col, string text)
@@ -385,7 +386,7 @@ public sealed class DomainMapView : Panel, IModuleView
         if (_syncing || _sel == null) return;
         int col = tb == _tbId ? DomainFile.ColId : tb == _tbName ? DomainFile.ColName : tb == _tbReward ? DomainFile.ColReward : tb == _tbCx ? DomainFile.ColCenterX : DomainFile.ColCenterY;
         if (col == DomainFile.ColId && long.TryParse(tb.Text, out var nid) && nid != _sel.Long(DomainFile.ColId) && Find(nid) != null)
-        { Status?.Invoke($"ID {nid} đã có – chọn ID khác."); ShowDetail(); return; }
+        { Status?.Invoke(L.F("ID {0} already exists – choose another ID.", nid)); ShowDetail(); return; }
         if (!Set(_sel, col, tb.Text)) ShowDetail();
     }
 
@@ -443,21 +444,21 @@ public sealed class DomainMapView : Panel, IModuleView
             r[DomainFile.ColCenterX] = (int)(r.Long(DomainFile.ColCenterX) + 40);
             r[DomainFile.ColCenterY] = (int)(r.Long(DomainFile.ColCenterY) + 40);
         }
-        else r[DomainFile.ColName] = $"Lãnh địa {next}";
+        else r[DomainFile.ColName] = L.F("Domain {0}", next);
         D.Rows.Add(r);
         Changed?.Invoke();
         _search.Text = "";
         FillList();
         Select(r, fromList: false);
         _canvas.Invalidate();
-        Status?.Invoke(clone ? "Đã nhân bản lãnh địa (dời 40px, chưa có lãnh địa kề)." : "Đã thêm lãnh địa mới – chưa có đường viền: vẽ đỉnh/tam giác ở chế độ ▦ Bảng hoặc nhân bản một lãnh địa có sẵn.");
+        Status?.Invoke(clone ? L.T("Domain cloned (shifted by 40px, no adjacent domains yet).") : L.T("New domain added – it has no outline yet: draw vertices / triangles in ▦ Table mode or clone an existing domain."));
     }
 
     private void DeleteDomain()
     {
         if (_sel == null) return;
         var me = _sel.Long(DomainFile.ColId);
-        if (Msg.Show($"Xoá lãnh địa {me} \"{_sel.Text(DomainFile.ColName)}\"? Các lãnh địa kề cũng được gỡ liên kết tới nó.", "Xoá lãnh địa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
+        if (Msg.Show(L.F("Delete domain {0} \"{1}\"? Adjacent domains are unlinked from it as well.", me, _sel.Text(DomainFile.ColName)), L.T("Delete domain"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
         D.Rows.Remove(_sel);
         foreach (var o in D.Rows) o.Table(DomainFile.ColNeighbours).RemoveAll(x => x.Long(0) == me);
         _sel = null;
@@ -491,7 +492,7 @@ public sealed class DomainMapView : Panel, IModuleView
         int col = e.ColumnIndex;
         string text = col == 0 ? DomainFile.WeekdayEnum.First(kv => kv.Value == cell).Key.ToString() : cell;
         int max = col == 1 ? 23 : col == 2 ? 59 : 6;
-        if (!int.TryParse(text, out int v) || v < 0 || v > max) { Status?.Invoke($"Giá trị phải từ 0 đến {max}."); FillTimes(); return; }
+        if (!int.TryParse(text, out int v) || v < 0 || v > max) { Status?.Invoke(L.F("Value must be between 0 and {0}.", max)); FillTimes(); return; }
         if (t.Long(col) == v) return;
         t[col] = v;
         Changed?.Invoke();
@@ -501,7 +502,7 @@ public sealed class DomainMapView : Panel, IModuleView
     {
         if (_syncing || _f.Header.Rows.Count == 0) return;
         var h = _f.Header.Rows[0];
-        if (!int.TryParse(_tbPerSlot.Text, out int v) || v < 0) { Status?.Invoke("Số trận mỗi khung phải là số ≥ 0."); FillTimes(); return; }
+        if (!int.TryParse(_tbPerSlot.Text, out int v) || v < 0) { Status?.Invoke(L.T("Battles per slot must be a number ≥ 0.")); FillTimes(); return; }
         if (h.Long(DomainFile.HdrBattlesPerSlot) == v) return;
         h[DomainFile.HdrBattlesPerSlot] = v;
         Changed?.Invoke();
@@ -545,7 +546,7 @@ public sealed class DomainMapView : Panel, IModuleView
 
     public RecordTable? CurrentTable => _table?.Visible == true ? _table.CurrentTable : D;
 
-    /// <summary>File tab (domain.data Bang hội …), the open one underlined in green.</summary>
+    /// <summary>File tab (domain.data Guild …), the open one underlined in green.</summary>
     private sealed class FileTab : Control
     {
         private readonly bool _current;
@@ -590,7 +591,7 @@ public sealed class DomainMapView : Panel, IModuleView
                 TextRenderer.DrawText(g, s, Font, new Point(x, Height / 2 - 8), Theme.Dark ? Theme.Text : SystemColors.ControlText);
                 x += TextRenderer.MeasureText(s, Font).Width + 14;
             }
-            TextRenderer.DrawText(g, "Lăn chuột: zoom · kéo: di chuyển · nhấp đúp: vừa khung · kéo chấm tâm của lãnh địa đang chọn để dời",
+            TextRenderer.DrawText(g, L.T("Mouse wheel: zoom · drag: pan · double-click: fit · drag the centre dot of the selected domain to move it"),
                 Font, new Point(x + 10, Height / 2 - 8), Theme.Dark ? Theme.TextDim : SystemColors.GrayText);
         }
     }
@@ -723,7 +724,7 @@ public sealed class DomainCanvas : Control
             TextRenderer.DrawText(g, name, Font, tp, sel ? Theme.AccentText : Color.FromArgb(235, 240, 245));
         }
         if (!Domains.Any())
-            TextRenderer.DrawText(g, "File chưa có lãnh địa nào.", Font, ClientRectangle, Theme.TextDim, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            TextRenderer.DrawText(g, L.T("The file has no domains yet."), Font, ClientRectangle, Theme.TextDim, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
     }
 
     private static Color Blend(Color c, int alpha) => Color.FromArgb(alpha + 60, (c.R + 30) / 2, (c.G + 40) / 2, (c.B + 60) / 2);

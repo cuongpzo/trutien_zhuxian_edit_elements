@@ -21,7 +21,7 @@ public sealed class ChangeItem
     public string? New { get; init; }
     /// <summary>Puts this change back as it was in the file.</summary>
     public Action? Revert { get; init; }
-    public string RevertLabel { get; init; } = "Hoàn tác";
+    public string RevertLabel { get; init; } = L.T("Undo");
     /// <summary>Navigation target (Record, byte[] item, TalkWindow …) for "go to".</summary>
     public object? Target { get; init; }
     public int ListIndex { get; init; } = -1;
@@ -82,7 +82,7 @@ public static class TableDiff
                 outp.Add(new ChangeItem
                 {
                     Group = cur.Name, GroupOrder = order, Kind = ChangeKind.Added, RecordKey = KeyText(cur, c, cur.Rows.IndexOf(c)), RecordName = NameText(cur, c),
-                    Revert = cur.CanAddRemove ? () => cur.Rows.Remove(c) : null, RevertLabel = "Bỏ dòng thêm", Target = c,
+                    Revert = cur.CanAddRemove ? () => cur.Rows.Remove(c) : null, RevertLabel = L.T("Remove added row"), Target = c,
                 });
                 continue;
             }
@@ -91,7 +91,7 @@ public static class TableDiff
                 outp.Add(new ChangeItem
                 {
                     Group = cur.Name, GroupOrder = order, Kind = ChangeKind.Deleted, RecordKey = KeyText(bas, b, bi), RecordName = NameText(bas, b),
-                    Revert = cur.CanAddRemove ? () => cur.Rows.Insert(Math.Min(bi, cur.Rows.Count), b.Clone()) : null, RevertLabel = "Khôi phục dòng",
+                    Revert = cur.CanAddRemove ? () => cur.Rows.Insert(Math.Min(bi, cur.Rows.Count), b.Clone()) : null, RevertLabel = L.T("Restore row"),
                 });
                 continue;
             }
@@ -111,7 +111,7 @@ public static class TableDiff
                         outp.Add(new ChangeItem
                         {
                             Group = cur.Name, GroupOrder = order, Kind = ChangeKind.Modified, RecordKey = KeyText(cur, c, cur.Rows.IndexOf(c)), RecordName = NameText(cur, c),
-                            Field = field, Old = o, New = n, Revert = revert, RevertLabel = $"Hoàn tác cả {cd.Name}", Target = c,
+                            Field = field, Old = o, New = n, Revert = revert, RevertLabel = L.F("Undo all of {0}", cd.Name), Target = c,
                         });
                     continue;
                 }
@@ -142,7 +142,7 @@ public static class TableDiff
             {
                 string o = sub[s].Type == ColType.Table ? $"[{bl[i].Table(s).Count}]" : RecordIO.Format(sub[s], bl[i].Values[s]);
                 string v = sub[s].Type == ColType.Table ? $"[{cl[i].Table(s).Count}]" : RecordIO.Format(sub[s], cl[i].Values[s]);
-                if (sub[s].Type == ColType.Table && o == v && NestedDiff(sub[s], cl[i].Table(s), bl[i].Table(s)).Count > 0) v += " (đã sửa)";
+                if (sub[s].Type == ColType.Table && o == v && NestedDiff(sub[s], cl[i].Table(s), bl[i].Table(s)).Count > 0) v += " " + L.T("(modified)");
                 if (o != v) res.Add(($"{cd.Name}[{i}].{sub[s].Name}", o, v));
             }
             if (res.Count > 200) break;
@@ -172,7 +172,7 @@ public static class TableDiff
             res.Add(new ChangeItem
             {
                 Group = System.IO.Path.GetFileName(cur.Path), Kind = o == null ? ChangeKind.Added : v == null ? ChangeKind.Deleted : ChangeKind.Modified,
-                RecordKey = $"dòng {p + i + 1}", Field = "", Old = o, New = v, Revert = revertAll, RevertLabel = "Hoàn tác cả file", Target = p + i,
+                RecordKey = L.F("line {0}", p + i + 1), Field = "", Old = o, New = v, Revert = revertAll, RevertLabel = L.T("Undo whole file"), Target = p + i,
             });
         }
         return res;
@@ -212,7 +212,7 @@ public static class ElementsDiff
                     outp.Add(new ChangeItem
                     {
                         Group = group, GroupOrder = li, Kind = ChangeKind.Added, RecordKey = $"ID {id}", RecordName = cl.GetName(i), Target = item, ListIndex = cl.Index,
-                        Revert = () => cl.Items.Remove(item), RevertLabel = "Bỏ bản ghi thêm",
+                        Revert = () => cl.Items.Remove(item), RevertLabel = L.T("Remove added record"),
                     });
                 }
             }
@@ -224,7 +224,7 @@ public static class ElementsDiff
                 outp.Add(new ChangeItem
                 {
                     Group = group, GroupOrder = li, Kind = ChangeKind.Deleted, RecordKey = $"ID {bl.GetId(bi)}", RecordName = bl.GetName(bi), ListIndex = cl.Index,
-                    Revert = () => { var copy = (byte[])orig.Clone(); cl.Items.Insert(Math.Min(at, cl.Items.Count), copy); touched(cl, copy); }, RevertLabel = "Khôi phục bản ghi",
+                    Revert = () => { var copy = (byte[])orig.Clone(); cl.Items.Insert(Math.Min(at, cl.Items.Count), copy); touched(cl, copy); }, RevertLabel = L.T("Restore record"),
                 });
             }
         }
@@ -258,7 +258,7 @@ public static class ElementsDiff
             outp.Add(new ChangeItem
             {
                 Group = group, GroupOrder = order, Kind = ChangeKind.Modified, RecordKey = key, RecordName = name, ListIndex = l.Index,
-                Field = "(byte ngoài schema)", Old = "…", New = "…", Target = item, RevertLabel = "Hoàn tác cả bản ghi",
+                Field = L.T("(bytes outside schema)"), Old = "…", New = "…", Target = item, RevertLabel = L.T("Undo whole record"),
                 Revert = () => { Array.Copy(orig, item, item.Length); touched(l, item); },
             });
     }

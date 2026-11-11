@@ -1,10 +1,11 @@
 using System.Reflection;
+using ElementsCore;
 using ElementsCore.Exchange;
 
 namespace ElementsEditor;
 
 /// <summary>
-/// "Lịch sử sửa" panel: every difference between the open document and the file as it was opened,
+/// "Edit history" panel: every difference between the open document and the file as it was opened,
 /// grouped by table / list then by record, with old → new values, undo per change and "go to".
 /// </summary>
 public sealed class ChangesPanel : Panel
@@ -26,17 +27,17 @@ public sealed class ChangesPanel : Panel
         Padding = new Padding(10, 8, 10, 8);
 
         var head = new Panel { Dock = DockStyle.Top, Height = 30 };
-        var title = new Label { Text = "⟲  LỊCH SỬ SỬA  ·  thay đổi so với file đã mở", Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), TextAlign = ContentAlignment.MiddleLeft };
+        var title = new Label { Text = L.T("⟲  EDIT HISTORY  ·  changes compared to the file as opened"), Dock = DockStyle.Fill, Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), TextAlign = ContentAlignment.MiddleLeft };
         var btnClose = new Button { Text = "✕", Dock = DockStyle.Right, Width = 34 };
-        var btnRefresh = new Button { Text = "Làm mới", Dock = DockStyle.Right, Width = 78 };
-        var btnUndoAll = new Button { Text = "Hoàn tác hết", Dock = DockStyle.Right, Width = 100 };
+        var btnRefresh = new Button { Text = L.T("Refresh"), Dock = DockStyle.Right, Width = 78 };
+        var btnUndoAll = new Button { Text = L.T("Undo all"), Dock = DockStyle.Right, Width = 100 };
         head.Controls.Add(title);
         head.Controls.Add(btnUndoAll);
         head.Controls.Add(new Panel { Dock = DockStyle.Right, Width = 4 });
         head.Controls.Add(btnRefresh);
         head.Controls.Add(new Panel { Dock = DockStyle.Right, Width = 4 });
         head.Controls.Add(btnClose);
-        _filter = new TextBox { Dock = DockStyle.Top, PlaceholderText = "Lọc theo bảng, ID, tên, field, giá trị…" };
+        _filter = new TextBox { Dock = DockStyle.Top, PlaceholderText = L.T("Filter by table, ID, name, field, value…") };
         _summary = new Label { Dock = DockStyle.Top, Height = 26, ForeColor = Color.DimGray, TextAlign = ContentAlignment.MiddleLeft, UseMnemonic = false };
 
         _grid = new DataGridView
@@ -46,10 +47,10 @@ public sealed class ChangesPanel : Panel
             VirtualMode = true, BackgroundColor = SystemColors.Window,
         };
         typeof(DataGridView).GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(_grid, true);
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Bản ghi", Width = 170 });
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Field", Width = 120 });
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cũ", Width = 130 });
-        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Mới", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 120 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Record"), Width = 170 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Field"), Width = 120 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("Old"), Width = 130 });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("New"), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 120 });
         _grid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "", Width = 44, Text = "↺", UseColumnTextForButtonValue = false, FlatStyle = FlatStyle.Flat });
         _grid.CellValueNeeded += OnValueNeeded;
         _grid.CellFormatting += OnFormatting;
@@ -76,7 +77,7 @@ public sealed class ChangesPanel : Panel
     public void Reload()
     {
         try { _all = _compute(); }
-        catch (Exception ex) { _all = new(); _summary.Text = "Không tính được thay đổi: " + ex.Message; }
+        catch (Exception ex) { _all = new(); _summary.Text = L.F("Could not compute the changes: {0}", ex.Message); }
         Fill();
     }
 
@@ -93,13 +94,13 @@ public sealed class ChangesPanel : Panel
             {
                 group = c.Group;
                 int n = items.Where(x => x.Group == group).Select(x => x.RecordKey + "|" + x.RecordName).Distinct().Count();
-                _rows.Add($"{group}   ·   {n} bản ghi");
+                _rows.Add(L.F("{0}   ·   {1} records", group, n));
             }
             _rows.Add(c);
         }
         int recs = _all.Select(c => c.Group + "|" + c.RecordKey + "|" + c.RecordName).Distinct().Count();
-        _summary.Text = _all.Count == 0 ? "Không có thay đổi – giống file đã mở."
-            : $"{_all.Count:N0} thay đổi trong {recs:N0} bản ghi, {_all.Select(c => c.Group).Distinct().Count()} bảng · giữ trong bộ nhớ đến khi Lưu · nhấp đúp để tới chỗ đã sửa";
+        _summary.Text = _all.Count == 0 ? L.T("No changes – same as the file as opened.")
+            : L.F("{0:N0} changes in {1:N0} records, {2} tables · kept in memory until you Save · double-click to go to the edit", _all.Count, recs, _all.Select(c => c.Group).Distinct().Count());
         _grid.RowCount = 0;
         _grid.RowCount = _rows.Count;
         _grid.Invalidate();
@@ -114,7 +115,7 @@ public sealed class ChangesPanel : Panel
         e.Value = e.ColumnIndex switch
         {
             0 => repeat ? "" : (c.Kind switch { ChangeKind.Added => "＋ ", ChangeKind.Deleted => "－ ", _ => "" }) + $"{c.RecordKey}  {c.RecordName}".Trim(),
-            1 => c.Field ?? (c.Kind == ChangeKind.Added ? "(dòng mới)" : "(đã xoá)"),
+            1 => c.Field ?? (c.Kind == ChangeKind.Added ? L.T("(new row)") : L.T("(deleted)")),
             2 => c.Old ?? "",
             3 => c.New ?? "",
             4 => c.Revert != null ? "↺" : "",
@@ -143,7 +144,7 @@ public sealed class ChangesPanel : Panel
     private void RevertRow(int row)
     {
         if (_rows[row] is not ChangeItem c || c.Revert == null) return;
-        if (c.RevertLabel != "Hoàn tác" && Msg.Show($"{c.RevertLabel}: {c.RecordKey} {c.RecordName}?", "Hoàn tác", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+        if (c.RevertLabel != L.T("Undo") && Msg.Show($"{c.RevertLabel}: {c.RecordKey} {c.RecordName}?", L.T("Undo"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
         c.Revert();
         _afterRevert();
         Reload();
@@ -152,7 +153,7 @@ public sealed class ChangesPanel : Panel
     private void RevertAll()
     {
         if (_all.Count == 0) return;
-        if (Msg.Show($"Hoàn tác toàn bộ {_all.Count:N0} thay đổi, đưa dữ liệu về như file đã mở?", "Hoàn tác hết", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
+        if (Msg.Show(L.F("Undo all {0:N0} changes and restore the data to the file as opened?", _all.Count), L.T("Undo all"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
         // field changes first, then deletions/additions; one revert per distinct action (nested lists share one)
         var done = new HashSet<Action>();
         foreach (var c in _all.OrderBy(c => c.Kind == ChangeKind.Modified ? 0 : 1))

@@ -1,5 +1,6 @@
 using System.Drawing.Drawing2D;
 using System.Media;
+using L = ElementsCore.L;
 
 namespace ElementsEditor;
 
@@ -108,7 +109,7 @@ public static class Msg
                 bar.Controls.Add(b);
                 if (CancelButton == null && (result is DialogResult.Cancel or DialogResult.No || defs.Length == 1)) CancelButton = b;
             }
-            first = (Button)bar.Controls[bar.Controls.Count - 1]; // left-most = default (OK / Có)
+            first = (Button)bar.Controls[bar.Controls.Count - 1]; // left-most = default (OK / Yes)
             AcceptButton = first;
             Controls.Add(bar);
 
@@ -129,12 +130,12 @@ public static class Msg
 
         private static (string, DialogResult)[] ButtonsFor(MessageBoxButtons b) => b switch
         {
-            MessageBoxButtons.OKCancel => new[] { ("OK", DialogResult.OK), ("Hủy", DialogResult.Cancel) },
-            MessageBoxButtons.YesNo => new[] { ("Có", DialogResult.Yes), ("Không", DialogResult.No) },
-            MessageBoxButtons.YesNoCancel => new[] { ("Có", DialogResult.Yes), ("Không", DialogResult.No), ("Hủy", DialogResult.Cancel) },
-            MessageBoxButtons.RetryCancel => new[] { ("Thử lại", DialogResult.Retry), ("Hủy", DialogResult.Cancel) },
-            MessageBoxButtons.AbortRetryIgnore => new[] { ("Hủy bỏ", DialogResult.Abort), ("Thử lại", DialogResult.Retry), ("Bỏ qua", DialogResult.Ignore) },
-            _ => new[] { ("OK", DialogResult.OK) },
+            MessageBoxButtons.OKCancel => new[] { (L.T("OK"), DialogResult.OK), (L.T("Cancel"), DialogResult.Cancel) },
+            MessageBoxButtons.YesNo => new[] { (L.T("Yes"), DialogResult.Yes), (L.T("No"), DialogResult.No) },
+            MessageBoxButtons.YesNoCancel => new[] { (L.T("Yes"), DialogResult.Yes), (L.T("No"), DialogResult.No), (L.T("Cancel"), DialogResult.Cancel) },
+            MessageBoxButtons.RetryCancel => new[] { (L.T("Retry"), DialogResult.Retry), (L.T("Cancel"), DialogResult.Cancel) },
+            MessageBoxButtons.AbortRetryIgnore => new[] { (L.T("Abort"), DialogResult.Abort), (L.T("Retry"), DialogResult.Retry), (L.T("Ignore"), DialogResult.Ignore) },
+            _ => new[] { (L.T("OK"), DialogResult.OK) },
         };
 
         private void Sound()

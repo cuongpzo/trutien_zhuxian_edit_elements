@@ -5,7 +5,7 @@ namespace ElementsEditor;
 
 /// <summary>
 /// Elements tab additions: colour-code text editor under the Fields grid, colour bar on the
-/// Việt hoá quick editor, full-data export/import (CSV / XLSX / JSON) of a list, the "N changed ·
+/// localization quick editor, full-data export/import (CSV / XLSX / JSON) of a list, the "N changed ·
 /// not saved" status label and the edit-history panel (diff against the file as opened).
 /// </summary>
 public sealed partial class MainForm
@@ -43,7 +43,7 @@ public sealed partial class MainForm
             { _fieldsGrid.CancelEdit(); _fieldEditor.FocusText(); }
         };
 
-        // 2. colour bar on the Việt hoá quick editor
+        // 2. colour bar on the localization quick editor
         if (_quickTextEditor.Parent is { } qp)
         {
             var bar = new ColorCodeBar(_quickTextEditor) { Dock = DockStyle.Top };
@@ -51,7 +51,7 @@ public sealed partial class MainForm
             qp.Controls.SetChildIndex(bar, 1);
         }
 
-        // 3. status label "● N đã sửa · chưa lưu" (click = edit history)
+        // 3. status label "● N edited · not saved" (click = edit history)
         var status = Controls.OfType<StatusStrip>().First();
         _lblChanges = new ToolStripStatusLabel { Visible = false, ForeColor = Theme.Amber, IsLink = false, Margin = new Padding(12, 3, 12, 2) };
         _lblChanges.Click += (_, _) => ToggleChangesPanel();
@@ -67,31 +67,31 @@ public sealed partial class MainForm
         _mainWorkHost.Controls.Add(_elChanges);
 
         // 5. menu + toolbar entries
-        var tools = _menu.Items.OfType<ToolStripMenuItem>().FirstOrDefault(m => m.Text?.StartsWith("&Công cụ") == true);
+        var tools = _menu.Items.OfType<ToolStripMenuItem>().FirstOrDefault(m => m.Name == "mnuTools");
         if (tools != null)
         {
             int at = 0;
-            tools.DropDownItems.Insert(at++, new ToolStripMenuItem("Xuất &dữ liệu list đang chọn → Excel (.xlsx)…", null, (_, _) => ExportListData("xlsx")));
-            tools.DropDownItems.Insert(at++, new ToolStripMenuItem("Xuất dữ liệu list đang chọn → CSV…", null, (_, _) => ExportListData("csv")));
-            tools.DropDownItems.Insert(at++, new ToolStripMenuItem("Xuất dữ liệu list đang chọn → JSON (có cột khoá)…", null, (_, _) => ExportListData("json")));
-            tools.DropDownItems.Insert(at++, new ToolStripMenuItem("&Nhập dữ liệu (CSV / XLSX / JSON)…", null, (_, _) => ImportListData()));
-            tools.DropDownItems.Insert(at++, new ToolStripMenuItem("&Lịch sử sửa (các thay đổi chưa lưu)…", null, (_, _) => ToggleChangesPanel()));
+            tools.DropDownItems.Insert(at++, new ToolStripMenuItem(L.T("Export &data of the selected list → Excel (.xlsx)…"), null, (_, _) => ExportListData("xlsx")));
+            tools.DropDownItems.Insert(at++, new ToolStripMenuItem(L.T("Export data of the selected list → CSV…"), null, (_, _) => ExportListData("csv")));
+            tools.DropDownItems.Insert(at++, new ToolStripMenuItem(L.T("Export data of the selected list → JSON (with key columns)…"), null, (_, _) => ExportListData("json")));
+            tools.DropDownItems.Insert(at++, new ToolStripMenuItem(L.T("&Import data (CSV / XLSX / JSON)…"), null, (_, _) => ImportListData()));
+            tools.DropDownItems.Insert(at++, new ToolStripMenuItem(L.T("Edit &history (unsaved changes)…"), null, (_, _) => ToggleChangesPanel()));
             tools.DropDownItems.Insert(at, new ToolStripSeparator());
         }
         var ts = _elementsHost.Controls.OfType<ToolStrip>().First();
-        var exp = new ToolStripDropDownButton("Xuất dữ liệu");
-        exp.DropDownItems.Add("List đang chọn → Excel (.xlsx)…", null, (_, _) => ExportListData("xlsx"));
-        exp.DropDownItems.Add("List đang chọn → CSV…", null, (_, _) => ExportListData("csv"));
-        exp.DropDownItems.Add("List đang chọn → JSON…", null, (_, _) => ExportListData("json"));
-        var imp = new ToolStripButton("Nhập dữ liệu");
+        var exp = new ToolStripDropDownButton(L.T("Export data"));
+        exp.DropDownItems.Add(L.T("Selected list → Excel (.xlsx)…"), null, (_, _) => ExportListData("xlsx"));
+        exp.DropDownItems.Add(L.T("Selected list → CSV…"), null, (_, _) => ExportListData("csv"));
+        exp.DropDownItems.Add(L.T("Selected list → JSON…"), null, (_, _) => ExportListData("json"));
+        var imp = new ToolStripButton(L.T("Import data"));
         imp.Click += (_, _) => ImportListData();
-        var hist = new ToolStripButton("Lịch sử sửa");
+        var hist = new ToolStripButton(L.T("Edit history"));
         hist.Click += (_, _) => ToggleChangesPanel();
-        var hanviet = new ToolStripButton("Việt hoá Hán Việt…") { ToolTipText = "Đổi chữ Hán của các field đã chọn (vd name) sang Hán Việt hàng loạt; dòng nào vượt độ dài thì bỏ qua." };
+        var hanviet = new ToolStripButton(L.T("Hán Việt conversion…")) { ToolTipText = L.T("Convert the Chinese characters of the chosen fields (e.g. name) to Sino-Vietnamese (Hán Việt) in bulk; rows that would exceed the length limit are skipped.") };
         hanviet.Click += (_, _) => ShowHanViet();
         ts.Items.AddRange([new ToolStripSeparator(), exp, imp, hist, new ToolStripSeparator(), hanviet]);
-        var loc = _menu.Items.OfType<ToolStripMenuItem>().FirstOrDefault(m => m.Text?.StartsWith("&Việt hóa") == true);
-        loc?.DropDownItems.Insert(0, new ToolStripMenuItem("Việt hoá &Hán Việt hàng loạt (từ điển phiên âm)…", null, (_, _) => ShowHanViet()));
+        var loc = _menu.Items.OfType<ToolStripMenuItem>().FirstOrDefault(m => m.Name == "mnuLoc");
+        loc?.DropDownItems.Insert(0, new ToolStripMenuItem(L.T("Bulk Sino-Vietnamese (&Hán Việt) conversion (phonetic dictionary)…"), null, (_, _) => ShowHanViet()));
         loc?.DropDownItems.Insert(1, new ToolStripSeparator());
     }
 
@@ -99,15 +99,15 @@ public sealed partial class MainForm
 
     private void ShowHanViet()
     {
-        if (_ef == null) { Msg.Show("Hãy mở elements.data trước.", "Việt hoá Hán Việt"); return; }
+        if (_ef == null) { Msg.Show(L.T("Open elements.data first."), L.T("Hán Việt conversion")); return; }
         var ef = _ef;
         var scopes = new List<TextScope>();
         if (_currentList != null)
         {
             var cl = _currentList;
-            scopes.Add(new TextScope($"List đang chọn: {cl.Index} {cl.Name} ({cl.Items.Count:N0})", () => ListTargets(cl)));
+            scopes.Add(new TextScope(L.F("Selected list: {0} {1} ({2:N0})", cl.Index, cl.Name, cl.Items.Count), () => ListTargets(cl)));
         }
-        scopes.Add(new TextScope($"Tất cả {ef.Lists.Count} list", () => ef.Lists.SelectMany(ListTargets)));
+        scopes.Add(new TextScope(L.F("All {0} lists", ef.Lists.Count), () => ef.Lists.SelectMany(ListTargets)));
         using var dlg = new HanVietDialog(scopes, _settings);
         dlg.ShowDialog(this);
         if (dlg.Applied == 0) return;
@@ -165,7 +165,7 @@ public sealed partial class MainForm
         int cjkRows = 0;
         if (text && !gbk) for (int i = 0; i < l.Items.Count; i++) if (ElementsCore.Exchange.HanViet.HasCjk(FieldCodec.GetText(l.Items[i], f))) cjkRows++;
 
-        var one = menu.Items.Add($"Việt hoá Hán Việt field \"{f.Path}\" của bản ghi này (ID {l.GetId(idx)})", null, (_, _) =>
+        var one = menu.Items.Add(L.F("Hán Việt conversion of field \"{0}\" in this record (ID {1})", f.Path, l.GetId(idx)), null, (_, _) =>
         {
             if (ElementTarget(l, idx, f) is not { } t) return;
             if (HanVietTools.ConvertOne(t, out var msg))
@@ -174,14 +174,14 @@ public sealed partial class MainForm
                 MarkRecordDirty(item);
                 RefreshInspector();
                 if (_itemsGrid.CurrentRow != null) _itemsGrid.InvalidateRow(_itemsGrid.CurrentRow.Index);
-                _lblStatus.Text = "Hán Việt: " + msg;
+                _lblStatus.Text = L.F("Hán Việt: {0}", msg);
             }
-            else Msg.Show(msg, "Việt hoá Hán Việt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            else Msg.Show(msg, L.T("Hán Việt conversion"), MessageBoxButtons.OK, MessageBoxIcon.Information);
         });
         one.Enabled = text && !gbk && ElementsCore.Exchange.HanViet.HasCjk(cur);
-        var all = menu.Items.Add($"Việt hoá Hán Việt field \"{f.Path}\" cho cả list {l.Name} ({cjkRows:N0} dòng còn chữ Hán)…", null, (_, _) =>
+        var all = menu.Items.Add(L.F("Hán Việt conversion of field \"{0}\" in the whole list {1} ({2:N0} rows still with Chinese characters)…", f.Path, l.Name, cjkRows), null, (_, _) =>
         {
-            using var dlg = new HanVietDialog([new TextScope($"List {l.Index} {l.Name} · field {f.Path}", () => ListTargets(l, f))], _settings, f.Path, onlyThatField: true);
+            using var dlg = new HanVietDialog([new TextScope(L.F("List {0} {1} · field {2}", l.Index, l.Name, f.Path), () => ListTargets(l, f))], _settings, f.Path, onlyThatField: true);
             dlg.ShowDialog(this);
             if (dlg.Applied == 0) return;
             _dirty = true;
@@ -193,11 +193,11 @@ public sealed partial class MainForm
             _elChanges.Reload();
         });
         all.Enabled = cjkRows > 0;
-        if (gbk) menu.Items.Add("(field GBK – không chứa được tiếng Việt có dấu)").Enabled = false;
-        else if (!text) menu.Items.Add("(chỉ field chữ mới Việt hoá được)").Enabled = false;
+        if (gbk) menu.Items.Add(L.T("(GBK field – cannot hold Vietnamese diacritics)")).Enabled = false;
+        else if (!text) menu.Items.Add(L.T("(only text fields can be localized)")).Enabled = false;
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Sửa trong khung soạn (màu, xem trước)", null, (_, _) => { UpdateFieldEditor(); _fieldEditor.FocusText(); }).Enabled = text;
-        menu.Items.Add("Sao chép giá trị", null, (_, _) =>
+        menu.Items.Add(L.T("Edit in the text editor (colours, preview)"), null, (_, _) => { UpdateFieldEditor(); _fieldEditor.FocusText(); }).Enabled = text;
+        menu.Items.Add(L.T("Copy value"), null, (_, _) =>
         {
             try { Clipboard.SetText(FieldCodec.Format(item, f, l.Schema)); } catch { }
         });
@@ -231,12 +231,12 @@ public sealed partial class MainForm
                 _syncingUi = false;
             }
             if (_itemsGrid.CurrentRow != null) _itemsGrid.InvalidateRow(_itemsGrid.CurrentRow.Index);
-            _lblStatus.Text = $"Đã sửa {f.Path} của ID {id} (chưa lưu file).";
+            _lblStatus.Text = L.F("Edited {0} of ID {1} (file not saved yet).", f.Path, id);
             return null;
         };
         _fieldEditor.Begin(f.Path, FieldCodec.GetText(item, f), FieldCodec.MaxTextLength(f),
             f.Kind == ElementsCore.Schema.FieldKind.Str ? s => FieldCodec.Gbk.GetByteCount(s) : null,
-            $"ID {id}{(f.Kind == ElementsCore.Schema.FieldKind.Str ? " · GBK (không chứa được tiếng Việt có dấu)" : "")}");
+            $"ID {id}{(f.Kind == ElementsCore.Schema.FieldKind.Str ? L.T(" · GBK (cannot hold Vietnamese diacritics)") : "")}");
     }
 
     /// <summary>After the inspector is rebuilt (another record): keep editing the same field.</summary>
@@ -258,12 +258,12 @@ public sealed partial class MainForm
         if (_activeModule == "elements")
         {
             int n = _dirtyRecords.Count + _dirtyDialogs.Count;
-            if (_dirty) text = n > 0 ? $"● {n:N0} bản ghi đã sửa · chưa lưu" : "● Có thay đổi · chưa lưu";
+            if (_dirty) text = n > 0 ? L.F("● {0:N0} records edited · not saved", n) : L.T("● Changed · not saved");
         }
         else if (_pages.TryGetValue(_activeModule, out var p) && p.Dirty)
-            text = p.ChangeCount > 0 ? $"● {p.ChangeCount:N0} thay đổi · chưa lưu" : "● Có thay đổi · chưa lưu";
+            text = p.ChangeCount > 0 ? L.F("● {0:N0} changes · not saved", p.ChangeCount) : L.T("● Changed · not saved");
         _lblChanges.Visible = text != null;
-        if (text != null) { _lblChanges.Text = text; _lblChanges.ToolTipText = "Bấm để xem lịch sử sửa (Ctrl+H ở các tab khác)"; }
+        if (text != null) { _lblChanges.Text = text; _lblChanges.ToolTipText = L.T("Click to see the edit history (Ctrl+H in the other tabs)"); }
     }
 
     private void ToggleChangesPanel()
@@ -319,7 +319,7 @@ public sealed partial class MainForm
 
     private void ExportListData(string ext)
     {
-        if (_ef == null || _currentList == null) { Msg.Show("Hãy mở elements.data và chọn một list trước.", "Xuất dữ liệu"); return; }
+        if (_ef == null || _currentList == null) { Msg.Show(L.T("Open elements.data and select a list first."), L.T("Export data")); return; }
         var l = _currentList;
         using var sfd = new SaveFileDialog
         {
@@ -332,20 +332,20 @@ public sealed partial class MainForm
             Cursor = Cursors.WaitCursor;
             ElementsExchange.Export(_ef, [l], sfd.FileName);
             RecentStore.Log("EXPORT", "elements", sfd.FileName);
-            _lblStatus.Text = $"Đã xuất {l.Items.Count:N0} bản ghi × {l.Schema.Fields.Count} field của {l.Name} → {sfd.FileName}";
-            Msg.Show($"Đã xuất {l.Items.Count:N0} bản ghi ({l.Schema.Fields.Count} cột) của list {l.Index} {l.Name}.\n\n"
-                + $"Cột khoá: {ElementsExchange.ListCol} (số list), ID, {ElementsExchange.IndexCol} (vị trí) – giữ nguyên khi sửa để nhập lại đúng bản ghi.\n"
-                + "Ô để trống khi nhập = giữ nguyên giá trị cũ. ID chưa có trong list = thêm bản ghi mới.",
-                "Xuất dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _lblStatus.Text = L.F("Exported {0:N0} records × {1} fields of {2} → {3}", l.Items.Count, l.Schema.Fields.Count, l.Name, sfd.FileName);
+            Msg.Show(L.F("Exported {0:N0} records ({1} columns) of list {2} {3}.", l.Items.Count, l.Schema.Fields.Count, l.Index, l.Name) + "\n\n"
+                + L.F("Key columns: {0} (list number), ID, {1} (position) – keep them unchanged so the import finds the right records.", ElementsExchange.ListCol, ElementsExchange.IndexCol) + "\n"
+                + L.T("Empty cells on import = keep the old value. An ID not yet in the list = a new record is added."),
+                L.T("Export data"), MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-        catch (Exception ex) { Msg.Show($"Xuất thất bại:\n{ex.Message}", "Xuất dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        catch (Exception ex) { Msg.Show(L.F("Export failed:\n{0}", ex.Message), L.T("Export data"), MessageBoxButtons.OK, MessageBoxIcon.Error); }
         finally { Cursor = Cursors.Default; }
     }
 
     private void ImportListData()
     {
-        if (_ef == null) { Msg.Show("Hãy mở elements.data trước.", "Nhập dữ liệu"); return; }
-        using var ofd = new OpenFileDialog { Filter = DataSheets.OpenFilter, Title = "Nhập dữ liệu vào elements.data (CSV / XLSX / JSON)", InitialDirectory = Path.GetDirectoryName(_ef.Path) };
+        if (_ef == null) { Msg.Show(L.T("Open elements.data first."), L.T("Import data")); return; }
+        using var ofd = new OpenFileDialog { Filter = DataSheets.OpenFilter, Title = L.T("Import data into elements.data (CSV / XLSX / JSON)"), InitialDirectory = Path.GetDirectoryName(_ef.Path) };
         if (ofd.ShowDialog(this) != DialogResult.OK) return;
         try
         {
@@ -361,10 +361,10 @@ public sealed partial class MainForm
                 UpdateWindowTitle();
                 UpdateSummaryStatus();
             }
-            Msg.Show(res.Summary($"Nhập {Path.GetFileName(ofd.FileName)} vào elements.data"), "Nhập dữ liệu", MessageBoxButtons.OK,
+            Msg.Show(res.Summary(L.F("Import {0} into {1}", Path.GetFileName(ofd.FileName), "elements.data")), L.T("Import data"), MessageBoxButtons.OK,
                 res.Errors.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
             if (res.CellsChanged > 0 || res.RowsAdded > 0) { _elChanges.Visible = true; _elChanges.Reload(); }
         }
-        catch (Exception ex) { Cursor = Cursors.Default; Msg.Show($"Nhập thất bại:\n{ex.Message}", "Nhập dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        catch (Exception ex) { Cursor = Cursors.Default; Msg.Show(L.F("Import failed:\n{0}", ex.Message), L.T("Import data"), MessageBoxButtons.OK, MessageBoxIcon.Error); }
     }
 }

@@ -78,9 +78,9 @@ public sealed partial class MainForm
         bool el = key == "elements";
         _elementsHost.Visible = el;
         foreach (var (k, p) in _pages) p.Visible = k == key;
-        // the Search/Replace and Việt hóa menus act on elements.data only
+        // the Search/Edit and Localization menus act on elements.data only (found by Name, never by text)
         foreach (ToolStripItem it in _menu.Items)
-            if (it.Text is { } t && (t.StartsWith("&Tìm kiếm") || t.StartsWith("&Việt hóa"))) it.Visible = el;
+            if (it.Name is "mnuEdit" or "mnuLoc") it.Visible = el;
         if (!el) _pages[key].RefreshStart();
         UpdateChangesLabel();
         _recent.SetActive(key);
@@ -88,7 +88,7 @@ public sealed partial class MainForm
         if (el)
         {
             if (_ef != null) UpdateSummaryStatus();
-            else _lblStatus.Text = "Sẵn sàng. Hãy mở elements.data.";
+            else _lblStatus.Text = L.T("Ready. Open elements.data.");
         }
         else _lblStatus.Text = _pages[key].StatusText.Length > 0 ? _pages[key].StatusText : _pages[key].Module.Description;
     }
@@ -147,7 +147,7 @@ public sealed partial class MainForm
         BuildItemIcons();
     }
 
-    /// <summary>ID → name of every record in elements.data, for the "→ tên" column of other tabs.</summary>
+    /// <summary>ID → name of every record in elements.data, for the "→ name" column of other tabs.</summary>
     private async void BuildIdNames()
     {
         var ef = _ef;
@@ -172,9 +172,9 @@ public sealed partial class MainForm
 
     private void AddRecentMenu()
     {
-        if (_menu.Items.Count == 0 || _menu.Items[0] is not ToolStripMenuItem file) return;
-        var recentMenu = new ToolStripMenuItem("Mở &gần đây (elements.data)");
-        recentMenu.DropDownItems.Add("(trống)");
+        if (_menu.Items["mnuFile"] is not ToolStripMenuItem file) return;
+        var recentMenu = new ToolStripMenuItem(L.T("Open &recent (elements.data)"));
+        recentMenu.DropDownItems.Add(L.T("(empty)"));
         recentMenu.DropDownOpening += (_, _) =>
         {
             recentMenu.DropDownItems.Clear();
@@ -183,16 +183,16 @@ public sealed partial class MainForm
                 var p = e.Path;
                 var it = recentMenu.DropDownItems.Add($"{Path.GetFileName(p)}   —   {Path.GetDirectoryName(p)}", null, (_, _) =>
                 {
-                    if (_dirty && Msg.Show("Chưa lưu thay đổi. Mở file khác sẽ mất các thay đổi chưa lưu. Tiếp tục?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
+                    if (_dirty && Msg.Show(L.T("Changes are not saved. Opening another file will lose the unsaved changes. Continue?"), L.T("Confirm"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
                     if (File.Exists(p)) LoadFileAsync(p);
-                    else Msg.Show($"Không tìm thấy file:\n{p}", "Mở gần đây", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    else Msg.Show(L.F("File not found:\n{0}", p), L.T("Open recent"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 });
-                it.ToolTipText = $"Mở lúc {e.LastOpened:dd/MM/yyyy HH:mm}";
+                it.ToolTipText = L.F("Opened {0:dd/MM/yyyy HH:mm}", e.LastOpened);
                 if (!File.Exists(p)) it.ForeColor = Color.Gray;
             }
-            if (recentMenu.DropDownItems.Count == 0) recentMenu.DropDownItems.Add("(chưa có file nào)").Enabled = false;
+            if (recentMenu.DropDownItems.Count == 0) recentMenu.DropDownItems.Add(L.T("(no files yet)")).Enabled = false;
             recentMenu.DropDownItems.Add(new ToolStripSeparator());
-            recentMenu.DropDownItems.Add("Mở thư mục lưu lịch sử…", null, (_, _) =>
+            recentMenu.DropDownItems.Add(L.T("Open history folder…"), null, (_, _) =>
             {
                 Directory.CreateDirectory(RecentStore.Folder);
                 System.Diagnostics.Process.Start("explorer.exe", RecentStore.Folder);

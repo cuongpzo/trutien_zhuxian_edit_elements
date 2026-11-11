@@ -71,17 +71,17 @@ public static class ElementsExchange
             if (int.TryParse(head, out int li)) sheetList = ef.Lists.FirstOrDefault(l => l.Index == li);
             sheetList ??= ef.Lists.FirstOrDefault(l => l.Name.Equals(s.Name, StringComparison.OrdinalIgnoreCase));
             if (listCol < 0 && sheetList == null) sheetList = fallback;
-            if (listCol < 0 && sheetList == null) { res.Notes.Add($"Bỏ qua sheet \"{s.Name}\": không biết thuộc list nào (thiếu cột {ListCol})."); continue; }
+            if (listCol < 0 && sheetList == null) { res.Notes.Add(L.F("Skipped sheet \"{0}\": unknown list (missing column {1}).", s.Name, ListCol)); continue; }
 
             var states = new Dictionary<ElementList, ListState>();
             for (int r = 0; r < s.Rows.Count; r++)
             {
                 var row = s.Rows[r];
-                string where = $"[{s.Name} dòng {r + 2}]";
+                string where = "[" + L.F("{0} row {1}", s.Name, r + 2) + "]";
                 res.RowsRead++;
                 var list = sheetList;
                 if (listCol >= 0 && int.TryParse(s.Cell(row, listCol), out int lix)) list = ef.Lists.FirstOrDefault(l => l.Index == lix);
-                if (list == null) { res.Errors.Add($"{where} {ListCol} không hợp lệ."); continue; }
+                if (list == null) { res.Errors.Add(where + " " + L.F("{0} is invalid.", ListCol)); continue; }
                 if (!states.TryGetValue(list, out var st)) states[list] = st = new ListState(list, s, res);
                 st.Apply(row, where, changed);
             }
@@ -110,9 +110,9 @@ public static class ElementsExchange
                 bool unique = true;
                 for (int i = 0; i < l.Items.Count; i++) if (!d.TryAdd(l.GetId(i), i)) { unique = false; break; }
                 if (unique) _byId = d;
-                else res.Notes.Add($"{SheetName(l)}: ID bị trùng trong list – ghép theo {IndexCol}.");
+                else res.Notes.Add(L.F("{0}: duplicate IDs in the list – matching by {1}.", SheetName(l), IndexCol));
             }
-            res.Notes.Add($"{SheetName(l)}: ghép bản ghi theo {(_byId != null ? "ID" : IndexCol)}, {_cols.Count} cột trùng tên field.");
+            res.Notes.Add(L.F("{0}: matching records by {1}, {2} columns match field names.", SheetName(l), _byId != null ? "ID" : IndexCol, _cols.Count));
         }
 
         public void Apply(object?[] row, string where, Action<ElementList, byte[]> changed)
@@ -134,9 +134,9 @@ public static class ElementsExchange
             {
                 idx = ix;
                 if (_idSc >= 0 && long.TryParse(Sheet.CellText(row[_idSc]), out long want) && _l.GetId(ix) != want)
-                { _res.Errors.Add($"{where} vị trí {ix} giờ có ID {_l.GetId(ix)} ≠ {want} – bỏ qua để tránh ghi nhầm."); return; }
+                { _res.Errors.Add(where + " " + L.F("position {0} now has ID {1} ≠ {2} – skipped to avoid overwriting the wrong record.", ix, _l.GetId(ix), want)); return; }
             }
-            if (idx < 0) { _res.Errors.Add($"{where} không xác định được bản ghi (thiếu ID / {IndexCol})."); return; }
+            if (idx < 0) { _res.Errors.Add(where + " " + L.F("cannot identify the record (missing ID / {0}).", IndexCol)); return; }
 
             var item = _l.Items[idx];
             int n = 0;

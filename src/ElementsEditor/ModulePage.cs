@@ -1,4 +1,5 @@
-﻿using ElementsCore.Exchange;
+﻿using ElementsCore;
+using ElementsCore.Exchange;
 using ElementsCore.Formats;
 
 namespace ElementsEditor;
@@ -43,15 +44,15 @@ public sealed class ModulePage : Panel
         _lblTitle = new Label { Text = m.Title, Font = new Font("Segoe UI", 13F, FontStyle.Bold), AutoSize = true, Location = new Point(14, 6), UseMnemonic = false };
         _lblPath = new Label { Text = m.Description, ForeColor = Color.DimGray, AutoSize = false, AutoEllipsis = true, Location = new Point(16, 32), Height = 18, Width = 600, UseMnemonic = false };
         var buttons = new FlowLayoutPanel { Dock = DockStyle.Right, FlowDirection = FlowDirection.LeftToRight, WrapContents = false, AutoSize = true, Padding = new Padding(0, 4, 0, 0) };
-        _btnOpen = Btn("Mở file…", 90);
-        _btnRecent = Btn("Gần đây ▾", 90);
-        _btnHistory = Btn("Lịch sử sửa", 98);
-        _btnExport = Btn("Xuất ▾", 74);
-        _btnImport = Btn("Nhập…", 70);
-        _btnHanViet = Btn("Hán Việt…", 84);
-        _btnSave = Btn("Lưu", 64);
-        _btnSaveAs = Btn("Lưu thành…", 92);
-        _btnClose = Btn("Đóng file", 80);
+        _btnOpen = Btn(L.T("Open file…"), 90);
+        _btnRecent = Btn(L.T("Recent ▾"), 90);
+        _btnHistory = Btn(L.T("Edit history"), 98);
+        _btnExport = Btn(L.T("Export ▾"), 74);
+        _btnImport = Btn(L.T("Import…"), 70);
+        _btnHanViet = Btn(L.T("Hán Việt…"), 84);
+        _btnSave = Btn(L.T("Save"), 64);
+        _btnSaveAs = Btn(L.T("Save as…"), 92);
+        _btnClose = Btn(L.T("Close file"), 80);
         buttons.Controls.AddRange([_btnOpen, _btnRecent, _btnHistory, _btnHanViet, _btnExport, _btnImport, _btnSave, _btnSaveAs, _btnClose]);
         header.Controls.Add(_lblPath);
         header.Controls.Add(_lblTitle);
@@ -94,7 +95,7 @@ public sealed class ModulePage : Panel
     public void OpenDialog()
     {
         if (!ConfirmDiscard()) return;
-        using var ofd = new OpenFileDialog { Filter = Module.DialogFilter, Title = $"{Module.Title} – chọn file" };
+        using var ofd = new OpenFileDialog { Filter = Module.DialogFilter, Title = L.F("{0} – choose a file", Module.Title) };
         var last = _recent.Recent(Module.Key).FirstOrDefault()?.Path;
         var root = _clientRoot();
         if (last != null && Directory.Exists(Path.GetDirectoryName(last))) ofd.InitialDirectory = Path.GetDirectoryName(last);
@@ -110,7 +111,7 @@ public sealed class ModulePage : Panel
         if (!quiet && !ConfirmDiscard()) return;
         if (!System.IO.File.Exists(path))
         {
-            if (!quiet && Msg.Show($"Không tìm thấy file:\n{path}\n\nXoá khỏi danh sách gần đây?", Module.Title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (!quiet && Msg.Show(L.F("File not found:\n{0}\n\nRemove it from the recent list?", path), Module.Title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 _recent.Forget(Module.Key, path);
                 _start.Refresh2();
@@ -118,7 +119,7 @@ public sealed class ModulePage : Panel
             return;
         }
         _loading = true;
-        SetStatus($"Đang đọc {path}…");
+        SetStatus(L.F("Reading {0}…", path));
         try
         {
             var bytes = await Task.Run(() => System.IO.File.ReadAllBytes(path));
@@ -129,14 +130,14 @@ public sealed class ModulePage : Panel
             _recent.Opened(Module.Key, path);
             var s = $"{Path.GetFileName(path)} · {f.FormatName}";
             if (f.Tables.Count > 0) s += " · " + string.Join(", ", f.Tables.Select(t => $"{t.Name}: {t.Rows.Count:N0}"));
-            if (f.Warnings.Count > 0) s += " · Cảnh báo: " + string.Join("; ", f.Warnings.Take(3)) + (f.Warnings.Count > 3 ? $" (+{f.Warnings.Count - 3})" : "");
+            if (f.Warnings.Count > 0) s += " · " + L.T("Warning: ") + string.Join("; ", f.Warnings.Take(3)) + (f.Warnings.Count > 3 ? $" (+{f.Warnings.Count - 3})" : "");
             SetStatus(s);
         }
         catch (Exception ex)
         {
-            SetStatus($"Đọc file thất bại: {ex.Message}");
+            SetStatus(L.F("Reading the file failed: {0}", ex.Message));
             RecentStore.Log("ERROR", Module.Key, $"{path} :: {ex.GetType().Name}: {ex.Message} @ {ex.StackTrace?.Split('\n').FirstOrDefault()?.Trim()}");
-            if (!quiet) Msg.Show($"Không đọc được file:\n{path}\n\n{ex.Message}", Module.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (!quiet) Msg.Show(L.F("Could not read the file:\n{0}\n\n{1}", path, ex.Message), Module.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally { _loading = false; }
     }
@@ -195,7 +196,7 @@ public sealed class ModulePage : Panel
             // safety: the bytes we are about to write must read back as the same format
             var bytes = File.ToBytes();
             if (File is not TextDataFile && DataModules.TryParse(Module, bytes, target, out var why)?.GetType() != File.GetType())
-                throw new InvalidDataException("Dữ liệu sau khi sửa không đọc lại được – chưa ghi gì. " + why);
+                throw new InvalidDataException(L.T("The edited data cannot be read back – nothing was written.") + " " + why);
             var bak = File.Save(target, backup: true);
             _origBytes = bytes;
             _baseline = null;
@@ -207,12 +208,12 @@ public sealed class ModulePage : Panel
             if (_changes.Visible) _changes.Reload();
             UpdateHeader();
             StateChanged?.Invoke();
-            SetStatus($"Đã lưu {target}" + (bak != null ? $" · backup: {Path.GetFileName(bak)}" : ""));
+            SetStatus(L.F("Saved {0}", target) + (bak != null ? $" · backup: {Path.GetFileName(bak)}" : ""));
             return true;
         }
         catch (Exception ex)
         {
-            Msg.Show($"Lưu thất bại:\n{ex.Message}", Module.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Msg.Show(L.F("Save failed:\n{0}", ex.Message), Module.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
             return false;
         }
     }
@@ -236,7 +237,7 @@ public sealed class ModulePage : Panel
     public bool ConfirmDiscard()
     {
         if (!Dirty) return true;
-        var r = Msg.Show($"{Module.Title}: {Path.GetFileName(File?.Path)} có thay đổi chưa lưu. Lưu trước?", "Chưa lưu", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+        var r = Msg.Show(L.F("{0}: {1} has unsaved changes. Save first?", Module.Title, Path.GetFileName(File?.Path)), L.T("Not saved"), MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
         if (r == DialogResult.Cancel) return false;
         if (r == DialogResult.Yes) return Save(false);
         Dirty = false;
@@ -257,7 +258,7 @@ public sealed class ModulePage : Panel
 
     public void ToggleChanges()
     {
-        if (File == null || File is RawDataFile) { SetStatus("Mở một file để xem các thay đổi."); return; }
+        if (File == null || File is RawDataFile) { SetStatus(L.T("Open a file to see the changes.")); return; }
         _changes.Visible = !_changes.Visible;
     }
 
@@ -294,20 +295,20 @@ public sealed class ModulePage : Panel
 
     private void ShowExportMenu()
     {
-        if (File == null || File.Tables.Count == 0) { SetStatus("Tab này không có bảng để xuất (file văn bản / chưa giải mã)."); return; }
+        if (File == null || File.Tables.Count == 0) { SetStatus(L.T("This tab has no table to export (text file / not decoded).")); return; }
         var cur = _iview?.CurrentTable ?? File.Tables[0];
         var menu = new ContextMenuStrip();
-        menu.Items.Add($"Bảng \"{cur.Name}\" → Excel (.xlsx)…", null, (_, _) => Export([cur], "xlsx"));
-        menu.Items.Add($"Bảng \"{cur.Name}\" → CSV…", null, (_, _) => Export([cur], "csv"));
-        menu.Items.Add($"Bảng \"{cur.Name}\" → JSON…", null, (_, _) => Export([cur], "json"));
+        menu.Items.Add(L.F("Table \"{0}\" → Excel (.xlsx)…", cur.Name), null, (_, _) => Export([cur], "xlsx"));
+        menu.Items.Add(L.F("Table \"{0}\" → CSV…", cur.Name), null, (_, _) => Export([cur], "csv"));
+        menu.Items.Add(L.F("Table \"{0}\" → JSON…", cur.Name), null, (_, _) => Export([cur], "json"));
         if (File.Tables.Count > 1)
         {
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add($"Tất cả {File.Tables.Count} bảng → Excel (.xlsx, mỗi bảng một sheet)…", null, (_, _) => Export(File.Tables, "xlsx"));
-            menu.Items.Add($"Tất cả {File.Tables.Count} bảng → JSON…", null, (_, _) => Export(File.Tables, "json"));
+            menu.Items.Add(L.F("All {0} tables → Excel (.xlsx, one sheet per table)…", File.Tables.Count), null, (_, _) => Export(File.Tables, "xlsx"));
+            menu.Items.Add(L.F("All {0} tables → JSON…", File.Tables.Count), null, (_, _) => Export(File.Tables, "json"));
         }
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Cột khoá: \"#\" (vị trí) + cột ID của bảng – giữ nguyên khi sửa để nhập lại đúng dòng").Enabled = false;
+        menu.Items.Add(L.T("Key columns: \"#\" (position) + the table's ID column – keep them unchanged so the import finds the right rows")).Enabled = false;
         Theme.Apply(menu);
         menu.Show(_btnExport, new Point(0, _btnExport.Height));
     }
@@ -322,17 +323,17 @@ public sealed class ModulePage : Panel
         {
             TableExchange.Export(File, tables, sfd.FileName, Module.Key);
             int rows = tables.Sum(t => t.Rows.Count);
-            SetStatus($"Đã xuất {rows:N0} dòng ({tables.Count} bảng) → {sfd.FileName}");
+            SetStatus(L.F("Exported {0:N0} rows ({1} tables) → {2}", rows, tables.Count, sfd.FileName));
             RecentStore.Log("EXPORT", Module.Key, sfd.FileName);
         }
-        catch (Exception ex) { Msg.Show($"Xuất thất bại:\n{ex.Message}", Module.Title, MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        catch (Exception ex) { Msg.Show(L.F("Export failed:\n{0}", ex.Message), Module.Title, MessageBoxButtons.OK, MessageBoxIcon.Error); }
     }
 
     private void Import()
     {
-        if (File == null || File.Tables.Count == 0) { SetStatus("Tab này không có bảng để nhập."); return; }
+        if (File == null || File.Tables.Count == 0) { SetStatus(L.T("This tab has no table to import into.")); return; }
         if (_iview?.Commit() == false) return;
-        using var ofd = new OpenFileDialog { Filter = DataSheets.OpenFilter, Title = $"{Module.Title} – nhập dữ liệu (CSV / XLSX / JSON)", InitialDirectory = Path.GetDirectoryName(File.Path) };
+        using var ofd = new OpenFileDialog { Filter = DataSheets.OpenFilter, Title = L.F("{0} – import data (CSV / XLSX / JSON)", Module.Title), InitialDirectory = Path.GetDirectoryName(File.Path) };
         if (ofd.ShowDialog(FindForm()) != DialogResult.OK) return;
         try
         {
@@ -340,22 +341,22 @@ public sealed class ModulePage : Panel
             RecentStore.Log("IMPORT", Module.Key, ofd.FileName);
             _iview?.RefreshAll();
             if (res.CellsChanged > 0 || res.RowsAdded > 0) OnViewChanged();
-            Msg.Show(res.Summary($"Nhập {Path.GetFileName(ofd.FileName)} vào {Path.GetFileName(File.Path)}"), "Nhập dữ liệu", MessageBoxButtons.OK,
+            Msg.Show(res.Summary(L.F("Import {0} into {1}", Path.GetFileName(ofd.FileName), Path.GetFileName(File.Path))), L.T("Import data"), MessageBoxButtons.OK,
                 res.Errors.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
             if (res.CellsChanged > 0 || res.RowsAdded > 0) _changes.Visible = true;
         }
-        catch (Exception ex) { Msg.Show($"Nhập thất bại:\n{ex.Message}", Module.Title, MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        catch (Exception ex) { Msg.Show(L.F("Import failed:\n{0}", ex.Message), Module.Title, MessageBoxButtons.OK, MessageBoxIcon.Error); }
     }
 
     // ───────────────────────── bulk Hán Việt ─────────────────────────
 
     private void ShowHanViet()
     {
-        if (File == null || File.Tables.Count == 0) { SetStatus("Tab này không có bảng để Việt hoá."); return; }
+        if (File == null || File.Tables.Count == 0) { SetStatus(L.T("This tab has no table to localize.")); return; }
         if (_iview?.Commit() == false) return;
         var cur = _iview?.CurrentTable ?? File.Tables[0];
-        var scopes = new List<TextScope> { new($"Bảng {cur.Name} ({cur.Rows.Count:N0})", () => HanVietTools.TableTargets(cur)) };
-        if (File.Tables.Count > 1) scopes.Add(new($"Tất cả {File.Tables.Count} bảng", () => File.Tables.SelectMany(t => HanVietTools.TableTargets(t))));
+        var scopes = new List<TextScope> { new(L.F("Table {0} ({1:N0})", cur.Name, cur.Rows.Count), () => HanVietTools.TableTargets(cur)) };
+        if (File.Tables.Count > 1) scopes.Add(new(L.F("All {0} tables", File.Tables.Count), () => File.Tables.SelectMany(t => HanVietTools.TableTargets(t))));
         using var dlg = new HanVietDialog(scopes, _settings, cur.NameColumn >= 0 ? cur.Columns[cur.NameColumn].Name : "name");
         dlg.ShowDialog(FindForm());
         if (dlg.Applied == 0) return;
@@ -373,14 +374,14 @@ public sealed class ModulePage : Panel
         foreach (var e in _recent.Recent(Module.Key))
         {
             var it = menu.Items.Add($"{Path.GetFileName(e.Path)}   —   {Path.GetDirectoryName(e.Path)}");
-            it.ToolTipText = $"Mở lúc {e.LastOpened:dd/MM/yyyy HH:mm}";
+            it.ToolTipText = L.F("Opened {0:dd/MM/yyyy HH:mm}", e.LastOpened);
             if (!System.IO.File.Exists(e.Path)) it.ForeColor = Color.Gray;
             var p = e.Path;
             it.Click += (_, _) => _ = OpenAsync(p);
         }
-        if (menu.Items.Count == 0) menu.Items.Add("(chưa có file nào)").Enabled = false;
+        if (menu.Items.Count == 0) menu.Items.Add(L.T("(no files yet)")).Enabled = false;
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Mở thư mục lưu lịch sử…", null, (_, _) =>
+        menu.Items.Add(L.T("Open the history folder…"), null, (_, _) =>
         {
             Directory.CreateDirectory(RecentStore.Folder);
             System.Diagnostics.Process.Start("explorer.exe", RecentStore.Folder);
@@ -420,7 +421,7 @@ public sealed class ModulePage : Panel
         _btnImport.Enabled = tables;
         _btnHistory.Enabled = editable;
         _btnHanViet.Enabled = tables;
-        _btnHistory.Text = ChangeCount > 0 ? $"Lịch sử ({ChangeCount})" : "Lịch sử sửa";
+        _btnHistory.Text = ChangeCount > 0 ? L.F("History ({0})", ChangeCount) : L.T("Edit history");
     }
 
     private void SetStatus(string s)

@@ -114,7 +114,7 @@ public static class FieldCodec
             case FieldKind.Bytes:
                 var hex = new string(text.Where(Uri.IsHexDigit).ToArray());
                 var bytes = Convert.FromHexString(hex);
-                if (bytes.Length != f.Length) throw new FormatException($"Cần đúng {f.Length} byte (hex)");
+                if (bytes.Length != f.Length) throw new FormatException(L.F("Exactly {0} bytes (hex) required", f.Length));
                 bytes.CopyTo(s);
                 break;
             case FieldKind.F32:
@@ -176,7 +176,7 @@ public static class FieldCodec
 }
 
 public sealed class TextTooLongException(FieldDef field, int length, int max)
-    : Exception($"'{field.Path}' dài {length} ký tự, tối đa {max}")
+    : Exception(L.F("'{0}' is {1} characters long, maximum {2}", field.Path, length, max))
 {
     public FieldDef Field { get; } = field;
     public int TextLength { get; } = length;

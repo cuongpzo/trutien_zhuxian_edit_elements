@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <!-- App version (tag + numeric) is kept in version.props, bumped by build-release.ps1 -->
   <Import Project="$(MSBuildThisFileDirectory)version.props" />
   <PropertyGroup>
@@ -9,5 +9,7 @@
   <!-- Ship the JSON schema folder next to every executable -->
   <ItemGroup Condition="'$(OutputType)' == 'Exe' Or '$(OutputType)' == 'WinExe'">
     <None Include="$(MSBuildThisFileDirectory)schemas\**\*.json" Link="schemas\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <!-- UI languages: src\ElementsEditor\lang\<code>.json → lang\ next to the exe (English is built in) -->
+    <None Include="$(MSBuildThisFileDirectory)src\ElementsEditor\lang\*.json" Link="lang\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -18,7 +18,7 @@ public sealed class ModuleInfo
     public ModuleView View { get; init; } = ModuleView.Table;
 
     public string DialogFilter =>
-        $"{Title} ({string.Join(";", Patterns)})|{string.Join(";", Patterns)}|Tất cả|*.*";
+        $"{Title} ({string.Join(";", Patterns)})|{string.Join(";", Patterns)}|{L.T("All files")}|*.*";
 }
 
 public static class DataModules
@@ -26,49 +26,49 @@ public static class DataModules
     public static readonly IReadOnlyList<ModuleInfo> All =
     [
         new() { Key = "elements", Title = "Elements", Glyph = "", View = ModuleView.Elements,
-                Description = "elements.data – toàn bộ vật phẩm, NPC, quái, kỹ năng… (318 list + hội thoại NPC).",
+                Description = L.T("elements.data – all items, NPCs, monsters, skills… (318 lists + NPC dialogs)."),
                 Patterns = ["elements.data"], ClientFolder = @"element\data" },
         new() { Key = "path", Title = "Path", Glyph = "",
-                Description = "path.data – bảng ID → đường dẫn model/icon mà elements.data tham chiếu.",
+                Description = L.T("path.data – the ID → model/icon path table that elements.data refers to."),
                 Patterns = ["path.data"], ClientFolder = @"element\data" },
         new() { Key = "objects", Title = "Objects", Glyph = "",
-                Description = "dynamicobjects.data – cửa, cổng dịch chuyển… server bật/tắt được.",
+                Description = L.T("dynamicobjects.data – doors, teleport gates… that the server can toggle."),
                 Patterns = ["dynamicobjects.data"], ClientFolder = @"element\data" },
         new() { Key = "domains", Title = "Domains", Glyph = "",
-                Description = "domain*.data – lãnh địa bang hội, chiến trường, bản đồ thế giới.",
+                Description = L.T("domain*.data – guild territories, battlefields, world map."),
                 Patterns = ["domain*.data"], ClientFolder = @"element\data" },
         new() { Key = "drops", Title = "Drops", Glyph = "", ServerSide = true,
-                Description = "extra_drops.sev – rơi đồ thêm của quái (file phía server).",
+                Description = L.T("extra_drops.sev – extra monster drops (server-side file)."),
                 Patterns = ["extra_drops.sev", "*drop*.sev", "*.sev"] },
         new() { Key = "quiz", Title = "Quiz", Glyph = "", ServerSide = true,
-                Description = "Ngân hàng câu hỏi đố vui (file phía server).",
+                Description = L.T("Quiz question bank (server-side file)."),
                 Patterns = ["*question*", "*quiz*"] },
         new() { Key = "lua", Title = "Lua", Glyph = "", View = ModuleView.Text,
-                Description = "Script .lua / file cấu hình dạng văn bản (giữ nguyên bảng mã).",
+                Description = L.T("Lua scripts / text config files (encoding preserved)."),
                 Patterns = ["*.lua", "*.txt", "*.ini"] },
         new() { Key = "areas", Title = "Areas", Glyph = "", View = ModuleView.Text,
-                Description = "precinct.clt / region.clt của từng bản đồ – khu vực, nhạc nền, điểm hồi sinh.",
+                Description = L.T("precinct.clt / region.clt of each map – areas, background music, respawn points."),
                 Patterns = ["precinct.clt", "region.clt", "*.clt", "*.sev"], ClientFolder = @"element\maps\*" },
         new() { Key = "tasks", Title = "Tasks", Glyph = "",
-                Description = "tasks.data – nhiệm vụ.",
+                Description = L.T("tasks.data – tasks."),
                 Patterns = ["tasks.data", "tasks.data*"], ClientFolder = @"element\data" },
         new() { Key = "dyntasks", Title = "Dyn Tasks", Glyph = "",
-                Description = "dyn_tasks.data – nhiệm vụ động / hoạt động.",
+                Description = L.T("dyn_tasks.data – dynamic tasks / events."),
                 Patterns = ["dyn_tasks.data"], ClientFolder = @"element\data" },
         new() { Key = "tasknpc", Title = "Task NPC", Glyph = "",
-                Description = "task_npc.data – NPC giao/nhận nhiệm vụ và vị trí.",
+                Description = L.T("task_npc.data – NPCs that give/accept tasks and their locations."),
                 Patterns = ["task_npc.data"], ClientFolder = @"element\data" },
         new() { Key = "npcgen", Title = "NPC Gen", Glyph = "", ServerSide = true,
-                Description = "npcgen.data – điểm sinh NPC/quái/mỏ (file phía server).",
+                Description = L.T("npcgen.data – NPC/monster/mine spawn points (server-side file)."),
                 Patterns = ["npcgen.data"] },
         new() { Key = "gshop", Title = "GShop", Glyph = "",
-                Description = "gshop*.data – cửa hàng (Shop, Lucky bag, liên server…).",
+                Description = L.T("gshop*.data – shops (Shop, Lucky bag, cross-server…)."),
                 Patterns = ["gshop*.data"], ClientFolder = @"element\data" },
         new() { Key = "vip", Title = "VIP", Glyph = "",
-                Description = "vipaward.data – quà VIP.",
+                Description = L.T("vipaward.data – VIP awards."),
                 Patterns = ["vipaward.data"], ClientFolder = @"element\data" },
         new() { Key = "ai", Title = "AI", Glyph = "", ServerSide = true,
-                Description = "aipolicy.data – kịch bản AI của quái (file phía server).",
+                Description = L.T("aipolicy.data – monster AI scripts (server-side file)."),
                 Patterns = ["aipolicy.data"] },
     ];
 
@@ -100,8 +100,8 @@ public static class DataModules
         DataFile? f = TryParse(m, data, path, out var why);
         if (f != null) return f;
         return RawDataFile.Parse(data, path, why ?? (m.ServerSide
-            ? "Định dạng file phía server này chưa được giải mã (chưa có file mẫu để kiểm chứng)."
-            : "Định dạng này chưa được giải mã."));
+            ? L.T("This server-side file format is not decoded yet (no sample file to verify against).")
+            : L.T("This format is not decoded yet.")));
     }
 
     /// <summary>
@@ -117,9 +117,9 @@ public static class DataModules
             try
             {
                 if (own.Sniff(data)) return own.Parse(data, path);
-                reason = $"Nội dung không giống file {m.Title} đã biết.";
+                reason = L.F("The content does not look like a known {0} file.", m.Title);
             }
-            catch (Exception ex) { reason = $"Đọc theo định dạng {m.Title} thất bại: {ex.Message}"; }
+            catch (Exception ex) { reason = L.F("Reading as the {0} format failed: {1}", m.Title, ex.Message); }
         }
         foreach (var x in Formats)
         {

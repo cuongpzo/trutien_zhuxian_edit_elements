@@ -345,7 +345,7 @@ public static class Theme
             var b = e.CellBounds;
             using (var br = new SolidBrush(Header)) e.Graphics.FillRectangle(br, b);
             using (var p = new Pen(Border)) e.Graphics.DrawLine(p, b.Left, b.Bottom - 1, b.Right, b.Bottom - 1);
-            var text = g.Columns[e.ColumnIndex].HeaderText.ToUpper(System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
+            var text = g.Columns[e.ColumnIndex].HeaderText.ToUpper(System.Globalization.CultureInfo.CurrentUICulture);
             var r = new Rectangle(b.Left + 8, b.Top, b.Width - 12, b.Height);
             TextRenderer.DrawText(e.Graphics, text, headFont, r, TextDim,
                 TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);

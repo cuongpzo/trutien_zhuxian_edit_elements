@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using ElementsCore;
 
 namespace ElementsEditor;
 
@@ -7,9 +8,9 @@ public static class GameColors
 {
     public static readonly (string Code, string Name)[] Palette =
     [
-        ("ffffff", "Trắng"), ("ffcb4a", "Vàng"), ("ff0000", "Đỏ"), ("00ff00", "Xanh lá"), ("00b4ff", "Xanh dương"),
-        ("c297ff", "Tím"), ("ff9c00", "Cam"), ("ff6ec7", "Hồng"), ("00ffff", "Xanh ngọc"), ("ffd700", "Vàng kim"),
-        ("7cfc00", "Xanh nõn chuối"), ("ff4500", "Đỏ cam"), ("a0a0a0", "Xám"), ("8b4513", "Nâu"),
+        ("ffffff", L.T("White")), ("ffcb4a", L.T("Yellow")), ("ff0000", L.T("Red")), ("00ff00", L.T("Green")), ("00b4ff", L.T("Blue")),
+        ("c297ff", L.T("Purple")), ("ff9c00", L.T("Orange")), ("ff6ec7", L.T("Pink")), ("00ffff", L.T("Cyan")), ("ffd700", L.T("Gold")),
+        ("7cfc00", L.T("Lime green")), ("ff4500", L.T("Red-orange")), ("a0a0a0", L.T("Gray")), ("8b4513", L.T("Brown")),
     ];
 
     private static readonly Regex Code = new(@"\^([0-9a-fA-F]{6})", RegexOptions.Compiled);
@@ -63,16 +64,16 @@ public sealed class ColorCodeBar : FlowLayoutPanel
         AutoSize = true;
         AutoSizeMode = AutoSizeMode.GrowAndShrink;
         Padding = new Padding(0, 2, 0, 2);
-        Controls.Add(new Label { Text = "Màu", AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(0, 6, 6, 0) });
+        Controls.Add(new Label { Text = L.T("Color"), AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(0, 6, 6, 0) });
         foreach (var (code, name) in GameColors.Palette)
         {
             var sw = new Swatch(ColorTranslator.FromHtml("#" + code));
-            _tip.SetToolTip(sw, $"{name}  ^{code}\nBấm để chèn; nếu đang bôi đen, đoạn đó được tô màu rồi trả về trắng.");
+            _tip.SetToolTip(sw, $"{name}  ^{code}\n" + L.T("Click to insert; if text is selected, it is coloured and then set back to white."));
             var c = code;
             sw.Click += (_, _) => Insert(c);
             Controls.Add(sw);
         }
-        var more = new Button { Text = "Màu khác…", AutoSize = true, Height = 24, Margin = new Padding(6, 1, 0, 0), FlatStyle = FlatStyle.Flat };
+        var more = new Button { Text = L.T("Other color…"), AutoSize = true, Height = 24, Margin = new Padding(6, 1, 0, 0), FlatStyle = FlatStyle.Flat };
         more.Click += (_, _) =>
         {
             using var dlg = new ColorDialog { FullOpen = true, Color = ColorTranslator.FromHtml("#" + _last) };
@@ -85,7 +86,7 @@ public sealed class ColorCodeBar : FlowLayoutPanel
         UpdateLast();
     }
 
-    private void UpdateLast() => _insertLast.Text = $"Chèn ^{_last}";
+    private void UpdateLast() => _insertLast.Text = L.F("Insert ^{0}", _last);
 
     public void Insert(string code)
     {
@@ -164,12 +165,12 @@ public sealed class ColorTextEditor : Panel
 
         _text = new TextBox { Dock = DockStyle.Top, Height = 74, Multiline = true, ScrollBars = ScrollBars.Vertical, AcceptsReturn = true, Font = new Font("Segoe UI", 10.5F) };
         var bar = new ColorCodeBar(_text) { Dock = DockStyle.Top };
-        var prevLabel = new Label { Text = "Xem trước (trong game)", Dock = DockStyle.Top, Height = 20, ForeColor = Color.DimGray, TextAlign = ContentAlignment.BottomLeft };
+        var prevLabel = new Label { Text = L.T("Preview (in game)"), Dock = DockStyle.Top, Height = 20, ForeColor = Color.DimGray, TextAlign = ContentAlignment.BottomLeft };
         _preview = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true, BorderStyle = BorderStyle.None, Font = new Font("Segoe UI", 10.5F), BackColor = Color.FromArgb(10, 12, 14), ScrollBars = RichTextBoxScrollBars.Vertical, TabStop = false };
         var bottom = new Panel { Dock = DockStyle.Bottom, Height = 38, Padding = new Padding(0, 6, 0, 0) };
-        _hint = new Label { Text = "Ctrl+Enter lưu · Esc huỷ", Dock = DockStyle.Fill, ForeColor = Color.DimGray, TextAlign = ContentAlignment.MiddleLeft };
-        _save = new Button { Text = "✓ Lưu chữ", Dock = DockStyle.Right, Width = 96 };
-        _cancel = new Button { Text = "Huỷ", Dock = DockStyle.Right, Width = 70 };
+        _hint = new Label { Text = L.T("Ctrl+Enter save · Esc cancel"), Dock = DockStyle.Fill, ForeColor = Color.DimGray, TextAlign = ContentAlignment.MiddleLeft };
+        _save = new Button { Text = L.T("✓ Save text"), Dock = DockStyle.Right, Width = 96 };
+        _cancel = new Button { Text = L.T("Cancel"), Dock = DockStyle.Right, Width = 70 };
         bottom.Controls.Add(_hint);
         bottom.Controls.Add(_cancel);
         bottom.Controls.Add(new Panel { Dock = DockStyle.Right, Width = 6 });
@@ -203,7 +204,7 @@ public sealed class ColorTextEditor : Panel
         _max = maxLength <= 0 ? int.MaxValue : maxLength;
         _crlf = text.Contains("\r\n");
         _original = text;
-        _title.Text = $"✎  Đang sửa {field}" + (note != null ? $"   ·   {note}" : "");
+        _title.Text = "✎  " + L.F("Editing {0}", field) + (note != null ? $"   ·   {note}" : "");
         _text.Text = text.Replace("\r\n", "\n").Replace("\n", "\r\n");
         _text.SelectionStart = _text.TextLength;
         Changed();
@@ -221,7 +222,7 @@ public sealed class ColorTextEditor : Panel
         _counter.Text = _max == int.MaxValue ? $"{len}" : $"{len} / {_max}";
         _counter.ForeColor = len > _max ? Theme.Red : Theme.Dark ? Theme.TextDim : Color.DimGray;
         _save.Enabled = len <= _max && t != _original;
-        _hint.Text = len > _max ? $"Quá dài {len - _max} – cần rút ngắn" : t != _original ? "Chưa lưu · Ctrl+Enter lưu · Esc huỷ" : "Ctrl+Enter lưu · Esc huỷ";
+        _hint.Text = len > _max ? L.F("Too long by {0} – shorten it", len - _max) : t != _original ? L.T("Unsaved · Ctrl+Enter save · Esc cancel") : L.T("Ctrl+Enter save · Esc cancel");
         _hint.ForeColor = len > _max ? Theme.Red : Color.DimGray;
         GameColors.Render(_preview, t, Theme.Dark ? Theme.Text : Color.White);
     }

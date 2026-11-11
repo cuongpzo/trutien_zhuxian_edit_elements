@@ -21,13 +21,13 @@ public sealed class BitmaskEnumDialog : ThemedForm
         _initialValue = currentValue;
         ResultValue = currentValue;
 
-        Text = $"Chọn giá trị: {fieldName} ({enumDef.Key})";
+        Text = L.F("Choose value: {0} ({1})", fieldName, enumDef.Key);
         Size = new Size(560, 500);
         StartPosition = FormStartPosition.CenterParent;
         MinimizeBox = false;
 
         var topPanel = new Panel { Dock = DockStyle.Top, Height = 44, Padding = new Padding(10, 8, 10, 6) };
-        var lblVal = new Label { Text = "Giá trị số:", AutoSize = true, Left = 10, Top = 13 };
+        var lblVal = new Label { Text = L.T("Numeric value:"), AutoSize = true, Left = 10, Top = 13 };
         _valueBox = new TextBox { Left = 85, Top = 10, Width = 180, Text = currentValue.ToString() };
         var lblHex = new Label { Left = 275, Top = 13, AutoSize = true, ForeColor = Color.DimGray, Text = $"0x{currentValue:X}" };
         topPanel.Controls.AddRange([lblVal, _valueBox, lblHex]);
@@ -39,16 +39,16 @@ public sealed class BitmaskEnumDialog : ThemedForm
             FlowDirection = FlowDirection.RightToLeft,
             Padding = new Padding(8),
         };
-        var btnOk = new Button { Text = "Áp dụng", DialogResult = DialogResult.OK, Width = 95, Height = 28 };
-        var btnCancel = new Button { Text = "Hủy", DialogResult = DialogResult.Cancel, Width = 80, Height = 28 };
+        var btnOk = new Button { Text = L.T("Apply"), DialogResult = DialogResult.OK, Width = 95, Height = 28 };
+        var btnCancel = new Button { Text = L.T("Cancel"), DialogResult = DialogResult.Cancel, Width = 80, Height = 28 };
         bottomPanel.Controls.AddRange([btnCancel, btnOk]);
         AcceptButton = btnOk;
         CancelButton = btnCancel;
 
         if (enumDef.IsMask)
         {
-            var btnAll = new Button { Text = "Chọn hết", Width = 85, Height = 28 };
-            var btnNone = new Button { Text = "Bỏ hết", Width = 80, Height = 28 };
+            var btnAll = new Button { Text = L.T("Select all"), Width = 85, Height = 28 };
+            var btnNone = new Button { Text = L.T("Clear all"), Width = 80, Height = 28 };
             btnAll.Click += (_, _) => SetAllMask(true);
             btnNone.Click += (_, _) => SetAllMask(false);
             bottomPanel.Controls.AddRange([btnNone, btnAll]);
@@ -103,9 +103,9 @@ public sealed class BitmaskEnumDialog : ThemedForm
                 GridLines = true,
                 MultiSelect = false,
             };
-            _enumList.Columns.Add("Giá trị", 85);
-            _enumList.Columns.Add("Nhãn", 220);
-            _enumList.Columns.Add("Mô tả", 220);
+            _enumList.Columns.Add(L.T("Value"), 85);
+            _enumList.Columns.Add(L.T("Label"), 220);
+            _enumList.Columns.Add(L.T("Description"), 220);
             foreach (var kv in enumDef.Values.OrderBy(x => x.Key))
             {
                 var lvi = new ListViewItem([kv.Key.ToString(), kv.Value.Label, kv.Value.Description ?? ""]) { Tag = kv.Key };
@@ -165,13 +165,13 @@ public sealed class GlobalSearchDialog : ThemedForm
         _ef = ef;
         _onJump = onJump;
 
-        Text = "Tìm kiếm toàn cục (ID hoặc Tên / Văn bản)";
+        Text = L.T("Global search (ID or name / text)");
         Size = new Size(820, 520);
         StartPosition = FormStartPosition.CenterParent;
 
         var top = new Panel { Dock = DockStyle.Top, Height = 44, Padding = new Padding(8) };
-        _queryBox = new TextBox { Left = 10, Top = 10, Width = 580, PlaceholderText = "Nhập ID (vd: 55) hoặc tên TQ/Việt (vd: 木剑, Chân Tiên)..." };
-        var btnFind = new Button { Text = "Tìm kiếm", Left = 600, Top = 8, Width = 95, Height = 27 };
+        _queryBox = new TextBox { Left = 10, Top = 10, Width = 580, PlaceholderText = L.T("Enter an ID (e.g. 55) or a Chinese / translated name (e.g. 木剑)...") };
+        var btnFind = new Button { Text = L.T("Search"), Left = 600, Top = 8, Width = 95, Height = 27 };
         _status = new Label { Left = 705, Top = 13, AutoSize = true, Text = "" };
         top.Controls.AddRange([_queryBox, btnFind, _status]);
 
@@ -182,10 +182,10 @@ public sealed class GlobalSearchDialog : ThemedForm
             FullRowSelect = true,
             GridLines = true,
         };
-        _results.Columns.Add("List", 200);
+        _results.Columns.Add(L.T("List"), 200);
         _results.Columns.Add("ID", 75);
-        _results.Columns.Add("Trường (Field)", 140);
-        _results.Columns.Add("Nội dung khớp", 360);
+        _results.Columns.Add(L.T("Field"), 140);
+        _results.Columns.Add(L.T("Matched text"), 360);
 
         btnFind.Click += (_, _) => RunSearch();
         _queryBox.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; RunSearch(); } };
@@ -199,7 +199,7 @@ public sealed class GlobalSearchDialog : ThemedForm
         {
             Dock = DockStyle.Bottom,
             Height = 24,
-            Text = "  Mẹo: Nhấp đúp vào kết quả để nhảy thẳng tới mục đó (tối đa 2.000 kết quả).",
+            Text = "  " + L.T("Tip: double-click a result to jump straight to it (max 2,000 results)."),
             TextAlign = ContentAlignment.MiddleLeft,
             ForeColor = Color.DimGray,
         };
@@ -224,7 +224,7 @@ public sealed class GlobalSearchDialog : ThemedForm
             _results.Items.Add(new ListViewItem([listLabel, h.Id.ToString(), h.FieldPath, snippet]));
         }
         _results.EndUpdate();
-        _status.Text = $"{_hits.Count} kết quả";
+        _status.Text = L.F("{0} results", _hits.Count);
     }
 }
 
@@ -250,19 +250,19 @@ public sealed class BatchReplaceDialog : ThemedForm
         _ef = ef;
         _currentListIndex = currentListIndex;
 
-        Text = "Tìm & Thay thế hàng loạt (Việt hóa nhanh)";
+        Text = L.T("Batch find & replace (quick localization)");
         Size = new Size(900, 580);
         StartPosition = FormStartPosition.CenterParent;
 
         var top = new Panel { Dock = DockStyle.Top, Height = 108, Padding = new Padding(10) };
-        top.Controls.Add(new Label { Text = "Tìm chuỗi:", Left = 10, Top = 14, Width = 90 });
+        top.Controls.Add(new Label { Text = L.T("Find:"), Left = 10, Top = 14, Width = 90 });
         _findBox = new TextBox { Left = 105, Top = 11, Width = 320 };
-        top.Controls.Add(new Label { Text = "Thay bằng:", Left = 445, Top = 14, Width = 80 });
+        top.Controls.Add(new Label { Text = L.T("Replace with:"), Left = 445, Top = 14, Width = 80 });
         _replaceBox = new TextBox { Left = 530, Top = 11, Width = 330 };
 
         _rbCurrent = new RadioButton
         {
-            Text = currentListIndex.HasValue ? $"Chỉ list hiện tại ({currentListLabel})" : "Chỉ list hiện tại",
+            Text = currentListIndex.HasValue ? L.F("Current list only ({0})", currentListLabel) : L.T("Current list only"),
             Left = 105,
             Top = 42,
             Width = 360,
@@ -271,15 +271,15 @@ public sealed class BatchReplaceDialog : ThemedForm
         };
         _rbAll = new RadioButton
         {
-            Text = "Toàn bộ file (tất cả 318 list + NPC Dialogs)",
+            Text = L.T("Whole file (all 318 lists + NPC dialogs)"),
             Left = 470,
             Top = 42,
             Width = 340,
             Checked = !currentListIndex.HasValue,
         };
-        _chkIgnoreCase = new CheckBox { Text = "Không phân biệt hoa/thường", Left = 105, Top = 70, Width = 220 };
-        var btnPreview = new Button { Text = "Xem trước (Preview)", Left = 350, Top = 67, Width = 160, Height = 28 };
-        _summary = new Label { Left = 530, Top = 72, AutoSize = true, Text = "Nhập chuỗi rồi bấm Xem trước." };
+        _chkIgnoreCase = new CheckBox { Text = L.T("Ignore case"), Left = 105, Top = 70, Width = 220 };
+        var btnPreview = new Button { Text = L.T("Preview"), Left = 350, Top = 67, Width = 160, Height = 28 };
+        _summary = new Label { Left = 530, Top = 72, AutoSize = true, Text = L.T("Enter the text, then click Preview.") };
 
         top.Controls.AddRange([_findBox, _replaceBox, _rbCurrent, _rbAll, _chkIgnoreCase, btnPreview, _summary]);
 
@@ -290,16 +290,16 @@ public sealed class BatchReplaceDialog : ThemedForm
             FullRowSelect = true,
             GridLines = true,
         };
-        _preview.Columns.Add("Vị trí", 170);
+        _preview.Columns.Add(L.T("Location"), 170);
         _preview.Columns.Add("ID", 70);
-        _preview.Columns.Add("Field", 120);
-        _preview.Columns.Add("Trước", 220);
-        _preview.Columns.Add("Sau", 220);
-        _preview.Columns.Add("Giới hạn", 80);
+        _preview.Columns.Add(L.T("Field"), 120);
+        _preview.Columns.Add(L.T("Before"), 220);
+        _preview.Columns.Add(L.T("After"), 220);
+        _preview.Columns.Add(L.T("Limit"), 80);
 
         var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(8) };
-        var btnClose = new Button { Text = "Đóng", DialogResult = DialogResult.Cancel, Width = 85, Height = 28 };
-        _btnApply = new Button { Text = "Áp dụng thay thế", Width = 140, Height = 28, Enabled = false };
+        var btnClose = new Button { Text = L.T("Close"), DialogResult = DialogResult.Cancel, Width = 85, Height = 28 };
+        _btnApply = new Button { Text = L.T("Apply replacements"), Width = 140, Height = 28, Enabled = false };
         bottom.Controls.AddRange([btnClose, _btnApply]);
 
         btnPreview.Click += (_, _) => RunPreview();
@@ -307,8 +307,8 @@ public sealed class BatchReplaceDialog : ThemedForm
         {
             var (applied, skipped) = ElementsOps.ApplyReplace(_items);
             AppliedCount += applied;
-            Msg.Show($"Đã áp dụng {applied:N0} thay đổi.\nBỏ qua do quá độ dài: {skipped:N0}.",
-                "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Msg.Show(L.F("Applied {0:N0} changes.\nSkipped because too long: {1:N0}.", applied, skipped),
+                L.T("Done"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             DialogResult = DialogResult.OK;
             Close();
         };
@@ -334,7 +334,7 @@ public sealed class BatchReplaceDialog : ThemedForm
             if (p.TooLong) tooLong++;
             if (shown++ >= 2000) continue;
             string limit = p.TooLong
-                ? $"QUÁ ({p.After.Length}/{p.Entry.MaxLength})"
+                ? L.F("OVER ({0}/{1})", p.After.Length, p.Entry.MaxLength)
                 : p.Entry.MaxLength < 0 ? "OK" : $"{p.After.Length}/{p.Entry.MaxLength}";
             var lvi = new ListViewItem([p.Entry.Group, p.Entry.Id.ToString(), p.Entry.Field, p.Entry.Value, p.After, limit]);
             if (p.TooLong) lvi.ForeColor = Color.Firebrick;
@@ -342,7 +342,7 @@ public sealed class BatchReplaceDialog : ThemedForm
         }
         _preview.EndUpdate();
         int valid = _items.Count - tooLong;
-        _summary.Text = $"Tìm thấy {_items.Count:N0} mục ({valid:N0} hợp lệ, {tooLong:N0} quá dài)" + (_items.Count > 2000 ? " [hiển thị 2000 dòng đầu]" : "");
+        _summary.Text = L.F("Found {0:N0} items ({1:N0} valid, {2:N0} too long)", _items.Count, valid, tooLong) + (_items.Count > 2000 ? " " + L.T("[showing the first 2000 rows]") : "");
         _btnApply.Enabled = valid > 0;
     }
 }
@@ -352,7 +352,7 @@ public sealed class ImportReportDialog : ThemedForm
 {
     public ImportReportDialog(ImportReport report)
     {
-        Text = "Kết quả nhập bản dịch CSV";
+        Text = L.T("CSV translation import result");
         Size = new Size(720, 460);
         StartPosition = FormStartPosition.CenterParent;
 
@@ -373,10 +373,10 @@ public sealed class ImportReportDialog : ThemedForm
             WordWrap = false,
             Font = new Font("Consolas", 9.5f),
             Text = report.Log.Count == 0
-                ? "Không có cảnh báo hay lỗi nào. Tất cả bản dịch hợp lệ."
+                ? L.T("No warnings or errors. All translations are valid.")
                 : string.Join(Environment.NewLine, report.Log),
         };
-        var btnOk = new Button { Text = "Đóng", Dock = DockStyle.Bottom, Height = 36, DialogResult = DialogResult.OK };
+        var btnOk = new Button { Text = L.T("Close"), Dock = DockStyle.Bottom, Height = 36, DialogResult = DialogResult.OK };
         Controls.Add(txt);
         Controls.Add(lbl);
         Controls.Add(btnOk);
@@ -389,15 +389,15 @@ public sealed class DiffReportDialog : ThemedForm
 {
     public DiffReportDialog(List<DiffEntry> diffs, string baseFile, Action<DiffEntry> onJump)
     {
-        Text = $"So sánh thay đổi với: {Path.GetFileName(baseFile)} ({diffs.Count} mục khác biệt)";
+        Text = L.F("Changes compared with: {0} ({1} differences)", Path.GetFileName(baseFile), diffs.Count);
         Size = new Size(800, 500);
         StartPosition = FormStartPosition.CenterParent;
 
         var lv = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, GridLines = true };
-        lv.Columns.Add("Loại", 55);
-        lv.Columns.Add("List", 240);
+        lv.Columns.Add(L.T("Kind"), 55);
+        lv.Columns.Add(L.T("List"), 240);
         lv.Columns.Add("ID", 85);
-        lv.Columns.Add("Tên mục", 380);
+        lv.Columns.Add(L.T("Item name"), 380);
 
         lv.BeginUpdate();
         foreach (var d in diffs)
@@ -409,7 +409,7 @@ public sealed class DiffReportDialog : ThemedForm
         lv.EndUpdate();
         lv.DoubleClick += (_, _) => { if (lv.SelectedIndices.Count > 0) onJump(diffs[lv.SelectedIndices[0]]); };
 
-        var lbl = new Label { Dock = DockStyle.Bottom, Height = 26, Text = "  (+) Thêm mới   (-) Đã xóa   (~) Đã chỉnh sửa. Nhấp đúp vào dòng (+) hoặc (~) để nhảy tới.", ForeColor = Color.DimGray, TextAlign = ContentAlignment.MiddleLeft };
+        var lbl = new Label { Dock = DockStyle.Bottom, Height = 26, Text = "  " + L.T("(+) Added   (-) Deleted   (~) Modified. Double-click a (+) or (~) row to jump to it."), ForeColor = Color.DimGray, TextAlign = ContentAlignment.MiddleLeft };
         Controls.Add(lv);
         Controls.Add(lbl);
     }

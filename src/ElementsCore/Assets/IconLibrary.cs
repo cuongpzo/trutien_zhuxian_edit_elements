@@ -48,7 +48,7 @@ public sealed class IconLibrary : IDisposable
             lib.Paths = PathTableFile.Parse(File.ReadAllBytes(pathData), pathData);
             foreach (var r in lib.Paths.Entries.Rows) lib._pathById[r.Long(0)] = r.Text(1);
         }
-        else lib.Messages.Add("Không thấy element\\data\\path.data.");
+        else lib.Messages.Add(L.T("element\\data\\path.data not found."));
 
         var surf = Path.Combine(element, "surfaces.pck");
         if (File.Exists(surf))
@@ -58,9 +58,9 @@ public sealed class IconLibrary : IDisposable
                 lib.Surfaces = new PckArchive(surf);
                 lib.LoadAtlasLists();
             }
-            catch (Exception ex) { lib.Messages.Add("Không đọc được surfaces.pck: " + ex.Message); }
+            catch (Exception ex) { lib.Messages.Add(L.T("Cannot read surfaces.pck:") + " " + ex.Message); }
         }
-        else lib.Messages.Add("Không thấy element\\surfaces.pck.");
+        else lib.Messages.Add(L.T("element\\surfaces.pck not found."));
         return lib;
     }
 

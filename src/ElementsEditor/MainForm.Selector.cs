@@ -1,4 +1,5 @@
-﻿using ElementsCore.Schema;
+﻿using ElementsCore;
+using ElementsCore.Schema;
 
 namespace ElementsEditor;
 
@@ -111,7 +112,7 @@ public sealed partial class MainForm
         if (e.IsTalk)
         {
             _listSelector.SetEntry("TALK", e.DisplayTitle, e.Count, Theme.Purple);
-            _selectorInfo.Text = $"Hội thoại NPC · {e.Count:N0} dialog";
+            _selectorInfo.Text = L.F("NPC dialogs · {0:N0} dialogs", e.Count);
             return;
         }
         var l = e.List!;
@@ -121,17 +122,17 @@ public sealed partial class MainForm
         string schema = l.Schema.Match switch
         {
             SchemaMatch.Exact => $"Exact · {l.Schema.SourceVersion}",
-            SchemaMatch.Borrowed => $"Mượn {l.Schema.SourceVersion}",
-            _ => "Tự dò",
+            SchemaMatch.Borrowed => L.F("Borrowed {0}", l.Schema.SourceVersion),
+            _ => L.T("Auto-detected"),
         };
-        _selectorInfo.Text = $"{l.Schema.DisplayName ?? l.Name}   ·   {l.Items.Count:N0} records × {l.ItemSize} B   ·   {schema}   ·   Ctrl+L đổi list";
+        _selectorInfo.Text = $"{l.Schema.DisplayName ?? l.Name}   ·   " + L.F("{0:N0} records × {1} B", l.Items.Count, l.ItemSize) + $"   ·   {schema}   ·   " + L.T("Ctrl+L change list");
     }
 }
 
 /// <summary>Rounded selector button: ● index NAME ……… count ⌄ (JD IDE look).</summary>
 public sealed class ListSelectorButton : Control
 {
-    private string _index = "", _name = "Chọn list…  (Ctrl+L)";
+    private string _index = "", _name = L.T("Select list…  (Ctrl+L)");
     private int _count = -1;
     private Color _dot = Color.Gray;
     private bool _hover, _open;

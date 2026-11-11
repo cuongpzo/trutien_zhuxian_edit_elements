@@ -1,4 +1,4 @@
-namespace ElementsEditor;
+﻿namespace ElementsEditor;
 
 internal static class Program
 {
@@ -6,7 +6,10 @@ internal static class Program
     static void Main(string[] args)
     {
         ApplicationConfiguration.Initialize();
-        Theme.Dark = AppSettings.Load().DarkTheme;
+        var settings = AppSettings.Load();
+        Theme.Dark = settings.DarkTheme;
+        // UI language (lang\*.json next to the exe; English when unset) – before any window is built
+        ElementsCore.L.Load(settings.Language);
         Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
         Application.ThreadException += (_, e) =>
         {
@@ -26,8 +29,8 @@ internal static class Program
 
     private static void ShowError(Exception ex)
     {
-        try { Msg.Show(ex.ToString(), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error); }
-        catch { MessageBox.Show(ex.ToString(), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        try { Msg.Show(ex.ToString(), ElementsCore.L.T("Error"), MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        catch { MessageBox.Show(ex.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); }
     }
 
     private static void TryLogError(Exception ex)

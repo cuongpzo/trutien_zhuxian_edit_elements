@@ -54,7 +54,7 @@ public static class TalkProc
     internal static byte[] EncodeFixed(string value, int chars, byte[] previous)
     {
         if (FieldCodec.DecodeWString(previous, 0, chars) == value) return previous;
-        if (value.Length > chars - 1) throw new ArgumentException($"Tối đa {chars - 1} ký tự (đang {value.Length})");
+        if (value.Length > chars - 1) throw new ArgumentException(L.F("At most {0} characters (currently {1})", chars - 1, value.Length));
         var b = new byte[chars * 2];
         Encoding.Unicode.GetBytes(value).CopyTo(b, 0);
         return b;

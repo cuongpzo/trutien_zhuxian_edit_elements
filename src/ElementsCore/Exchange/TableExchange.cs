@@ -19,17 +19,17 @@ public sealed class ImportResult
     {
         var sb = new StringBuilder();
         sb.AppendLine($"{title}");
-        sb.AppendLine($"Đọc {RowsRead:N0} dòng · cập nhật {RowsUpdated:N0} dòng ({CellsChanged:N0} ô) · thêm mới {RowsAdded:N0} dòng · lỗi {Errors.Count:N0}.");
+        sb.AppendLine(L.F("Read {0:N0} rows · updated {1:N0} rows ({2:N0} cells) · added {3:N0} rows · errors {4:N0}.", RowsRead, RowsUpdated, CellsChanged, RowsAdded, Errors.Count));
         foreach (var n in Notes) sb.AppendLine("• " + n);
         if (Errors.Count > 0)
         {
             sb.AppendLine();
-            sb.AppendLine("Các ô / dòng bị bỏ qua:");
+            sb.AppendLine(L.T("Skipped cells / rows:"));
             foreach (var e in Errors.Take(300)) sb.AppendLine("  " + e);
-            if (Errors.Count > 300) sb.AppendLine($"  … và {Errors.Count - 300:N0} lỗi khác");
+            if (Errors.Count > 300) sb.AppendLine("  " + L.F("… and {0:N0} more errors", Errors.Count - 300));
         }
         sb.AppendLine();
-        sb.AppendLine("Các thay đổi chưa được ghi vào file – xem ở “Lịch sử sửa”, rồi Lưu (Ctrl+S).");
+        sb.AppendLine(L.T("The changes are not written to the file yet – review them in “Edit history”, then Save (Ctrl+S)."));
         return sb.ToString();
     }
 }
@@ -118,7 +118,7 @@ public static class TableExchange
             int ti = f.Tables.FindIndex(t => t.Name.Equals(s.Name, StringComparison.OrdinalIgnoreCase));
             if (ti < 0) ti = safe.FindIndex(n => n.Equals(s.Name, StringComparison.OrdinalIgnoreCase));
             var table = ti >= 0 ? f.Tables[ti] : sheets.Count == 1 ? fallback : null;
-            if (table == null) { res.Notes.Add($"Bỏ qua sheet \"{s.Name}\": không có bảng trùng tên."); continue; }
+            if (table == null) { res.Notes.Add(L.F("Skipped sheet \"{0}\": no table with that name.", s.Name)); continue; }
             ImportSheet(table, s, res);
         }
         return res;
@@ -128,7 +128,7 @@ public static class TableExchange
     {
         int rowCol = s.Col(RowCol);
         var colMap = t.Columns.Select((c, i) => (c, i, sc: s.Col(c.Name))).Where(x => x.sc >= 0).ToList();
-        if (colMap.Count == 0) { res.Notes.Add($"Sheet \"{s.Name}\": không có cột nào trùng tên cột của bảng {t.Name}."); return; }
+        if (colMap.Count == 0) { res.Notes.Add(L.F("Sheet \"{0}\": no column matches a column name of table {1}.", s.Name, t.Name)); return; }
 
         // key: the table's key column when present in the sheet and unique in the table
         int key = t.KeyColumn;
@@ -138,15 +138,15 @@ public static class TableExchange
         {
             var groups = t.Rows.GroupBy(r => RecordIO.Format(t.Columns[key], r.Values[key])).ToList();
             if (groups.All(g => g.Count() == 1)) byKey = groups.ToDictionary(g => g.Key, g => g.First());
-            else res.Notes.Add($"{t.Name}: cột khoá \"{t.Columns[key].Name}\" có giá trị trùng – ghép dòng theo cột \"#\".");
+            else res.Notes.Add(L.F("{0}: key column \"{1}\" has duplicate values – matching rows by column \"#\".", t.Name, t.Columns[key].Name));
         }
-        if (byKey == null && rowCol < 0) { res.Notes.Add($"{t.Name}: thiếu cột \"#\" và cột khoá – không ghép được dòng nào."); return; }
-        res.Notes.Add($"{t.Name}: ghép dòng theo {(byKey != null ? $"cột khoá \"{t.Columns[key].Name}\"" : "cột \"#\"")}.");
+        if (byKey == null && rowCol < 0) { res.Notes.Add(L.F("{0}: missing column \"#\" and the key column – no row can be matched.", t.Name)); return; }
+        res.Notes.Add(L.F("{0}: matching rows by {1}.", t.Name, byKey != null ? L.F("key column \"{0}\"", t.Columns[key].Name) : L.T("column \"#\"")));
 
         for (int r = 0; r < s.Rows.Count; r++)
         {
             var row = s.Rows[r];
-            string where = $"[{s.Name} dòng {r + 2}]";
+            string where = "[" + L.F("{0} row {1}", s.Name, r + 2) + "]";
             res.RowsRead++;
             Record? target = null;
             if (byKey != null)
@@ -156,7 +156,7 @@ public static class TableExchange
                 byKey.TryGetValue(k, out target);
                 if (target == null)
                 {
-                    if (!t.CanAddRemove || k.Length == 0) { res.Errors.Add($"{where} không có {t.Columns[key].Name} = {k} trong bảng."); continue; }
+                    if (!t.CanAddRemove || k.Length == 0) { res.Errors.Add(where + " " + L.F("no {0} = {1} in the table.", t.Columns[key].Name, k)); continue; }
                     target = t.NewRecord();
                     t.Rows.Add(target);
                     byKey[k] = target;
@@ -165,12 +165,12 @@ public static class TableExchange
             }
             else
             {
-                if (!int.TryParse(s.Cell(row, rowCol), out int ri) || ri < 0 || ri >= t.Rows.Count) { res.Errors.Add($"{where} cột \"#\" không hợp lệ."); continue; }
+                if (!int.TryParse(s.Cell(row, rowCol), out int ri) || ri < 0 || ri >= t.Rows.Count) { res.Errors.Add(where + " " + L.T("invalid column \"#\".")); continue; }
                 target = t.Rows[ri];
                 // safety: when a key column is in the sheet, it must still match this row
                 if (keySc >= 0 && s.Cell(row, keySc) is { } kk && RecordIO.TryParse(t.Columns[key], kk, out var kv2, out _)
                     && RecordIO.Format(t.Columns[key], kv2) != RecordIO.Format(t.Columns[key], target.Values[key]))
-                { res.Errors.Add($"{where} dòng #{ri} giờ có {t.Columns[key].Name} khác ({RecordIO.Format(t.Columns[key], target.Values[key])}) – bỏ qua để tránh ghi nhầm."); continue; }
+                { res.Errors.Add(where + " " + L.F("row #{0} now has a different {1} ({2}) – skipped to avoid overwriting the wrong row.", ri, t.Columns[key].Name, RecordIO.Format(t.Columns[key], target.Values[key]))); continue; }
             }
 
             int changed = 0;
@@ -206,12 +206,12 @@ public static class TableExchange
         try
         {
             using var doc = JsonDocument.Parse(json.Length == 0 ? "[]" : json);
-            if (doc.RootElement.ValueKind != JsonValueKind.Array) { error = "cần mảng JSON [ {...}, … ]"; return false; }
+            if (doc.RootElement.ValueKind != JsonValueKind.Array) { error = L.T("expected a JSON array [ {...}, … ]"); return false; }
             var result = new List<Record>();
             foreach (var o in doc.RootElement.EnumerateArray())
             {
                 var rec = Record.CreateDefault(sub);
-                if (o.ValueKind != JsonValueKind.Object) { error = "mỗi phần tử phải là object"; return false; }
+                if (o.ValueKind != JsonValueKind.Object) { error = L.T("every element must be an object"); return false; }
                 foreach (var p in o.EnumerateObject())
                 {
                     int i = -1;
@@ -238,6 +238,6 @@ public static class TableExchange
             list = result;
             return true;
         }
-        catch (JsonException ex) { error = "JSON lỗi: " + ex.Message; return false; }
+        catch (JsonException ex) { error = L.T("JSON error:") + " " + ex.Message; return false; }
     }
 }

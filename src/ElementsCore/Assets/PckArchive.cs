@@ -44,7 +44,7 @@ public sealed class PckArchive : IDisposable
         int count = BinaryPrimitives.ReadInt32LittleEndian(tail);
         Version = BinaryPrimitives.ReadUInt32LittleEndian(tail[4..]);
         bool v64 = Version == 0x00020003;
-        if (Version is not (0x00020002 or 0x00020003)) throw new InvalidDataException($"Gói pck phiên bản lạ 0x{Version:X8}.");
+        if (Version is not (0x00020002 or 0x00020003)) throw new InvalidDataException(L.F("Unknown pck package version 0x{0:X8}.", Version));
 
         // table offset sits right after the 0xFDFDFEEE tag + version
         long tableOffset;
@@ -60,7 +60,7 @@ public sealed class PckArchive : IDisposable
             ReadAt(_pckLength - 272, b);
             tableOffset = BinaryPrimitives.ReadUInt32LittleEndian(b) ^ Key1;
         }
-        if (tableOffset <= 0 || tableOffset >= _pckLength) throw new InvalidDataException("Không tìm thấy bảng file của gói pck (khoá khác bản PW?).");
+        if (tableOffset <= 0 || tableOffset >= _pckLength) throw new InvalidDataException(L.T("File table of the pck package not found (different key from the PW version?)."));
 
         var table = new byte[_pckLength - tableOffset];
         ReadAt(tableOffset, table);
@@ -108,7 +108,7 @@ public sealed class PckArchive : IDisposable
             {
                 long pos = offset + done;
                 // offsets past the .pck size continue in the .pkx
-                var fs = pos < _pckLength ? _pck : _pkx ?? throw new InvalidDataException("Thiếu file .pkx đi kèm gói pck.");
+                var fs = pos < _pckLength ? _pck : _pkx ?? throw new InvalidDataException(L.T("The .pkx file that goes with the pck package is missing."));
                 long local = pos < _pckLength ? pos : pos - _pckLength;
                 int want = (int)Math.Min(dest.Length - done, pos < _pckLength ? _pckLength - pos : long.MaxValue);
                 fs.Position = local;

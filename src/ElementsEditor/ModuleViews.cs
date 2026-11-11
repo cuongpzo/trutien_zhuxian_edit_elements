@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ElementsCore;
 using ElementsCore.Formats;
 
 namespace ElementsEditor;
@@ -64,12 +65,12 @@ public sealed class TableFileView : Panel, IModuleView
         var top = new Panel { Dock = DockStyle.Top, Height = 46, Padding = new Padding(10, 8, 10, 6) };
         _tablePick = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 200, Dock = DockStyle.Left, Visible = file.Tables.Count > 1 };
         foreach (var t in file.Tables) _tablePick.Items.Add($"{t.Name}  ({t.Rows.Count:N0})");
-        _search = new TextBox { Dock = DockStyle.Left, Width = 300, PlaceholderText = "Tìm (ID, tên, giá trị bất kỳ)…   Ctrl+F" };
+        _search = new TextBox { Dock = DockStyle.Left, Width = 300, PlaceholderText = L.T("Search (ID, name, any value)…   Ctrl+F") };
         _count = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.DimGray, Padding = new Padding(12, 0, 0, 0), UseMnemonic = false };
         var btns = new FlowLayoutPanel { Dock = DockStyle.Right, AutoSize = true, WrapContents = false };
-        _btnAdd = new Button { Text = "+ Thêm dòng", Width = 104, Height = 30 };
-        _btnClone = new Button { Text = "Nhân bản", Width = 86, Height = 30 };
-        _btnDel = new Button { Text = "Xoá", Width = 64, Height = 30 };
+        _btnAdd = new Button { Text = L.T("+ Add row"), Width = 104, Height = 30 };
+        _btnClone = new Button { Text = L.T("Duplicate"), Width = 86, Height = 30 };
+        _btnDel = new Button { Text = L.T("Delete"), Width = 64, Height = 30 };
         btns.Controls.AddRange([_btnAdd, _btnClone, _btnDel]);
         top.Controls.Add(_count);
         top.Controls.Add(new Panel { Dock = DockStyle.Left, Width = 8 });
@@ -93,9 +94,9 @@ public sealed class TableFileView : Panel, IModuleView
         var splitter = new Splitter { Dock = DockStyle.Right, Width = 5 };
         _detailTabs = new ThemedTabControl { Dock = DockStyle.Fill };
         _fields = MakeGrid();
-        _fields.Columns.Add(new DataGridViewTextBoxColumn { Name = "Field", HeaderText = "Field", ReadOnly = true, Width = 130 });
-        _fields.Columns.Add(new DataGridViewTextBoxColumn { Name = "Value", HeaderText = "Giá trị", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-        _fields.Columns.Add(new DataGridViewTextBoxColumn { Name = "Type", HeaderText = "Kiểu", ReadOnly = true, Width = 74 });
+        _fields.Columns.Add(new DataGridViewTextBoxColumn { Name = "Field", HeaderText = L.T("Field"), ReadOnly = true, Width = 130 });
+        _fields.Columns.Add(new DataGridViewTextBoxColumn { Name = "Value", HeaderText = L.T("Value"), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+        _fields.Columns.Add(new DataGridViewTextBoxColumn { Name = "Type", HeaderText = L.T("Type"), ReadOnly = true, Width = 74 });
         _fields.CellValidating += OnFieldValidating;
         _fields.CellEndEdit += (_, e) => { if (e.RowIndex >= 0) _fields.Rows[e.RowIndex].ErrorText = ""; };
         _fields.SelectionChanged += (_, _) => OnFieldSelected();
@@ -184,7 +185,7 @@ public sealed class TableFileView : Panel, IModuleView
         _iconCol = IconSourceColumn(t);
         if (_iconCol != int.MinValue)
         {
-            var ic = new DataGridViewImageColumn { HeaderText = "Ảnh", Width = 46, ImageLayout = DataGridViewImageCellLayout.Normal, SortMode = DataGridViewColumnSortMode.NotSortable, ReadOnly = true };
+            var ic = new DataGridViewImageColumn { HeaderText = L.T("Icon"), Width = 46, ImageLayout = DataGridViewImageCellLayout.Normal, SortMode = DataGridViewColumnSortMode.NotSortable, ReadOnly = true };
             ic.DefaultCellStyle.NullValue = null;
             ic.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             _grid.Columns.Add(ic);
@@ -204,7 +205,7 @@ public sealed class TableFileView : Panel, IModuleView
                 _ => Math.Max(64, Math.Min(120, c.Name.Length * 9 + 16)),
             };
             AddCol(c.Name, i, w, c.ReadOnly || c.Type == ColType.Table || c.Type == ColType.Bytes && c.Length == 0, c.Note);
-            if (i == _refCol) AddCol("→ tên (elements)", -2, 180, true, "Tên tra từ elements.data đang mở");
+            if (i == _refCol) AddCol(L.T("→ name (elements)"), -2, 180, true, L.T("Name looked up in the open elements.data"));
         }
         bool canEdit = t.CanAddRemove;
         _btnAdd.Enabled = _btnClone.Enabled = _btnDel.Enabled = canEdit;
@@ -259,7 +260,7 @@ public sealed class TableFileView : Panel, IModuleView
         }
         _grid.RowCount = 0;
         _grid.RowCount = _view.Count;
-        _count.Text = q.Length == 0 ? $"{rows.Count:N0} dòng" : $"{_view.Count:N0} / {rows.Count:N0} dòng";
+        _count.Text = q.Length == 0 ? L.F("{0:N0} rows", rows.Count) : L.F("{0:N0} / {1:N0} rows", _view.Count, rows.Count);
         if (_table.Note != null) _count.Text += "   ·   " + _table.Note;
         if (_view.Count > 0 && _grid.CurrentCell == null && _grid.Columns.Count > 1)
         {
@@ -307,7 +308,7 @@ public sealed class TableFileView : Panel, IModuleView
         ShowDetails();
     }
 
-    /// <summary>"3 (Vật phẩm mới)" → "3" when the user leaves the enum meaning in place.</summary>
+    /// <summary>"3 (New item)" → "3" when the user leaves the enum meaning in place.</summary>
     private static string StripMeaning(ColumnDef c, string s)
     {
         if (c.Enum == null || !c.IsInteger) return s;
@@ -345,7 +346,7 @@ public sealed class TableFileView : Panel, IModuleView
         _search.Text = "";
         ApplyFilter();
         SelectModelRow(at);
-        Status?.Invoke(clone ? "Đã nhân bản dòng (ID mới = lớn nhất + 1)." : "Đã thêm dòng mới.");
+        Status?.Invoke(clone ? L.T("Row duplicated (new ID = highest + 1).") : L.T("New row added."));
     }
 
     private void DeleteRows()
@@ -353,7 +354,7 @@ public sealed class TableFileView : Panel, IModuleView
         if (!_table.CanAddRemove) return;
         var sel = _grid.SelectedRows.Cast<DataGridViewRow>().Select(r => RowAt(r.Index)).Where(r => r != null).Cast<Record>().ToList();
         if (sel.Count == 0) return;
-        if (Msg.Show($"Xoá {sel.Count} dòng khỏi \"{_table.Name}\"?", "Xoá", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
+        if (Msg.Show(L.F("Delete {0} rows from \"{1}\"?", sel.Count, _table.Name), L.T("Delete"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
         int first = _table.Rows.IndexOf(sel[0]);
         foreach (var r in sel) _table.Rows.Remove(r);
         Changed?.Invoke();
@@ -385,7 +386,7 @@ public sealed class TableFileView : Panel, IModuleView
             while (_detailTabs.TabPages.Count > 1) { var p = _detailTabs.TabPages[1]; _detailTabs.TabPages.RemoveAt(1); p.Dispose(); }
             if (_detailTabs.TabPages.Count == 0)
             {
-                var tp = new TabPage("Chi tiết");
+                var tp = new TabPage(L.T("Details"));
                 tp.Controls.Add(_fields);
                 _detailTabs.TabPages.Add(tp);
             }
@@ -393,7 +394,7 @@ public sealed class TableFileView : Panel, IModuleView
             for (int i = 0; i < _table.Columns.Count; i++)
             {
                 var c = _table.Columns[i];
-                string val = c.Type == ColType.Table ? $"{rec.Table(i).Count} dòng → tab \"{c.Name}\"" : RecordIO.Describe(c, rec.Values[i]);
+                string val = c.Type == ColType.Table ? L.F("{0} rows → tab \"{1}\"", rec.Table(i).Count, c.Name) : RecordIO.Describe(c, rec.Values[i]);
                 int r = _fields.Rows.Add(c.Name, val, c.TypeLabel);
                 var row = _fields.Rows[r];
                 row.Tag = i;
@@ -448,11 +449,11 @@ public sealed class TableFileView : Panel, IModuleView
                 _syncing = false;
             }
             _grid.InvalidateRow(_grid.CurrentCell?.RowIndex ?? 0);
-            Status?.Invoke($"Đã sửa {c.Name} của {key} (chưa lưu file).");
+            Status?.Invoke(L.F("Edited {0} of {1} (file not saved yet).", c.Name, key));
             return null;
         };
         _editor.Begin(c.Name, rec.Text(i), c.Length > 0 ? c.MaxChars : 0, s => RecordIO.TextLength(c, s),
-            $"{key}{(c.Type == ColType.Str ? " · GBK (không chứa được tiếng Việt có dấu)" : "")}");
+            $"{key}{(c.Type == ColType.Str ? L.T(" · GBK (cannot hold Vietnamese diacritics)") : "")}");
     }
 
     /// <summary>Right-click menu for a column of the current table.</summary>
@@ -465,7 +466,7 @@ public sealed class TableFileView : Panel, IModuleView
         bool text = c.IsText && !c.ReadOnly, gbk = c.Type == ColType.Str;
         int cjk = text && !gbk ? table.Rows.Count(r => r.Values[col] is string s && ElementsCore.Exchange.HanViet.HasCjk(s)) : 0;
         var menu = new ContextMenuStrip();
-        var one = menu.Items.Add($"Việt hoá Hán Việt field \"{c.Name}\" của dòng này", null, (_, _) =>
+        var one = menu.Items.Add(L.F("Hán Việt conversion of field \"{0}\" in this row", c.Name), null, (_, _) =>
         {
             var t = HanVietTools.RecordTargets(table, rec, table.Rows.IndexOf(rec)).FirstOrDefault(x => x.Field == c.Name);
             if (t == null) return;
@@ -474,25 +475,25 @@ public sealed class TableFileView : Panel, IModuleView
                 Changed?.Invoke();
                 _grid.InvalidateRow(_grid.CurrentCell?.RowIndex ?? 0);
                 ShowDetails();
-                Status?.Invoke("Hán Việt: " + msg);
+                Status?.Invoke(L.F("Hán Việt: {0}", msg));
             }
-            else Msg.Show(msg, "Việt hoá Hán Việt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            else Msg.Show(msg, L.T("Hán Việt conversion"), MessageBoxButtons.OK, MessageBoxIcon.Information);
         });
         one.Enabled = text && !gbk && rec.Values[col] is string cur && ElementsCore.Exchange.HanViet.HasCjk(cur);
-        var all = menu.Items.Add($"Việt hoá Hán Việt field \"{c.Name}\" cho cả bảng {table.Name} ({cjk:N0} dòng còn chữ Hán)…", null, (_, _) =>
+        var all = menu.Items.Add(L.F("Hán Việt conversion of field \"{0}\" in the whole table {1} ({2:N0} rows still with Chinese characters)…", c.Name, table.Name, cjk), null, (_, _) =>
         {
-            using var dlg = new HanVietDialog([new TextScope($"Bảng {table.Name} · field {c.Name}", () => HanVietTools.TableTargets(table, c.Name))], HanVietTools.Settings, c.Name, onlyThatField: true);
+            using var dlg = new HanVietDialog([new TextScope(L.F("Table {0} · field {1}", table.Name, c.Name), () => HanVietTools.TableTargets(table, c.Name))], HanVietTools.Settings, c.Name, onlyThatField: true);
             dlg.ShowDialog(FindForm());
             if (dlg.Applied == 0) return;
             RefreshAll();
             Changed?.Invoke();
         });
         all.Enabled = cjk > 0;
-        if (gbk) menu.Items.Add("(field GBK – không chứa được tiếng Việt có dấu)").Enabled = false;
-        else if (!c.IsText) menu.Items.Add("(chỉ field chữ mới Việt hoá được)").Enabled = false;
+        if (gbk) menu.Items.Add(L.T("(GBK field – cannot hold Vietnamese diacritics)")).Enabled = false;
+        else if (!c.IsText) menu.Items.Add(L.T("(only text fields can be localized)")).Enabled = false;
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Sửa trong khung soạn (màu, xem trước)", null, (_, _) => { SelectField(c.Name); _editor.FocusText(); }).Enabled = text;
-        menu.Items.Add("Sao chép giá trị", null, (_, _) => { try { Clipboard.SetText(RecordIO.Format(c, rec.Values[col])); } catch { } });
+        menu.Items.Add(L.T("Edit in the text editor (colours, preview)"), null, (_, _) => { SelectField(c.Name); _editor.FocusText(); }).Enabled = text;
+        menu.Items.Add(L.T("Copy value"), null, (_, _) => { try { Clipboard.SetText(RecordIO.Format(c, rec.Values[col])); } catch { } });
         Theme.Apply(menu);
         menu.Show(Cursor.Position);
     }
@@ -620,9 +621,9 @@ public sealed class SubTableEditor : Panel
         };
 
         var bar = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40, Padding = new Padding(4, 4, 4, 2), WrapContents = false };
-        var add = new Button { Text = "+ Thêm", Width = 80, Height = 30, Enabled = col.SubCanAddRemove };
-        var ins = new Button { Text = "Chèn", Width = 64, Height = 30, Enabled = col.SubCanAddRemove };
-        var del = new Button { Text = "Xoá", Width = 64, Height = 30, Enabled = col.SubCanAddRemove };
+        var add = new Button { Text = L.T("+ Add"), Width = 80, Height = 30, Enabled = col.SubCanAddRemove };
+        var ins = new Button { Text = L.T("Insert"), Width = 64, Height = 30, Enabled = col.SubCanAddRemove };
+        var del = new Button { Text = L.T("Delete"), Width = 64, Height = 30, Enabled = col.SubCanAddRemove };
         var info = new Label { Text = col.Note ?? "", AutoSize = true, ForeColor = Color.DimGray, Padding = new Padding(8, 8, 0, 0), UseMnemonic = false };
         bar.Controls.AddRange([add, ins, del, info]);
         add.Click += (_, _) => Insert(_rows.Count);
@@ -672,7 +673,7 @@ public sealed class TextFileView : Panel, IModuleView
     {
         _file = f;
         var top = new Panel { Dock = DockStyle.Top, Height = 46, Padding = new Padding(10, 8, 10, 6) };
-        _find = new TextBox { Dock = DockStyle.Left, Width = 300, PlaceholderText = "Tìm… (Enter = tiếp, Ctrl+F)" };
+        _find = new TextBox { Dock = DockStyle.Left, Width = 300, PlaceholderText = L.T("Find… (Enter = next, Ctrl+F)") };
         _info = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = Color.DimGray, Padding = new Padding(12, 0, 0, 0), UseMnemonic = false };
         top.Controls.Add(_info);
         top.Controls.Add(_find);
@@ -696,7 +697,7 @@ public sealed class TextFileView : Panel, IModuleView
     private void UpdateInfo()
     {
         int line = _text.GetLineFromCharIndex(_text.SelectionStart) + 1;
-        _info.Text = $"{_file.FormatName}   ·   {_text.Lines.Length:N0} dòng   ·   dòng {line}   ·   xuống dòng {(_file.NewLine == "\n" ? "LF" : "CRLF")}";
+        _info.Text = L.F("{0}   ·   {1:N0} lines   ·   line {2}   ·   line endings {3}", _file.FormatName, _text.Lines.Length, line, _file.NewLine == "\n" ? "LF" : "CRLF");
     }
 
     private void FindNext()
@@ -706,7 +707,7 @@ public sealed class TextFileView : Panel, IModuleView
         int from = _text.SelectionStart + _text.SelectionLength;
         int i = _text.Text.IndexOf(q, from, StringComparison.OrdinalIgnoreCase);
         if (i < 0) i = _text.Text.IndexOf(q, 0, StringComparison.OrdinalIgnoreCase);
-        if (i < 0) { Status?.Invoke($"Không thấy \"{q}\"."); return; }
+        if (i < 0) { Status?.Invoke(L.F("\"{0}\" not found.", q)); return; }
         _text.Select(i, q.Length);
         _text.ScrollToCaret();
         UpdateInfo();
@@ -741,7 +742,7 @@ public sealed class TextFileView : Panel, IModuleView
         if (_file.NewLine == "\n") t = t.Replace("\r\n", "\n");
         if (_file.CheckEncodable(t) is { } err)
         {
-            Msg.Show(err + "\nHãy bỏ ký tự đó, hoặc đổi file sang UTF-16 trước.", "Bảng mã", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Msg.Show(err + "\n" + L.T("Remove that character, or convert the file to UTF-16 first."), L.T("Encoding"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
         _file.Text = t;
@@ -762,7 +763,9 @@ public sealed class RawFileView : Panel, IModuleView
         var banner = new Label
         {
             Dock = DockStyle.Top, Height = 64, Padding = new Padding(14, 8, 14, 8), ForeColor = Color.DarkGoldenrod,
-            Text = $"{f.Reason}\nĐang hiển thị dạng hex ({f.Data.Length:N0} byte{(f.Data.Length > HexFormatter.MaxBytes ? $", {HexFormatter.MaxBytes / 1024} KB đầu" : "")}). File không bị thay đổi.",
+            Text = f.Reason + "\n" + (f.Data.Length > HexFormatter.MaxBytes
+                ? L.F("Shown as hex ({0:N0} bytes, first {1} KB). The file is not changed.", f.Data.Length, HexFormatter.MaxBytes / 1024)
+                : L.F("Shown as hex ({0:N0} bytes). The file is not changed.", f.Data.Length)),
             UseMnemonic = false,
         };
         var hex = new TextBox

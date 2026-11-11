@@ -59,11 +59,11 @@ public sealed class ElementsFile
 
     public static ElementsFile Parse(byte[] d, SchemaRepository repo, IProgress<int>? progress = null)
     {
-        if (d.Length < 8) throw new InvalidDataException("File quá nhỏ");
+        if (d.Length < 8) throw new InvalidDataException(L.T("File too small"));
         var ef = new ElementsFile { Header = d.AsSpan(0, 8).ToArray() };
         ef.Layout = repo.GetLayout(ef.Version);
-        if (ef.Layout == null) ef.Warnings.Add($"Không có layout cho version {ef.Version}: dò list tự động.");
-        else if (ef.Layout.Version != "v" + ef.Version) ef.Warnings.Add($"Không có layout v{ef.Version}, dùng tạm {ef.Layout.Version}.");
+        if (ef.Layout == null) ef.Warnings.Add(L.F("No layout for version {0}: detecting lists automatically.", ef.Version));
+        else if (ef.Layout.Version != "v" + ef.Version) ef.Warnings.Add(L.F("No layout v{0}, using {1} for now.", ef.Version, ef.Layout.Version));
 
         long p = 8;
         int expected = ef.Layout?.ListCount ?? int.MaxValue;
@@ -90,7 +90,7 @@ public sealed class ElementsFile
             if (!ok)
             {
                 if (ef.Layout == null || !ef.Layout.ListCountVerified) { p = start; break; }
-                throw new InvalidDataException($"List {i} hỏng tại offset 0x{p:X} (size={size}, count={count})");
+                throw new InvalidDataException(L.F("List {0} is broken at offset 0x{1:X} (size={2}, count={3})", i, p, size, count));
             }
             var prefix = d.AsSpan((int)start, (int)(p - start)).ToArray();
             var items = new List<byte[]>(count);
@@ -108,7 +108,7 @@ public sealed class ElementsFile
         if (ef.Dialogs == null)
         {
             ef.RawTail = tail;
-            if (tail.Length > 0) ef.Warnings.Add($"Không đọc được NPC Dialogs ({tail.Length} byte) – giữ nguyên dạng thô.");
+            if (tail.Length > 0) ef.Warnings.Add(L.F("Cannot read NPC Dialogs ({0} bytes) – kept as raw data.", tail.Length));
         }
         return ef;
     }

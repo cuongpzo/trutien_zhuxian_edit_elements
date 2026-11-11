@@ -30,43 +30,43 @@ public sealed class VipAwardFile : DataFile
 
     public static readonly IReadOnlyDictionary<long, string> AwardTypes = new Dictionary<long, string>
     {
-        [0] = "Thường", [1] = "VIP", [2] = "VIP shop",
+        [0] = L.T("Normal"), [1] = "VIP", [2] = L.T("VIP shop"),
     };
     public static readonly IReadOnlyDictionary<long, string> ObtainTypes = new Dictionary<long, string>
     {
-        [0] = "Hằng ngày", [1] = "Đặc biệt (1 lần)", [2] = "Mua ở shop",
+        [0] = L.T("Daily"), [1] = L.T("Special (once)"), [2] = L.T("Bought in the shop"),
     };
 
     public static readonly IReadOnlyList<ColumnDef> HeaderColumns =
     [
-        new() { Name = "timeMark", Type = ColType.U32, Note = "Dấu thời gian xuất file (Unix)" },
-        new() { Name = "count", Type = ColType.U32, ReadOnly = true, Note = "Số phần quà (tự tính lại khi lưu)" },
+        new() { Name = "timeMark", Type = ColType.U32, Note = L.T("File export timestamp (Unix)") },
+        new() { Name = "count", Type = ColType.U32, ReadOnly = true, Note = L.T("Number of awards (recalculated on save)") },
     ];
 
     private static readonly ColumnDef[] BaseColumns =
     [
-        new() { Name = "id", Type = ColType.U32, Note = "ID phần quà (>0, không trùng)" },
-        new() { Name = "name", Type = ColType.WStr, Length = 64, Note = "Tên hiển thị (tối đa 63 ký tự)" },
-        new() { Name = "itemId", Type = ColType.U32, Note = "ID vật phẩm trong elements.data" },
-        new() { Name = "count", Type = ColType.U32, Note = "Số lượng (vật phẩm không chồng được thì phải là 1)" },
-        new() { Name = "awardType", Type = ColType.U32, Enum = AwardTypes, Note = "Loại quà: 0 thường, 1 VIP, 2 VIP shop" },
-        new() { Name = "level", Type = ColType.U32, Note = "Cấp VIP / bậc cấp 1–8" },
-        new() { Name = "obtainType", Type = ColType.U32, Enum = ObtainTypes, Note = "Cách nhận: 0 hằng ngày, 1 đặc biệt, 2 shop" },
-        new() { Name = "expireTime", Type = ColType.I32, Note = "Thời hạn vật phẩm (giây); 0 = vĩnh viễn" },
+        new() { Name = "id", Type = ColType.U32, Note = L.T("Award ID (>0, unique)") },
+        new() { Name = "name", Type = ColType.WStr, Length = 64, Note = L.T("Display name (max 63 characters)") },
+        new() { Name = "itemId", Type = ColType.U32, Note = L.T("Item ID in elements.data") },
+        new() { Name = "count", Type = ColType.U32, Note = L.T("Quantity (must be 1 for non-stackable items)") },
+        new() { Name = "awardType", Type = ColType.U32, Enum = AwardTypes, Note = L.T("Award type: 0 normal, 1 VIP, 2 VIP shop") },
+        new() { Name = "level", Type = ColType.U32, Note = L.T("VIP level / level bracket 1–8") },
+        new() { Name = "obtainType", Type = ColType.U32, Enum = ObtainTypes, Note = L.T("How it is obtained: 0 daily, 1 special, 2 shop") },
+        new() { Name = "expireTime", Type = ColType.I32, Note = L.T("Item duration (seconds); 0 = permanent") },
     ];
 
     private static readonly ColumnDef[] CurrentTail =
     [
-        new() { Name = "price", Type = ColType.F32, Note = "Giá ở VIP shop (0 nếu không bán)" },
-        new() { Name = "shopParam", Type = ColType.U32, Note = "Chỉ dùng cho VIP shop (1–3), chưa rõ ý nghĩa" },
-        new() { Name = "reserved", Type = ColType.Bytes, Length = 8, HideInGrid = true, Note = "Dự trữ, luôn 0" },
+        new() { Name = "price", Type = ColType.F32, Note = L.T("VIP shop price (0 if not sold)") },
+        new() { Name = "shopParam", Type = ColType.U32, Note = L.T("VIP shop only (1–3), meaning unknown") },
+        new() { Name = "reserved", Type = ColType.Bytes, Length = 8, HideInGrid = true, Note = L.T("Reserved, always 0") },
     ];
 
     /// <summary>Columns of the current 172-byte layout.</summary>
     public static readonly IReadOnlyList<ColumnDef> Columns = [.. BaseColumns, .. CurrentTail];
 
     public int AwardSize { get; private set; } = CurrentSize;
-    public override string FormatName => $"vipaward.data ({AwardSize} B/quà)";
+    public override string FormatName => L.F("vipaward.data ({0} B/award)", AwardSize);
     public RecordTable Header => Tables[0];
     public RecordTable Awards => Tables[1];
 
@@ -75,8 +75,8 @@ public sealed class VipAwardFile : DataFile
         if (size == CurrentSize) return Columns;
         if (size == BaseSize) return BaseColumns;
         if (size > BaseSize)
-            return [.. BaseColumns, new() { Name = "extra", Type = ColType.Bytes, Length = size - BaseSize, Note = "Phần mở rộng chưa giải mã" }];
-        throw new InvalidDataException($"Phần quà {size} byte không phải bố cục vipaward.data đã biết ({BaseSize} hoặc {CurrentSize}).");
+            return [.. BaseColumns, new() { Name = "extra", Type = ColType.Bytes, Length = size - BaseSize, Note = L.T("Undecoded extension") }];
+        throw new InvalidDataException(L.F("An award of {0} bytes is not a known vipaward.data layout ({1} or {2}).", size, BaseSize, CurrentSize));
     }
 
     public static bool Sniff(byte[] d)
@@ -100,7 +100,7 @@ public sealed class VipAwardFile : DataFile
 
     public static VipAwardFile Parse(byte[] data, string path)
     {
-        if (data.Length < HeaderSize) throw new InvalidDataException("File quá ngắn, không đủ header vipaward.data.");
+        if (data.Length < HeaderSize) throw new InvalidDataException(L.T("File too short for the vipaward.data header."));
         var r = new BinReader(data);
         var head = RecordIO.ReadFixed(r, HeaderColumns);
         long count = head.Long(1);
@@ -108,42 +108,42 @@ public sealed class VipAwardFile : DataFile
         int size;
         if (count == 0)
         {
-            if (r.Remaining > 0) throw new InvalidDataException($"Không có phần quà nhưng sau header còn {r.Remaining} byte.");
+            if (r.Remaining > 0) throw new InvalidDataException(L.F("No awards, but {0} bytes remain after the header.", r.Remaining));
             size = CurrentSize;
         }
         else
         {
-            if (count > MaxAwards) throw new InvalidDataException($"Số phần quà {count} không hợp lệ (tối đa {MaxAwards}).");
-            if (r.Remaining % count != 0) throw new InvalidDataException($"{r.Remaining} byte không chia đều cho {count} phần quà.");
+            if (count > MaxAwards) throw new InvalidDataException(L.F("Invalid award count {0} (max {1}).", count, MaxAwards));
+            if (r.Remaining % count != 0) throw new InvalidDataException(L.F("{0} bytes do not divide evenly into {1} awards.", r.Remaining, count));
             size = (int)(r.Remaining / count);
         }
         var cols = ColumnsFor(size);
         f.AwardSize = size;
-        if (size != CurrentSize) f.Warnings.Add($"Bố cục {size} B/quà (bản hiện hành là {CurrentSize} B); phần sau {BaseSize} B giữ dạng byte thô.");
+        if (size != CurrentSize) f.Warnings.Add(L.F("Layout {0} B/award (the current version is {1} B); the part after {2} B is kept as raw bytes.", size, CurrentSize, BaseSize));
 
         f.Tables.Add(new RecordTable
         {
             Name = "Header", Columns = HeaderColumns, CanAddRemove = false, Rows = [head],
-            Note = "Header của file; count tự tính khi lưu.",
+            Note = L.T("File header; count is calculated on save."),
         });
         var t = new RecordTable
         {
             Name = "VIP awards", Columns = cols, KeyColumn = 0, NameColumn = 1,
-            Note = "Quà VIP / quà hằng ngày / VIP shop.",
+            Note = L.T("VIP awards / daily awards / VIP shop."),
         };
         for (long i = 0; i < count; i++) t.Rows.Add(RecordIO.ReadFixed(r, cols));
         f.Tables.Add(t);
 
-        if (t.Rows.Any(x => x.Long(0) == 0)) f.Warnings.Add("Có phần quà ID 0 (server không khởi động).");
+        if (t.Rows.Any(x => x.Long(0) == 0)) f.Warnings.Add(L.T("An award has ID 0 (the server will not start)."));
         var dup = t.Rows.GroupBy(x => x.Long(0)).Where(g => g.Count() > 1).Select(g => g.Key).Take(5).ToList();
-        if (dup.Count > 0) f.Warnings.Add("ID phần quà trùng (server không khởi động): " + string.Join(", ", dup));
+        if (dup.Count > 0) f.Warnings.Add(L.F("Duplicate award IDs (the server will not start): {0}", string.Join(", ", dup)));
         return f;
     }
 
     public override byte[] ToBytes()
     {
         int count = Awards.Rows.Count;
-        if (count > MaxAwards) throw new InvalidDataException($"vipaward.data chứa tối đa {MaxAwards} phần quà (đang có {count}).");
+        if (count > MaxAwards) throw new InvalidDataException(L.F("vipaward.data holds at most {0} awards (currently {1}).", MaxAwards, count));
         var h = Header.Rows[0];
         h.Values[1] = (uint)count;
         var w = new BinWriter();

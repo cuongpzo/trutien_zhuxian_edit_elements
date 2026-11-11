@@ -57,7 +57,7 @@ public sealed class HanViet
             if (val.Length == 0 || val == ",") continue;
             hv._map.TryAdd(cp, val.ToLowerInvariant());
         }
-        if (hv._map.Count == 0) throw new InvalidDataException("Không đọc được mục nào (cần dạng 字=âm, mỗi dòng một chữ).");
+        if (hv._map.Count == 0) throw new InvalidDataException(L.T("No entry could be read (expected 字=reading, one character per line)."));
         return hv;
     }
 
