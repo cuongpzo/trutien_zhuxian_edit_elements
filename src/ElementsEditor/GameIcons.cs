@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using ElementsCore;
@@ -49,6 +49,16 @@ public static class GameIcons
     }
 
     public static string? PathOf(long pathId) => _lib?.PathOf(pathId);
+
+    /// <summary>Every .dds / .tga in surfaces.pck ("Surfaces\…"), for the icon picker.</summary>
+    public static IEnumerable<string> PicturePaths()
+    {
+        var pck = _lib?.Surfaces;
+        if (pck == null) yield break;
+        foreach (var e in pck.Entries.OrderBy(e => e.Path, StringComparer.OrdinalIgnoreCase))
+            if (e.Path.EndsWith(".dds", StringComparison.OrdinalIgnoreCase) || e.Path.EndsWith(".tga", StringComparison.OrdinalIgnoreCase))
+                yield return e.Path.StartsWith("surfaces\\", StringComparison.OrdinalIgnoreCase) ? "Surfaces" + e.Path[8..] : e.Path;
+    }
 
     /// <summary>Icon of a resource path (Surfaces\…\x.dds), or null.</summary>
     public static Image? ForPath(string? path, int size = 24)

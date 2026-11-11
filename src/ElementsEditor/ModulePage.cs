@@ -153,6 +153,7 @@ public sealed class ModulePage : Panel
             TextDataFile t => new TextFileView(t),
             RawDataFile r => new RawFileView(r),
             DomainFile d => new DomainMapView(d, p => _ = OpenAsync(p)),
+            GShopFile g when g.Tables.FirstOrDefault(t => t.Name == "Items")?.IndexOf("id") >= 0 => new GShopView(g),
             _ => new TableFileView(f),
         };
         _iview.Changed += OnViewChanged;

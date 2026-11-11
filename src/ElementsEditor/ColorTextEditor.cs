@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using ElementsCore;
 
 namespace ElementsEditor;
@@ -35,17 +35,116 @@ public static class GameColors
     /// <summary>Renders text with its colour codes into a RichTextBox (preview).</summary>
     public static void Render(RichTextBox rtb, string text, Color defaultColor)
     {
+        // set the whole text first, then colour each run by selecting it (reliable on a read-only box)
+        var segs = Segments(text.Replace("\r\n", "\n").Replace("\\n", "\n").Replace("\r", "\n")).ToList();
         rtb.SuspendLayout();
-        rtb.Clear();
-        foreach (var (c, run) in Segments(text.Replace("\r\n", "\n").Replace("\\n", "\n").Replace("\r", "\n")))
+        rtb.Text = string.Concat(segs.Select(s => s.text));
+        rtb.SelectAll();
+        rtb.SelectionColor = defaultColor;
+        int pos = 0;
+        foreach (var (c, run) in segs)
         {
-            rtb.SelectionStart = rtb.TextLength;
-            rtb.SelectionLength = 0;
-            rtb.SelectionColor = c ?? defaultColor;
-            rtb.AppendText(run);
+            if (c != null && run.Length > 0)
+            {
+                rtb.Select(pos, run.Length);
+                rtb.SelectionColor = c.Value;
+            }
+            pos += run.Length;
         }
-        rtb.SelectionStart = 0;
+        rtb.Select(0, 0);
         rtb.ResumeLayout();
+    }
+}
+
+/// <summary>
+/// In-game look of a text: ^RRGGBB codes colour the following run, line breaks are kept, long lines
+/// wrap (character by character, as the game does for Chinese). Drawn by itself – a RichTextBox loses
+/// its colours under the dark window theme.
+/// </summary>
+public sealed class GameTextPreview : Control
+{
+    private string _text = "";
+    private readonly Dictionary<char, int> _widths = new();
+    private int _scroll, _contentHeight;
+
+    public GameTextPreview()
+    {
+        SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+        Font = new Font("Segoe UI", 10.5F);
+        BackColor = Color.FromArgb(10, 12, 14);
+        Padding = new Padding(8, 6, 8, 6);
+    }
+
+    /// <summary>Text with game colour codes (^RRGGBB, \n).</summary>
+    [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public string GameText
+    {
+        get => _text;
+        set { _text = value ?? ""; _scroll = 0; Invalidate(); }
+    }
+
+    /// <summary>Colour of text before the first code.</summary>
+    [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public Color DefaultTextColor { get; set; } = Color.FromArgb(235, 235, 235);
+
+    protected override void OnFontChanged(EventArgs e) { _widths.Clear(); base.OnFontChanged(e); }
+
+    protected override void OnMouseWheel(MouseEventArgs e)
+    {
+        int max = Math.Max(0, _contentHeight - Height + Padding.Vertical);
+        _scroll = Math.Clamp(_scroll - Math.Sign(e.Delta) * Font.Height * 2, 0, max);
+        Invalidate();
+        base.OnMouseWheel(e);
+    }
+
+    private int W(Graphics g, char ch)
+    {
+        if (!_widths.TryGetValue(ch, out int w))
+            _widths[ch] = w = TextRenderer.MeasureText(g, ch.ToString(), Font, new Size(1000, 100), TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix).Width;
+        return w;
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        var g = e.Graphics;
+        g.Clear(BackColor);
+        int lineH = Font.Height + 2;
+        int x0 = Padding.Left, maxX = Width - Padding.Right - 8;
+        int x = x0, y = Padding.Top - _scroll;
+        var runChars = new System.Text.StringBuilder();
+        int runX = x;
+        Color runColor = DefaultTextColor;
+        void Flush()
+        {
+            if (runChars.Length > 0 && y + lineH > 0 && y < Height)
+                TextRenderer.DrawText(g, runChars.ToString(), Font, new Point(runX, y), runColor, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
+            runChars.Clear();
+        }
+        var text = _text.Replace("\r\n", "\n").Replace("\\n", "\n").Replace("\r", "\n");
+        foreach (var (c, run) in GameColors.Segments(text))
+        {
+            Flush();
+            runColor = c ?? DefaultTextColor;
+            runX = x;
+            foreach (char ch in run)
+            {
+                if (ch == '\n') { Flush(); x = x0; y += lineH; runX = x; continue; }
+                int w = W(g, ch);
+                if (x + w > maxX && x > x0) { Flush(); x = x0; y += lineH; runX = x; }
+                runChars.Append(ch);
+                x += w;
+            }
+        }
+        Flush();
+        _contentHeight = y + _scroll + lineH;
+        if (_contentHeight > Height)
+        {
+            // thin scroll indicator
+            float k = (float)Height / _contentHeight;
+            int barH = Math.Max(16, (int)(Height * k)), barY = (int)(_scroll * k);
+            using var b = new SolidBrush(Color.FromArgb(90, 255, 255, 255));
+            g.FillRectangle(b, Width - 5, barY, 3, barH);
+        }
     }
 }
 
@@ -142,7 +241,7 @@ public sealed class ColorTextEditor : Panel
 {
     private readonly Label _title, _counter, _hint;
     private readonly TextBox _text;
-    private readonly RichTextBox _preview;
+    private readonly GameTextPreview _preview;
     private readonly Button _save, _cancel;
     private Func<string, int> _measure = s => s.Length;
     private int _max = int.MaxValue;
@@ -166,7 +265,7 @@ public sealed class ColorTextEditor : Panel
         _text = new TextBox { Dock = DockStyle.Top, Height = 74, Multiline = true, ScrollBars = ScrollBars.Vertical, AcceptsReturn = true, Font = new Font("Segoe UI", 10.5F) };
         var bar = new ColorCodeBar(_text) { Dock = DockStyle.Top };
         var prevLabel = new Label { Text = L.T("Preview (in game)"), Dock = DockStyle.Top, Height = 20, ForeColor = Color.DimGray, TextAlign = ContentAlignment.BottomLeft };
-        _preview = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true, BorderStyle = BorderStyle.None, Font = new Font("Segoe UI", 10.5F), BackColor = Color.FromArgb(10, 12, 14), ScrollBars = RichTextBoxScrollBars.Vertical, TabStop = false };
+        _preview = new GameTextPreview { Dock = DockStyle.Fill, TabStop = false };
         var bottom = new Panel { Dock = DockStyle.Bottom, Height = 38, Padding = new Padding(0, 6, 0, 0) };
         _hint = new Label { Text = L.T("Ctrl+Enter save · Esc cancel"), Dock = DockStyle.Fill, ForeColor = Color.DimGray, TextAlign = ContentAlignment.MiddleLeft };
         _save = new Button { Text = L.T("✓ Save text"), Dock = DockStyle.Right, Width = 96 };
@@ -224,7 +323,7 @@ public sealed class ColorTextEditor : Panel
         _save.Enabled = len <= _max && t != _original;
         _hint.Text = len > _max ? L.F("Too long by {0} – shorten it", len - _max) : t != _original ? L.T("Unsaved · Ctrl+Enter save · Esc cancel") : L.T("Ctrl+Enter save · Esc cancel");
         _hint.ForeColor = len > _max ? Theme.Red : Color.DimGray;
-        GameColors.Render(_preview, t, Theme.Dark ? Theme.Text : Color.White);
+        _preview.GameText = t;
     }
 
     private void DoSave()
