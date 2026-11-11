@@ -101,7 +101,7 @@ public sealed class GShopView : Panel, IModuleView
         bDel.Click += (_, _) => DeleteItem();
         bUp.Click += (_, _) => MoveItem(-1);
         bDown.Click += (_, _) => MoveItem(+1);
-        Action refresh = () => { if (IsHandleCreated) BeginInvoke(() => { _list.Invalidate(); if (_sel != null) BuildForm(); }); };
+        Action refresh = () => { if (IsHandleCreated) BeginInvoke(() => { _list.Invalidate(); if (_sel != null && !_form.ContainsFocus) ShowValues(); }); }; // names / icons arrived: only the values change
         GameIcons.Ready += refresh;
         IdNames.Changed += refresh;
         Disposed += (_, _) => { GameIcons.Ready -= refresh; IdNames.Changed -= refresh; };
@@ -183,7 +183,7 @@ public sealed class GShopView : Panel, IModuleView
         int idx = _sel != null ? _shown.IndexOf(_sel) : -1;
         if (idx < 0 && _shown.Count > 0) idx = 0;
         if (idx >= 0) _list.SelectedIndex = idx;
-        else { _sel = null; BuildForm(); }
+        else { _sel = null; ShowValues(); }
     }
 
     private static string Price(long hundredths) => (hundredths / 100.0).ToString("N2", CultureInfo.CurrentCulture);
@@ -220,7 +220,7 @@ public sealed class GShopView : Panel, IModuleView
     {
         if (_building) return;
         _sel = r;
-        BuildForm();
+        ShowValues();
     }
 
     private void AddItem(bool clone)
@@ -266,53 +266,98 @@ public sealed class GShopView : Panel, IModuleView
     }
 
     // ───────────────────────── form ─────────────────────────
+    // The form is built ONCE for the file's layout (every item has the same fields). Picking another item
+    // only puts that item's values into the existing boxes: no control is created or destroyed, nothing
+    // jumps or flickers. Commits always go to the item the form currently shows (_bound).
+
+    private Record? _bound;
+    private Record R => _bound!;
+    private readonly List<Action> _loaders = new();
+    private readonly List<Control[]> _groups = new();
+    private Label? _title, _empty;
+    private bool _formBuilt;
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool RedrawWindow(IntPtr h, IntPtr rect, IntPtr rgn, uint flags);
+
+    /// <summary>Stops / restarts painting of a control and its children (the change shows in one go).</summary>
+    private static void Redraw(Control c, bool on)
+    {
+        if (!c.IsHandleCreated) return;
+        SendMessage(c.Handle, 0x000B /* WM_SETREDRAW */, on ? 1 : 0, IntPtr.Zero);
+        if (on) RedrawWindow(c.Handle, IntPtr.Zero, IntPtr.Zero, 0x0001 | 0x0004 | 0x0080 | 0x0100); // INVALIDATE | ERASE | ALLCHILDREN | UPDATENOW
+    }
+
+    /// <summary>Shows the selected item's values in the (already built) form.</summary>
+    private void ShowValues()
+    {
+        if (!_formBuilt) BuildForm();
+        bool any = _sel != null && _items.Rows.Contains(_sel);
+        Redraw(_form, false);
+        _form.SuspendLayout();
+        try
+        {
+            _bound = any ? _sel : null;
+            if (any)
+            {
+                bool was = _building;
+                _building = true;
+                try { foreach (var load in _loaders) load(); }
+                finally { _building = was; }
+            }
+            _empty!.Visible = !any;
+            foreach (var g in _groups) foreach (var c in g) c.Visible = any;
+        }
+        finally
+        {
+            _form.ResumeLayout(false);
+            Relayout();
+            Redraw(_form, true);
+        }
+    }
+
+    private void UpdateTitle()
+    {
+        if (_title != null && _bound != null) _title.Text = L.F("Item {0}   {1}", _items.Rows.IndexOf(_bound) + 1, Txt(_bound, "name"));
+    }
 
     private void BuildForm()
     {
+        _formBuilt = true;
         _form.SuspendLayout();
-        foreach (Control c in _form.Controls.Cast<Control>().ToList()) { _form.Controls.Remove(c); c.Dispose(); }
-        if (_sel == null)
-        {
-            _form.Controls.Add(new Label { Text = L.T("Select an item in the list."), Dock = DockStyle.Top, Height = 40, ForeColor = Color.DimGray });
-            _form.ResumeLayout();
-            return;
-        }
-        var r = _sel;
         var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        var title = new Label
-        {
-            Text = L.F("Item {0}   {1}", _items.Rows.IndexOf(r) + 1, Txt(r, "name")), Dock = DockStyle.Top, Height = 34,
-            Font = new Font("Segoe UI", 13F, FontStyle.Bold), UseMnemonic = false, AutoSize = false, AutoEllipsis = true,
-        };
-        _groups.Clear();
-        _groups.Add([title]);
+        _empty = new Label { Text = L.T("Select an item in the list."), AutoSize = true, ForeColor = Color.DimGray, Location = new Point(_form.Padding.Left, _form.Padding.Top + 8), Visible = false };
+        _form.Controls.Add(_empty);
+        _title = new Label { Height = 34, Font = new Font("Segoe UI", 13F, FontStyle.Bold), UseMnemonic = false, AutoSize = false, AutoEllipsis = true };
+        _loaders.Add(UpdateTitle);
+        _groups.Add([_title]);
         Section? priceSec = null, catSec = null, saleSec = null, descSec = null, giftSec = null;
 
         // Item
         var item = new Section(L.T("Item"));
-        Field(item, r, "id", L.T("Sells"), used, lookup: true);
-        Field(item, r, "num", L.T("Count"), used);
-        Field(item, r, "place", L.T("Position"), used);
-        Field(item, r, "name", L.T("Name"), used, wide: true);
-        IconField(item, r, "icon", L.T("Icon"), used);
-        Field(item, r, "local_id", L.T("Local ID"), used);
+        Field(item, "id", L.T("Sells"), used, lookup: true);
+        Field(item, "num", L.T("Count"), used);
+        Field(item, "place", L.T("Position"), used);
+        Field(item, "name", L.T("Name"), used, wide: true);
+        IconField(item, "icon", L.T("Icon"), used);
+        Field(item, "local_id", L.T("Local ID"), used);
 
         // Price
         if (Col("price") >= 0 || Col("price_item") >= 0)
         {
             var price = new Section(L.T("Price"), Col("price") >= 0 ? L.T("In hundredths: 100 = 1.00") : null);
-            Field(price, r, "price", L.T("Price"), used, hint: v => long.TryParse(v, out var p) ? Price(p) : "");
-            Field(price, r, "price_item", L.T("Paid with item"), used, lookup: true);
-            Field(price, r, "price_item_count", L.T("Item count"), used);
-            Field(price, r, "time", L.T("Lasts"), used, hint: v => long.TryParse(v, out var s) ? Duration(s) : "");
-            Field(price, r, "discount", L.T("Discount"), used, hint: _ => "%");
-            Field(price, r, "bonus", L.T("Bonus"), used, hint: _ => "%");
+            Field(price, "price", L.T("Price"), used, hint: v => long.TryParse(v, out var p) ? Price(p) : "");
+            Field(price, "price_item", L.T("Paid with item"), used, lookup: true);
+            Field(price, "price_item_count", L.T("Item count"), used);
+            Field(price, "time", L.T("Lasts"), used, hint: v => long.TryParse(v, out var s) ? Duration(s) : "");
+            Field(price, "discount", L.T("Discount"), used, hint: _ => "%");
+            Field(price, "bonus", L.T("Bonus"), used, hint: _ => "%");
             if (Col("props") >= 0)
             {
-                Bits(price, r, "props", L.T("Flags"), [(0, L.T("New")), (1, L.T("Recommended")), (2, L.T("Promotion"))], used);
-                if (Col("props_b2") >= 0) Bits(price, r, "props_b2", L.T("Sale schemes"), Enumerable.Range(0, 8).Select(b => (b, (b + 1).ToString())).ToArray(), used);
-                if (Col("props_b3") >= 0) Bits(price, r, "props_b3", L.T("Discount schemes"), Enumerable.Range(0, 8).Select(b => (b, (b + 1).ToString())).ToArray(), used);
+                Bits(price, "props", L.T("Flags"), [(0, L.T("New")), (1, L.T("Recommended")), (2, L.T("Promotion"))], used);
+                if (Col("props_b2") >= 0) Bits(price, "props_b2", L.T("Sale schemes"), Enumerable.Range(0, 8).Select(b => (b, (b + 1).ToString())).ToArray(), used);
+                if (Col("props_b3") >= 0) Bits(price, "props_b3", L.T("Discount schemes"), Enumerable.Range(0, 8).Select(b => (b, (b + 1).ToString())).ToArray(), used);
             }
             priceSec = price;
         }
@@ -321,8 +366,8 @@ public sealed class GShopView : Panel, IModuleView
         if (Col("main_type") >= 0)
         {
             var cat = new Section(L.T("Category"));
-            CategoryFields(cat, r, used);
-            Field(cat, r, "search_keys", L.T("Keywords"), used, wide: true);
+            CategoryFields(cat, used);
+            Field(cat, "search_keys", L.T("Keywords"), used, wide: true);
             catSec = cat;
         }
 
@@ -330,8 +375,8 @@ public sealed class GShopView : Panel, IModuleView
         if (Col("valid_type") >= 0)
         {
             var sale = new Section(L.T("On sale"), L.T("When the server sells it"));
-            SaleFields(sale, r, "valid", used);
-            if (Col("valid2_type") >= 0) { sale.Add(new Label { Text = L.T("Second sale window (copy)"), ForeColor = Color.DimGray, AutoSize = true, Margin = new Padding(0, 8, 0, 2) }, full: true); SaleFields(sale, r, "valid2", used); }
+            SaleFields(sale, "valid", used);
+            if (Col("valid2_type") >= 0) { sale.Add(new Label { Text = L.T("Second sale window (copy)"), ForeColor = Color.DimGray, AutoSize = true, Margin = new Padding(0, 8, 0, 2) }, full: true); SaleFields(sale, "valid2", used); }
             saleSec = sale;
         }
 
@@ -339,7 +384,7 @@ public sealed class GShopView : Panel, IModuleView
         if (Col("description") >= 0)
         {
             var desc = new Section(L.T("Description"), L.T("^RRGGBB colours a run; line breaks are kept"));
-            DescriptionField(desc, r, "description");
+            DescriptionField(desc, "description");
             used.Add("description");
             descSec = desc;
         }
@@ -348,21 +393,21 @@ public sealed class GShopView : Panel, IModuleView
         if (Col("has_present") >= 0)
         {
             var gift = new Section(L.T("Free gift"), L.T("Given with every purchase"));
-            Check(gift, r, "has_present", L.T("Gives a gift"), used);
-            Field(gift, r, "present_id", L.T("Gift item"), used, lookup: true);
-            Field(gift, r, "present_name", L.T("Gift name"), used, wide: true);
-            Field(gift, r, "present_count", L.T("Gift count"), used);
-            Field(gift, r, "present_time", L.T("Gift lasts"), used, hint: v => long.TryParse(v, out var s) ? Duration(s) : "");
-            IconField(gift, r, "present_icon", L.T("Gift icon"), used);
-            Check(gift, r, "present_bind", L.T("Bound"), used);
-            Field(gift, r, "present_description", L.T("Gift description"), used, wide: true);
+            Check(gift, "has_present", L.T("Gives a gift"), used);
+            Field(gift, "present_id", L.T("Gift item"), used, lookup: true);
+            Field(gift, "present_name", L.T("Gift name"), used, wide: true);
+            Field(gift, "present_count", L.T("Gift count"), used);
+            Field(gift, "present_time", L.T("Gift lasts"), used, hint: v => long.TryParse(v, out var s) ? Duration(s) : "");
+            IconField(gift, "present_icon", L.T("Gift icon"), used);
+            Check(gift, "present_bind", L.T("Bound"), used);
+            Field(gift, "present_description", L.T("Gift description"), used, wide: true);
             giftSec = gift;
         }
 
         // Other fields
         var other = new Section(L.T("Other fields"), L.F("Fields of the layout {0} ({1:N0} bytes) without a meaning; edited by their type", _f.ItemLayout.Title, _f.ItemLayout.Size));
         foreach (var c in _items.Columns)
-            if (!used.Contains(c.Name) && c.Type != ColType.Table) Field(other, r, c.Name, c.Name, used, typeHint: true);
+            if (!used.Contains(c.Name) && c.Type != ColType.Table) Field(other, c.Name, c.Name, used, typeHint: true);
 
         // JD IDE arrangement: Item | Price, Category | On sale side by side when the window is wide
         _groups.Add(priceSec != null ? [item, priceSec] : [item]);
@@ -372,12 +417,9 @@ public sealed class GShopView : Panel, IModuleView
         if (giftSec != null) _groups.Add([giftSec]);
         if (other.Count > 0) _groups.Add([other]);
         foreach (var g in _groups) foreach (var c in g) _form.Controls.Add(c);
-        _form.ResumeLayout(true);
-        Theme.Apply(_form);
-        Relayout();
+        _form.ResumeLayout(false);
+        Theme.Apply(_form); // once: wraps the text boxes in their rounded hosts
     }
-
-    private readonly List<Control[]> _groups = new();
 
     /// <summary>Places the form cards: two columns when there is room, one column otherwise; long boxes follow the width.</summary>
     private void Relayout()
@@ -417,14 +459,25 @@ public sealed class GShopView : Panel, IModuleView
         : s % 3600 == 0 ? L.F("{0} hours", s / 3600)
         : L.F("{0} seconds", s);
 
+    /// <summary>Puts items into a combo box only when they differ (keeps the box quiet otherwise).</summary>
+    private static void SetItems(ComboBox cb, List<string> items)
+    {
+        if (cb.Items.Count == items.Count && items.Select((t, i) => (string)cb.Items[i]! == t).All(x => x)) return;
+        cb.BeginUpdate();
+        cb.Items.Clear();
+        cb.Items.AddRange(items.ToArray<object>());
+        cb.EndUpdate();
+    }
+
     /// <summary>A labelled input bound to a column (commit on Enter / leaving the box).</summary>
-    private void Field(Section s, Record r, string name, string label, HashSet<string> used, bool wide = false, bool lookup = false, Func<string, string>? hint = null, bool typeHint = false)
+    private void Field(Section s, string name, string label, HashSet<string> used, bool wide = false, bool lookup = false, Func<string, string>? hint = null, bool typeHint = false)
     {
         int c = Col(name);
         if (c < 0 || !used.Add(name)) return;
         var col = _items.Columns[c];
-        var tb = new TextBox { Text = col.Type == ColType.Bytes ? Convert.ToHexString(r.Values[c] as byte[] ?? []) : RecordIO.Format(col, r.Values[c]), Width = wide ? 360 : 130, ReadOnly = col.ReadOnly };
+        var tb = new TextBox { Width = wide ? 360 : 130, ReadOnly = col.ReadOnly };
         var after = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(6, 6, 0, 0), UseMnemonic = false };
+        string Value() => col.Type == ColType.Bytes ? Convert.ToHexString(R.Values[c] as byte[] ?? []) : RecordIO.Format(col, R.Values[c]);
         void UpdateHint()
         {
             var parts = new List<string>();
@@ -432,67 +485,77 @@ public sealed class GShopView : Panel, IModuleView
             if (typeHint) parts.Add(col.TypeLabel);
             if (lookup && long.TryParse(tb.Text, out var id) && IdNames.Lookup?.Invoke(id) is { } nm) parts.Add(nm);
             if (col.IsText && col.Length > 0) parts.Add($"{RecordIO.TextLength(col, tb.Text)}/{col.MaxChars}");
-            after.Text = string.Join("   ", parts.Where(p => p.Length > 0));
+            var t = string.Join("   ", parts.Where(p => p.Length > 0));
+            if (after.Text != t) after.Text = t;
         }
-        UpdateHint();
         void Commit()
         {
-            if (Set(r, name, tb.Text)) { UpdateHint(); if (name is "name" or "id" or "price" or "icon") _list.Invalidate(); }
-            else tb.Text = RecordIO.Format(col, r.Values[c]);
+            if (_bound == null) return;
+            if (Set(R, name, tb.Text)) { UpdateHint(); if (name == "name") UpdateTitle(); }
+            else tb.Text = Value();
         }
         tb.Leave += (_, _) => Commit();
         tb.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Commit(); } };
         tb.TextChanged += (_, _) => UpdateHint();
         if (col.IsText) GameFont.Bind(tb);
-        var tip = new ToolTip();
-        if (col.Note != null) tip.SetToolTip(tb, col.Note);
+        if (col.Note != null) new ToolTip().SetToolTip(tb, col.Note);
         s.AddRow(label, col.Note, tb, after);
         if (wide) s.Stretch.Add((tb, 230));
+        _loaders.Add(() => { var v = Value(); if (tb.Text != v) tb.Text = v; UpdateHint(); });
     }
 
-    private void Check(Section s, Record r, string name, string label, HashSet<string> used)
+    private void Check(Section s, string name, string label, HashSet<string> used)
     {
         int c = Col(name);
         if (c < 0 || !used.Add(name)) return;
-        var cb = new CheckBox { Text = label, AutoSize = true, Checked = r.Values[c] is true };
-        cb.CheckedChanged += (_, _) => { if (!_building) Set(r, name, cb.Checked ? "1" : "0"); };
+        var cb = new CheckBox { Text = label, AutoSize = true };
+        cb.CheckedChanged += (_, _) => { if (!_building && _bound != null) Set(R, name, cb.Checked ? "1" : "0"); };
         s.AddRow("", _items.Columns[c].Note, cb);
+        _loaders.Add(() => cb.Checked = R.Values[c] is true);
     }
 
     /// <summary>Checkboxes for the bits of a byte (flags / scheme masks).</summary>
-    private void Bits(Section s, Record r, string name, string label, (int bit, string text)[] bits, HashSet<string> used)
+    private void Bits(Section s, string name, string label, (int bit, string text)[] bits, HashSet<string> used)
     {
         int c = Col(name);
         if (c < 0 || !used.Add(name)) return;
         var flow = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = Padding.Empty };
-        long v = r.Long(c);
+        var boxes = new List<(CheckBox cb, int bit)>();
         foreach (var (bit, text) in bits)
         {
-            var cb = new CheckBox { Text = text, AutoSize = true, Checked = (v & (1L << bit)) != 0, Margin = new Padding(0, 3, 10, 0) };
+            var cb = new CheckBox { Text = text, AutoSize = true, Margin = new Padding(0, 3, 10, 0) };
             int b = bit;
             cb.CheckedChanged += (_, _) =>
             {
-                long cur = r.Long(c);
+                if (_building || _bound == null) return;
+                long cur = R.Long(c);
                 long nv = cb.Checked ? cur | (1L << b) : cur & ~(1L << b);
-                Set(r, name, nv.ToString(CultureInfo.InvariantCulture));
+                Set(R, name, nv.ToString(CultureInfo.InvariantCulture));
             };
             flow.Controls.Add(cb);
+            boxes.Add((cb, b));
         }
         s.AddRow(label, _items.Columns[c].Note, flow);
+        _loaders.Add(() =>
+        {
+            long v = R.Long(c);
+            foreach (var (cb, b) in boxes) cb.Checked = (v & (1L << b)) != 0;
+        });
     }
 
-    private void IconField(Section s, Record r, string name, string label, HashSet<string> used)
+    private void IconField(Section s, string name, string label, HashSet<string> used)
     {
         int c = Col(name);
         if (c < 0 || !used.Add(name)) return;
         var col = _items.Columns[c];
-        var pic = new PictureBox { Size = new Size(36, 36), SizeMode = PictureBoxSizeMode.CenterImage, BorderStyle = BorderStyle.FixedSingle, Image = GameIcons.ForPath(r.Text(c), 32), Margin = new Padding(0, 0, 6, 0) };
-        var tb = new TextBox { Text = r.Text(c), Width = 330 };
+        var pic = new PictureBox { Size = new Size(36, 36), SizeMode = PictureBoxSizeMode.CenterImage, BorderStyle = BorderStyle.FixedSingle, Margin = new Padding(0, 0, 6, 0) };
+        var tb = new TextBox { Width = 330 };
         var choose = new Button { Text = L.T("Choose…"), AutoSize = true, Height = 28 };
         void Commit()
         {
-            if (Set(r, name, tb.Text)) { pic.Image = GameIcons.ForPath(tb.Text, 32); _list.Invalidate(); }
-            else tb.Text = r.Text(c);
+            if (_bound == null) return;
+            if (Set(R, name, tb.Text)) { pic.Image = GameIcons.ForPath(tb.Text, 32); _list.Invalidate(); }
+            else tb.Text = R.Text(c);
         }
         tb.Leave += (_, _) => Commit();
         tb.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Commit(); } };
@@ -503,67 +566,73 @@ public sealed class GShopView : Panel, IModuleView
         };
         s.AddRow(label, col.Note, pic, tb, choose);
         s.Stretch.Add((tb, 300));
+        _loaders.Add(() =>
+        {
+            var v = R.Text(c);
+            if (tb.Text != v) tb.Text = v;
+            var img = GameIcons.ForPath(v, 32);
+            if (!ReferenceEquals(pic.Image, img)) pic.Image = img;
+        });
     }
 
-    private void CategoryFields(Section s, Record r, HashSet<string> used)
+    private void CategoryFields(Section s, HashSet<string> used)
     {
         int cm = Col("main_type"), cs = Col("sub_type");
         used.Add("main_type"); used.Add("sub_type");
         var main = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 170 };
         var sub = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 170 };
-        for (int m = 0; m < _cats.Rows.Count; m++) main.Items.Add($"{m} · {MainName(m)}");
-        void FillSubs(int m)
-        {
-            sub.Items.Clear();
-            if (m >= 0 && m < _cats.Rows.Count)
-                for (int i = 0; i < _cats.Rows[m].Table(2).Count; i++) sub.Items.Add($"{i} · {SubName(m, i)}");
-        }
-        int mv = (int)Num(r, "main_type"), sv = (int)Num(r, "sub_type");
-        _building = true;
-        if (mv >= 0 && mv < main.Items.Count) main.SelectedIndex = mv;
-        FillSubs(mv);
-        if (cs >= 0 && sv >= 0 && sv < sub.Items.Count) sub.SelectedIndex = sv;
-        _building = false;
+        void FillMain() => SetItems(main, Enumerable.Range(0, _cats.Rows.Count).Select(m => $"{m} · {MainName(m)}").ToList());
+        void FillSubs(int m) => SetItems(sub, m >= 0 && m < _cats.Rows.Count
+            ? Enumerable.Range(0, _cats.Rows[m].Table(2).Count).Select(i => $"{i} · {SubName(m, i)}").ToList()
+            : new List<string>());
         main.SelectedIndexChanged += (_, _) =>
         {
-            if (_building || main.SelectedIndex < 0) return;
-            Set(r, "main_type", main.SelectedIndex.ToString());
+            if (_building || _bound == null || main.SelectedIndex < 0) return;
+            Set(R, "main_type", main.SelectedIndex.ToString());
+            _building = true;
             FillSubs(main.SelectedIndex);
-            if (cs >= 0 && sub.Items.Count > 0) { sub.SelectedIndex = 0; }
+            if (cs >= 0 && sub.Items.Count > 0) sub.SelectedIndex = 0;
+            _building = false;
+            if (cs >= 0 && sub.Items.Count > 0) Set(R, "sub_type", "0");
             FillTree();
         };
-        sub.SelectedIndexChanged += (_, _) => { if (!_building && sub.SelectedIndex >= 0) { Set(r, "sub_type", sub.SelectedIndex.ToString()); FillTree(); } };
+        sub.SelectedIndexChanged += (_, _) => { if (!_building && _bound != null && sub.SelectedIndex >= 0) { Set(R, "sub_type", sub.SelectedIndex.ToString()); FillTree(); } };
         s.AddRow(L.T("Main"), _items.Columns[cm].Note, main);
         if (cs >= 0) s.AddRow(L.T("Sub"), _items.Columns[cs].Note, sub);
+        _loaders.Add(() =>
+        {
+            FillMain();
+            int mv = (int)Num(R, "main_type"), sv = (int)Num(R, "sub_type");
+            main.SelectedIndex = mv >= 0 && mv < main.Items.Count ? mv : -1;
+            FillSubs(mv);
+            if (cs >= 0) sub.SelectedIndex = sv >= 0 && sv < sub.Items.Count ? sv : -1;
+        });
     }
 
-    private void SaleFields(Section s, Record r, string prefix, HashSet<string> used)
+    private void SaleFields(Section s, string prefix, HashSet<string> used)
     {
         string tn = prefix + "_type", sn = prefix + "_start", en = prefix + "_end", pn = prefix + "_param";
         if (Col(tn) < 0) return;
         foreach (var n in new[] { tn, sn, en, pn }) used.Add(n);
         var when = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 210 };
         when.Items.AddRange([L.T("Always"), L.T("Date range (start → end)"), L.T("Repeating (start + duration)")]);
-        long type = Num(r, tn), start = Num(r, sn), end = Num(r, en);
-        _building = true;
-        when.SelectedIndex = type == 1 ? 2 : start == 0 && end == 0 ? 0 : 1;
-        _building = false;
         s.AddRow(L.T("When"), _items.Columns[Col(tn)].Note, when);
-        var startTb = new TextBox { Width = 130, Text = start.ToString() };
-        var endTb = new TextBox { Width = 130, Text = end.ToString() };
-        var paramTb = new TextBox { Width = 80, Text = Num(r, pn).ToString() };
+        var startTb = new TextBox { Width = 130 };
+        var endTb = new TextBox { Width = 130 };
+        var paramTb = new TextBox { Width = 80 };
         var startHint = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(6, 6, 0, 0) };
         var endHint = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(6, 6, 0, 0) };
         void Hints()
         {
             long.TryParse(startTb.Text, out var a); long.TryParse(endTb.Text, out var b);
-            startHint.Text = a > 100000 ? DateTimeOffset.FromUnixTimeSeconds(a).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "";
-            endHint.Text = when.SelectedIndex == 2 ? Duration(b) : b > 100000 ? DateTimeOffset.FromUnixTimeSeconds(b).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "";
+            var st = a > 100000 ? DateTimeOffset.FromUnixTimeSeconds(a).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "";
+            var et = when.SelectedIndex == 2 ? Duration(b) : b > 100000 ? DateTimeOffset.FromUnixTimeSeconds(b).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "";
+            if (startHint.Text != st) startHint.Text = st;
+            if (endHint.Text != et) endHint.Text = et;
         }
-        Hints();
         void Bind(TextBox tb, string col)
         {
-            void Commit() { if (!Set(r, col, tb.Text)) tb.Text = Num(r, col).ToString(); Hints(); }
+            void Commit() { if (_bound == null) return; if (!Set(R, col, tb.Text)) tb.Text = Num(R, col).ToString(); Hints(); }
             tb.Leave += (_, _) => Commit();
             tb.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Commit(); } };
         }
@@ -571,47 +640,63 @@ public sealed class GShopView : Panel, IModuleView
         var rowStart = s.AddRow(L.T("Start"), L.T("Unix time (seconds since 1970)"), startTb, startHint);
         var rowEnd = s.AddRow(L.T("End / duration"), L.T("Unix time, or seconds for a repeating sale"), endTb, endHint);
         var rowParam = s.AddRow(L.T("Parameter"), null, paramTb);
-        void Vis() { bool on = when.SelectedIndex > 0; rowStart.Visible = rowEnd.Visible = rowParam.Visible = on; }
-        Vis();
+        void Vis() { bool on = when.SelectedIndex > 0; if (rowStart.Visible != on) rowStart.Visible = rowEnd.Visible = rowParam.Visible = on; }
         when.SelectedIndexChanged += (_, _) =>
         {
-            if (_building) return;
+            if (_building || _bound == null) return;
             switch (when.SelectedIndex)
             {
-                case 0: Set(r, tn, "0"); Set(r, sn, "0"); Set(r, en, "0"); Set(r, pn, "0"); startTb.Text = endTb.Text = paramTb.Text = "0"; break;
-                case 1: Set(r, tn, "0"); break;
-                case 2: Set(r, tn, "1"); break;
+                case 0: Set(R, tn, "0"); Set(R, sn, "0"); Set(R, en, "0"); Set(R, pn, "0"); startTb.Text = endTb.Text = paramTb.Text = "0"; break;
+                case 1: Set(R, tn, "0"); break;
+                case 2: Set(R, tn, "1"); break;
             }
             Vis(); Hints();
+            Relayout(); // the card grows / shrinks with the date rows
         };
+        _loaders.Add(() =>
+        {
+            long type = Num(R, tn), start = Num(R, sn), end = Num(R, en);
+            when.SelectedIndex = type == 1 ? 2 : start == 0 && end == 0 ? 0 : 1;
+            void Put(TextBox tb, string v) { if (tb.Text != v) tb.Text = v; }
+            Put(startTb, start.ToString()); Put(endTb, end.ToString()); Put(paramTb, Num(R, pn).ToString());
+            Vis(); Hints();
+        });
     }
 
-    private void DescriptionField(Section s, Record r, string name)
+    private void DescriptionField(Section s, string name)
     {
         int c = Col(name);
         var col = _items.Columns[c];
-        var text = new TextBox { Multiline = true, ScrollBars = ScrollBars.Vertical, AcceptsReturn = true, Width = 600, Height = 96, Font = new Font("Segoe UI", 10F), Text = r.Text(c).Replace("\r\n", "\n").Replace("\n", "\r\n") };
+        var text = new TextBox { Multiline = true, ScrollBars = ScrollBars.Vertical, AcceptsReturn = true, Width = 600, Height = 96, Font = new Font("Segoe UI", 10F) };
         var preview = new GameTextPreview { Width = 600, Height = 96, Font = new Font("Segoe UI", 10F) };
         GameFont.Bind(text);
         GameFont.Bind(preview);
         var counter = new Label { AutoSize = true, ForeColor = Color.DimGray, Margin = new Padding(0, 4, 0, 0) };
-        bool crlf = r.Text(c).Contains("\r\n");
+        bool crlf = false;
+        string Shown(Record r) => r.Text(c).Replace("\r\n", "\n").Replace("\n", "\r\n");
         string Norm() => crlf ? text.Text : text.Text.Replace("\r\n", "\n");
         void Refresh2()
         {
             preview.GameText = Norm();
-            counter.Text = $"{RecordIO.TextLength(col, Norm())}/{col.MaxChars}";
-            counter.ForeColor = RecordIO.TextLength(col, Norm()) > col.MaxChars ? Color.Firebrick : Color.DimGray;
+            int n = RecordIO.TextLength(col, Norm());
+            counter.Text = $"{n}/{col.MaxChars}";
+            counter.ForeColor = n > col.MaxChars ? Color.Firebrick : Color.DimGray;
         }
-        Refresh2();
         text.TextChanged += (_, _) => Refresh2();
-        void Commit() { if (!Set(r, name, Norm())) { text.Text = r.Text(c).Replace("\r\n", "\n").Replace("\n", "\r\n"); } }
+        void Commit() { if (_bound == null) return; if (!Set(R, name, Norm())) text.Text = Shown(R); }
         text.Leave += (_, _) => Commit();
         var bar = new ColorCodeBar(text);
         var prevLabel = new Label { Text = L.T("Preview (in game)"), AutoSize = true, ForeColor = Color.DimGray };
         var host = new DescriptionHost(text, bar, counter, prevLabel, preview);
         s.AddRow(L.T("Text"), col.Note, host);
         s.Stretch.Add((host, 150));
+        _loaders.Add(() =>
+        {
+            crlf = R.Text(c).Contains("\r\n");
+            var v = Shown(R);
+            if (text.Text != v) { text.Text = v; text.Select(0, 0); text.ScrollToCaret(); }
+            Refresh2();
+        });
     }
 
     // ───────────────────────── mode / IModuleView ─────────────────────────
