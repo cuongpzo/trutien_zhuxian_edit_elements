@@ -1,4 +1,4 @@
-# Tru Tiên Elements Editor
+﻿# Tru Tiên Elements Editor
 
 Công cụ đọc/sửa/Việt hoá `elements.data` (Tru Tiên 3 / Jade Dynasty, engine Perfect World).
 C# .NET 10 – WinForms. Đã kiểm chứng trên Client0619 (version 165): đọc rồi ghi lại **giống hệt từng byte**.
@@ -31,7 +31,7 @@ Mỗi loại file một tab: **Elements · Path · Objects · Domains · Drops �
 | Tab | File | Trạng thái |
 |---|---|---|
 | Path / Objects | `path.data`, `dynamicobjects.data` (ID → đường dẫn model) | Đọc/sửa, ghi lại giống từng byte |
-| Domains | `domain*.data` (lãnh địa, đường viền, tam giác, lãnh địa kề, giờ chiến) | Đọc/sửa, giống từng byte (7/7 file) |
+| Domains | `domain*.data` (lãnh địa, đường viền, tam giác, lãnh địa kề, giờ chiến) | **Bản đồ** kiểu JD IDE (tab từng file domain, vẽ đường viền + tên, màu theo cấp, zoom/kéo, bấm chọn, kéo chấm tâm để dời, lãnh địa kề nét đứt, thêm/bỏ kề hai chiều, giờ chiến) + chế độ ▦ Bảng; giống từng byte (7/7 file) |
 | GShop | `gshop*.data` (món bán + cây danh mục; 3 kiểu bản ghi 2660/357/200 B) | Đọc/sửa, giống từng byte (6/6 file) |
 | Task NPC | `task_npc.data` (NPC nhiệm vụ + vị trí) | Đọc/sửa, giống từng byte |
 | VIP | `vipaward.data` (quà VIP) | Đọc/sửa, giống từng byte |

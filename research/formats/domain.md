@@ -1,4 +1,4 @@
-# domain*.data — map domains (territory / guild war)
+﻿# domain*.data — map domains (territory / guild war)
 
 Implemented in `src/ElementsCore/Formats/DomainFile.cs`. Verified byte-exact on all 7 TT3 client samples.
 Little-endian, no padding, no version field. All numbers are `i32`.
@@ -38,7 +38,7 @@ Domain:
 Observed invariants (all samples): faceCount = vertCount − 2 (ear-clipped polygon), all face indices
 < vertCount, neighbour lists symmetric, no self-neighbour, ids unique within a file.
 Battle times in every non-empty sample: Sat/Fri/Sun 20:00, Sat/Sun 14:00, Sat/Sun 09:00; perSlot = 7.
-`weekday` is assumed to be tm_wday (0 = Sunday, 6 = Saturday).
+`weekday` counts from Monday 00:00 (0 = Monday … 6 = Sunday), as JD IDE shows it: the samples' 7 slots are Sat/Sun/Mon 20:00, Sun/Mon 14:00, Sun/Mon 09:00.
 
 JD IDE names (strings): struct DomainData{magic, domains, times, timeMax}, Domain{id, name, type, reward,
 center?, verts, faces, neighbours, …} ("9 elements" — one more than the 8 stored fields; likely an

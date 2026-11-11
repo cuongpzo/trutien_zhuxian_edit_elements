@@ -1,3 +1,10 @@
 .build/
 **/bin/
 **/obj/
+
+# build output, release packages and local notes - not pushed
+Release/
+*.zip
+RELEASE_HISTORY.md
+ISSUES_ChinhDo_Game.MD
+*.bak_*
