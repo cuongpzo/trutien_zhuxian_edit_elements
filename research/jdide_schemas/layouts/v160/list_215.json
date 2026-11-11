@@ -1,0 +1,52 @@
+{
+ "name": "SKILL_REPLACE_CONFIG",
+ "struct": "SKILL_REPLACE_CONFIG",
+ "size": 1412,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "Skill Replace Info",
+   "off": 68,
+   "t": {
+    "k": "array",
+    "n": 168,
+    "stride": 8,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "original_skill_id",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       },
+       "display": "skill"
+      },
+      {
+       "name": "new_skill_id",
+       "off": 4,
+       "t": {
+        "k": "i32"
+       },
+       "display": "skill"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ElementsCli/ElementsCli.csproj" />
+    <Project Path="src/ElementsCore/ElementsCore.csproj" />
+    <Project Path="src/ElementsEditor/ElementsEditor.csproj" />
+  </Folder>
+</Solution>

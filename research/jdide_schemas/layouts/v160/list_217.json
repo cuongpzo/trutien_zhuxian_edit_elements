@@ -1,0 +1,71 @@
+{
+ "name": "CONSUME_AWARD_CONFIG",
+ "struct": "CONSUME_AWARD_CONFIG",
+ "size": 544,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "Consume Awards Info",
+   "off": 68,
+   "t": {
+    "k": "array",
+    "n": 7,
+    "stride": 68,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "consume_award_count",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "Awards List",
+       "off": 4,
+       "t": {
+        "k": "array",
+        "n": 8,
+        "stride": 8,
+        "t": {
+         "k": "struct",
+         "fields": [
+          {
+           "name": "award_id",
+           "off": 0,
+           "t": {
+            "k": "i32"
+           }
+          },
+          {
+           "name": "award_count",
+           "off": 4,
+           "t": {
+            "k": "i32"
+           }
+          }
+         ]
+        }
+       }
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

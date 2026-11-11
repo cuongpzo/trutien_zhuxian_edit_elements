@@ -1,0 +1,472 @@
+{
+ "name": "NPC_ESSENCE",
+ "struct": "NPC_ESSENCE",
+ "size": 860,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "type",
+   "off": 68,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "title",
+   "off": 72,
+   "t": {
+    "k": "wstr",
+    "n": 16
+   }
+  },
+  {
+   "name": "refresh_time",
+   "off": 104,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "size",
+   "off": 108,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "model_path_id",
+   "off": 112,
+   "display": "path",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "profile_path_id",
+   "off": 116,
+   "display": "image",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Monster_Source",
+   "off": 120,
+   "refs": [
+    "MONSTER_ESSENCE"
+   ],
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Greeting",
+   "off": 124,
+   "t": {
+    "k": "wstr",
+    "n": 256
+   }
+  },
+  {
+   "name": "Discover_ID",
+   "off": 636,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Domain_Related",
+   "off": 640,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Guard",
+   "off": 644,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Vehicle",
+   "off": 648,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Fort_Config",
+   "off": 652,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "NPC_Dialog",
+   "off": 656,
+   "refs": [
+    "NPC_TALK_SERVICE"
+   ],
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Shop",
+   "off": 660,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "gShop_Major_Type_ID",
+   "off": 664,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Purchase_Service",
+   "off": 668,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Task_Start_Map",
+   "off": 672,
+   "refs": [
+    "NPC_TASK_OUT_SERVICE"
+   ],
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Task_End_Map",
+   "off": 676,
+   "refs": [
+    "NPC_TASK_IN_SERVICE"
+   ],
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Taskmatter_Service",
+   "off": 680,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Heal_Service",
+   "off": 684,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Teleport",
+   "off": 688,
+   "refs": [
+    "NPC_TRANSMIT_SERVICE"
+   ],
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Proxy_Service",
+   "off": 692,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Stash",
+   "off": 696,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Tower_Build_Service",
+   "off": 700,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Reset_Service",
+   "off": 704,
+   "refs": [
+    "NPC_RESETPROP_SERVICE"
+   ],
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Bind_Service",
+   "off": 708,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Destroy_Service",
+   "off": 712,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Cancel_Destroy_Service",
+   "off": 716,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "War_Service",
+   "off": 720,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Item Exchange",
+   "off": 724,
+   "refs": [
+    "ITEM_TRADE_CONFIG"
+   ],
+   "t": {
+    "k": "array",
+    "n": 4,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Crafting_Service",
+   "off": 740,
+   "refs": [
+    "EQUIP_SOUL_MELD_SERVICE"
+   ],
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Consignment_Service",
+   "off": 744,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Reputation_Service",
+   "off": 748,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Transfer_Service",
+   "off": 752,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Open_Service",
+   "off": 756,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Item Exchange 2",
+   "off": 760,
+   "refs": [
+    "ITEM_TRADE2_CONFIG"
+   ],
+   "t": {
+    "k": "array",
+    "n": 2,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Special_Mode_1",
+   "off": 768,
+   "e": "combined_services",
+   "g": "Special Modes",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Special_Mode_2",
+   "off": 772,
+   "e": "combined_services2",
+   "g": "Special Modes",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Special_Mode_3",
+   "off": 776,
+   "e": "combined_services3",
+   "g": "Special Modes",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Special_Mode_4",
+   "off": 780,
+   "g": "Special Modes",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Has_PK_Service",
+   "off": 784,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Fee_Per_PK",
+   "off": 788,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Refine_Service",
+   "off": 792,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Mine_Service",
+   "off": 796,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Interation_Object_ID",
+   "off": 800,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "npc_related",
+   "off": 804,
+   "c": "New or unidentified bytes found while aligning an older schema",
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Collision_in_Server",
+   "off": 808,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Vehicle_Min_Length",
+   "off": 812,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Vehicle_Min_Width",
+   "off": 816,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Vehicle_Min_Height",
+   "off": 820,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Vehicle_Max_Length",
+   "off": 824,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Vehicle_Max_Width",
+   "off": 828,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Vehicle_Max_Height",
+   "off": 832,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Territory_ID",
+   "off": 836,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Instances",
+   "off": 840,
+   "refs": [
+    "TRANSCRIPTION_CONFIG",
+    "TOWER_TRANSCRIPTION_CONFIG"
+   ],
+   "t": {
+    "k": "array",
+    "n": 5,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  }
+ ]
+}

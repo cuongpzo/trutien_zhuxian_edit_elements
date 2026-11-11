@@ -1,0 +1,163 @@
+{
+  "name": "ITEM_TRADE_CONFIG",
+  "struct": "ITEM_TRADE_CONFIG",
+  "size": 10888,
+  "fields": [
+    {
+      "name": "id",
+      "off": 0,
+      "t": {
+        "k": "i32"
+      }
+    },
+    {
+      "name": "name",
+      "off": 4,
+      "t": {
+        "k": "wstr",
+        "n": 32
+      }
+    },
+    {
+      "name": "pages",
+      "off": 68,
+      "t": {
+        "k": "array",
+        "n": 4,
+        "stride": 2704,
+        "t": {
+          "k": "struct",
+          "fields": [
+            {
+              "name": "title",
+              "off": 0,
+              "t": {
+                "k": "wstr",
+                "n": 8
+              }
+            },
+            {
+              "name": "items",
+              "off": 16,
+              "t": {
+                "k": "array",
+                "n": 48,
+                "stride": 56,
+                "t": {
+                  "k": "struct",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "off": 0,
+                      "t": {
+                        "k": "i32"
+                      }
+                    },
+                    {
+                      "name": "amount",
+                      "off": 4,
+                      "t": {
+                        "k": "i32"
+                      }
+                    },
+                    {
+                      "name": "item_required",
+                      "off": 8,
+                      "t": {
+                        "k": "array",
+                        "n": 2,
+                        "stride": 8,
+                        "t": {
+                          "k": "struct",
+                          "fields": [
+                            {
+                              "name": "id",
+                              "off": 0,
+                              "t": {
+                                "k": "i32"
+                              }
+                            },
+                            {
+                              "name": "amount",
+                              "off": 4,
+                              "t": {
+                                "k": "i32"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "name": "reputation_required",
+                      "off": 24,
+                      "t": {
+                        "k": "array",
+                        "n": 2,
+                        "stride": 8,
+                        "t": {
+                          "k": "struct",
+                          "fields": [
+                            {
+                              "name": "type",
+                              "off": 0,
+                              "t": {
+                                "k": "i32"
+                              }
+                            },
+                            {
+                              "name": "amount",
+                              "off": 4,
+                              "t": {
+                                "k": "i32"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "name": "type",
+                      "off": 40,
+                      "t": {
+                        "k": "i32"
+                      }
+                    },
+                    {
+                      "name": "count",
+                      "off": 44,
+                      "t": {
+                        "k": "i32"
+                      }
+                    },
+                    {
+                      "name": "trade_related_1",
+                      "off": 48,
+                      "t": {
+                        "k": "i32"
+                      }
+                    },
+                    {
+                      "name": "trade_related_2",
+                      "off": 52,
+                      "t": {
+                        "k": "i32"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "dialog_id",
+      "off": 10884,
+      "t": {
+        "k": "i32"
+      }
+    }
+  ]
+}

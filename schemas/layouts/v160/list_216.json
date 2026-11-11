@@ -1,0 +1,287 @@
+{
+ "name": "HILL_TRANSCRIPTION_CONFIG",
+ "struct": "HILL_TRANSCRIPTION_CONFIG",
+ "size": 444,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "max_finish_count",
+   "off": 68,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "map_id",
+   "off": 72,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "open_room_item_id",
+   "off": 76,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "open_room_item_count",
+   "off": 80,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "room_active_time",
+   "off": 84,
+   "t": {
+    "k": "i32"
+   },
+   "display": "duration"
+  },
+  {
+   "name": "player_min_level",
+   "off": 88,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "player_max_level",
+   "off": 92,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "character_combo_id",
+   "off": 96,
+   "t": {
+    "k": "i64"
+   },
+   "e": "character_combo_id"
+  },
+  {
+   "name": "character_combo_id_2",
+   "off": 104,
+   "t": {
+    "k": "i64"
+   },
+   "e": "character_combo_id2"
+  },
+  {
+   "name": "god_devil_mask",
+   "off": 112,
+   "t": {
+    "k": "i32"
+   },
+   "e": "god_devil_mask"
+  },
+  {
+   "name": "ascension_count",
+   "off": 116,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "required_race",
+   "off": 120,
+   "t": {
+    "k": "i32"
+   },
+   "e": "race"
+  },
+  {
+   "name": "required_money",
+   "off": 124,
+   "t": {
+    "k": "i32"
+   },
+   "display": "money"
+  },
+  {
+   "name": "Required Reputation",
+   "off": 128,
+   "t": {
+    "k": "array",
+    "n": 4,
+    "stride": 8,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "type",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "value",
+       "off": 4,
+       "t": {
+        "k": "i32"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "required_item_id",
+   "off": 160,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "required_item_count",
+   "off": 164,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "required_item_consumed",
+   "off": 168,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "min_players_enter",
+   "off": 172,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "max_players_enter",
+   "off": 176,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "invincible_time",
+   "off": 180,
+   "t": {
+    "k": "i32"
+   },
+   "display": "duration"
+  },
+  {
+   "name": "wait_time_before_leave",
+   "off": 184,
+   "t": {
+    "k": "i32"
+   },
+   "display": "duration"
+  },
+  {
+   "name": "total_exist_time",
+   "off": 188,
+   "t": {
+    "k": "i32"
+   },
+   "display": "duration"
+  },
+  {
+   "name": "controller_id",
+   "off": 192,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "award_task_id",
+   "off": 196,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Forbidden Items",
+   "off": 200,
+   "t": {
+    "k": "array",
+    "n": 10,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Forbidden Skills",
+   "off": 240,
+   "t": {
+    "k": "array",
+    "n": 10,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Map Variables",
+   "off": 280,
+   "t": {
+    "k": "array",
+    "n": 20,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Level Controllers",
+   "off": 360,
+   "t": {
+    "k": "array",
+    "n": 10,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Strategies",
+   "off": 400,
+   "t": {
+    "k": "array",
+    "n": 10,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Difficulty",
+   "off": 440,
+   "t": {
+    "k": "i32"
+   }
+  }
+ ]
+}

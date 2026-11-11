@@ -1,0 +1,124 @@
+{
+ "name": "LIVENESS_CONFIG",
+ "struct": "LIVENESS_CONFIG",
+ "size": 7824,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "Scores",
+   "off": 68,
+   "t": {
+    "k": "array",
+    "n": 15,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Gifts",
+   "off": 128,
+   "t": {
+    "k": "array",
+    "n": 4,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Element Lists",
+   "off": 144,
+   "t": {
+    "k": "array",
+    "n": 120,
+    "stride": 64,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "name",
+       "off": 0,
+       "t": {
+        "k": "wstr",
+        "n": 16
+       }
+      },
+      {
+       "name": "activity_type",
+       "off": 32,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "min_level",
+       "off": 36,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "max_level",
+       "off": 40,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "judge_type",
+       "off": 44,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "unidentified_field",
+       "off": 48,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "require_id",
+       "off": 52,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "unidentified_field_8",
+       "off": 56,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "unidentified_field_9",
+       "off": 60,
+       "t": {
+        "k": "i32"
+       }
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

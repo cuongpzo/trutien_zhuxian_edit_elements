@@ -1,0 +1,218 @@
+{
+ "name": "SALE_PROMOTION_ITEM_ESSENCE",
+ "struct": "SALE_PROMOTION_ITEM_ESSENCE",
+ "size": 5344,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "ui_name",
+   "off": 68,
+   "t": {
+    "k": "wstr",
+    "n": 16
+   }
+  },
+  {
+   "name": "model_path",
+   "off": 100,
+   "t": {
+    "k": "i32"
+   },
+   "display": "path"
+  },
+  {
+   "name": "icon_path",
+   "off": 104,
+   "t": {
+    "k": "i32"
+   },
+   "display": "icon"
+  },
+  {
+   "name": "Element List",
+   "off": 108,
+   "t": {
+    "k": "array",
+    "n": 20,
+    "stride": 260,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "valid_time_start",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       },
+       "display": "time"
+      },
+      {
+       "name": "valid_time_end",
+       "off": 4,
+       "t": {
+        "k": "i32"
+       },
+       "display": "time"
+      },
+      {
+       "name": "get_count",
+       "off": 8,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "condition_type",
+       "off": 12,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "condition_arg",
+       "off": 16,
+       "t": {
+        "k": "array",
+        "n": 3,
+        "stride": 4,
+        "t": {
+         "k": "i32"
+        }
+       }
+      },
+      {
+       "name": "Award Items",
+       "off": 28,
+       "t": {
+        "k": "array",
+        "n": 2,
+        "stride": 16,
+        "t": {
+         "k": "struct",
+         "fields": [
+          {
+           "name": "award_id",
+           "off": 0,
+           "t": {
+            "k": "i32"
+           }
+          },
+          {
+           "name": "award_count",
+           "off": 4,
+           "t": {
+            "k": "i32"
+           }
+          },
+          {
+           "name": "expire",
+           "off": 8,
+           "t": {
+            "k": "i32"
+           }
+          },
+          {
+           "name": "bind",
+           "off": 12,
+           "t": {
+            "k": "i32"
+           }
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "description",
+       "off": 60,
+       "t": {
+        "k": "wstr",
+        "n": 100
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "extra_award_need_count",
+   "off": 5308,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "extra_award_id",
+   "off": 5312,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "extra_award_count",
+   "off": 5316,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "extra_award_expire",
+   "off": 5320,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Extra_Award_Is_Bind",
+   "off": 5324,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "sell_price",
+   "off": 5328,
+   "t": {
+    "k": "i32"
+   },
+   "display": "money"
+  },
+  {
+   "name": "buy_price",
+   "off": 5332,
+   "t": {
+    "k": "i32"
+   },
+   "display": "money"
+  },
+  {
+   "name": "pile_num_max",
+   "off": 5336,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "proc_type",
+   "off": 5340,
+   "t": {
+    "k": "i32"
+   },
+   "e": "trade_behavior"
+  }
+ ]
+}

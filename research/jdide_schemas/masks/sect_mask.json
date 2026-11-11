@@ -1,0 +1,101 @@
+{
+ "key": "sect_mask",
+ "label": "Sects",
+ "flags": [
+  {
+   "bit": 0,
+   "label": "Initiate",
+   "description": "少侠"
+  },
+  {
+   "bit": 1,
+   "label": "Vim",
+   "description": "鬼王宗"
+  },
+  {
+   "bit": 2,
+   "label": "Lupin",
+   "description": "合欢派"
+  },
+  {
+   "bit": 3,
+   "label": "Jadeon",
+   "description": "青云门"
+  },
+  {
+   "bit": 4,
+   "label": "Skysong",
+   "description": "天音寺"
+  },
+  {
+   "bit": 5,
+   "label": "Modo",
+   "description": "鬼道"
+  },
+  {
+   "bit": 6,
+   "label": "Inc. Mage",
+   "description": "焚香"
+  },
+  {
+   "bit": 7,
+   "label": "Reserved 3",
+   "description": "保留3"
+  },
+  {
+   "bit": 8,
+   "label": "Divine novice",
+   "description": "神裔少侠"
+  },
+  {
+   "bit": 9,
+   "label": "Balo",
+   "description": "九黎"
+  },
+  {
+   "bit": 10,
+   "label": "Arden",
+   "description": "烈山"
+  },
+  {
+   "bit": 11,
+   "label": "Forta",
+   "description": "太昊"
+  },
+  {
+   "bit": 12,
+   "label": "Rayan",
+   "description": "怀光"
+  },
+  {
+   "bit": 13,
+   "label": "Voida",
+   "description": "东夷"
+  },
+  {
+   "bit": 14,
+   "label": "Celan",
+   "description": "天华"
+  },
+  {
+   "bit": 15,
+   "label": "Psychea",
+   "description": "萝莉"
+  },
+  {
+   "bit": 16,
+   "label": "Kytos",
+   "description": "四足"
+  },
+  {
+   "bit": 17,
+   "label": "Hydran",
+   "description": "四足"
+  },
+  {
+   "bit": 18,
+   "label": "Seira",
+   "description": "四足"
+  }
+ ]
+}

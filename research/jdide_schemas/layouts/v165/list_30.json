@@ -1,0 +1,124 @@
+{
+ "name": "NPC_TRANSMIT_SERVICE",
+ "struct": "NPC_TRANSMIT_SERVICE",
+ "size": 1224,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "Teleports",
+   "off": 68,
+   "t": {
+    "k": "array",
+    "n": 16,
+    "stride": 72,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "world_tag",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "name",
+       "off": 4,
+       "t": {
+        "k": "wstr",
+        "n": 16
+       }
+      },
+      {
+       "name": "position_x",
+       "off": 36,
+       "t": {
+        "k": "f32"
+       }
+      },
+      {
+       "name": "position_y",
+       "off": 40,
+       "t": {
+        "k": "f32"
+       }
+      },
+      {
+       "name": "position_z",
+       "off": 44,
+       "t": {
+        "k": "f32"
+       }
+      },
+      {
+       "name": "teleport_fee",
+       "off": 48,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "target_related_1",
+       "off": 52,
+       "t": {
+        "k": "i32"
+       },
+       "refs": [
+        "EQUIPMENT_ESSENCE"
+       ]
+      },
+      {
+       "name": "target_related_2",
+       "off": 56,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "target_related_3",
+       "off": 60,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "target_related_4",
+       "off": 64,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "required_level",
+       "off": 68,
+       "t": {
+        "k": "i32"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "id_dialog",
+   "off": 1220,
+   "t": {
+    "k": "i32"
+   }
+  }
+ ]
+}

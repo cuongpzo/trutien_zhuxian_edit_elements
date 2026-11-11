@@ -1,0 +1,125 @@
+{
+ "name": "TALENT_SCROLL_CONFIG",
+ "struct": "TALENT_SCROLL_CONFIG",
+ "size": 812,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "Attribute Probabilities",
+   "off": 68,
+   "t": {
+    "k": "array",
+    "n": 4,
+    "stride": 4,
+    "t": {
+     "k": "f32"
+    }
+   }
+  },
+  {
+   "name": "Spe_Prob",
+   "off": 84,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Attribute List",
+   "off": 88,
+   "t": {
+    "k": "array",
+    "n": 32,
+    "stride": 20,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "attribute_id",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "attribute_max_value",
+       "off": 4,
+       "t": {
+        "k": "f32"
+       }
+      },
+      {
+       "name": "attribute_min_value",
+       "off": 8,
+       "t": {
+        "k": "f32"
+       }
+      },
+      {
+       "name": "attribute_add_value",
+       "off": 12,
+       "t": {
+        "k": "f32"
+       }
+      },
+      {
+       "name": "attribute_probability",
+       "off": 16,
+       "t": {
+        "k": "f32"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "Level Probability",
+   "off": 728,
+   "t": {
+    "k": "array",
+    "n": 5,
+    "stride": 4,
+    "t": {
+     "k": "f32"
+    }
+   }
+  },
+  {
+   "name": "Skills",
+   "off": 748,
+   "t": {
+    "k": "array",
+    "n": 15,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   },
+   "display": "skill"
+  },
+  {
+   "name": "config",
+   "off": 808,
+   "t": {
+    "k": "i32"
+   },
+   "refs": [
+    "TALENT_SCROLL_SKILL_CONFIG"
+   ]
+  }
+ ]
+}

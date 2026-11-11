@@ -1,0 +1,13 @@
+<Project>
+  <!-- App version (tag + numeric) is kept in version.props, bumped by build-release.ps1 -->
+  <Import Project="$(MSBuildThisFileDirectory)version.props" />
+  <PropertyGroup>
+    <InformationalVersion>$(AppVersionTag)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <!-- Ship the JSON schema folder next to every executable -->
+  <ItemGroup Condition="'$(OutputType)' == 'Exe' Or '$(OutputType)' == 'WinExe'">
+    <None Include="$(MSBuildThisFileDirectory)schemas\**\*.json" Link="schemas\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

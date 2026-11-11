@@ -1,0 +1,205 @@
+{
+ "name": "VEHICLE_ESSENCE",
+ "struct": "VEHICLE_ESSENCE",
+ "size": 324,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "file_model",
+   "off": 68,
+   "t": {
+    "k": "i32"
+   },
+   "display": "path"
+  },
+  {
+   "name": "file_matter",
+   "off": 72,
+   "t": {
+    "k": "i32"
+   },
+   "display": "path"
+  },
+  {
+   "name": "file_icon",
+   "off": 76,
+   "t": {
+    "k": "i32"
+   },
+   "display": "icon"
+  },
+  {
+   "name": "level_required",
+   "off": 80,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "renascence_count",
+   "off": 84,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "nation_position_mask",
+   "off": 88,
+   "t": {
+    "k": "i32"
+   },
+   "e": "nation_position_mask"
+  },
+  {
+   "name": "only_qianji",
+   "off": 92,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "only_in_war",
+   "off": 96,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "is_multi_ride",
+   "off": 100,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "multi_ride_mode",
+   "off": 104,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "multi_ride_limit",
+   "off": 108,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "speed",
+   "off": 112,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "max_speed",
+   "off": 116,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "height",
+   "off": 120,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "init_upgrade",
+   "off": 124,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Attribute Probabilities",
+   "off": 128,
+   "t": {
+    "k": "array",
+    "n": 5,
+    "stride": 4,
+    "t": {
+     "k": "f32"
+    }
+   }
+  },
+  {
+   "name": "Attributes",
+   "off": 148,
+   "t": {
+    "k": "array",
+    "n": 20,
+    "stride": 8,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "attribute_id",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       },
+       "refs": [
+        "EQUIPMENT_ADDON"
+       ]
+      },
+      {
+       "name": "probability",
+       "off": 4,
+       "t": {
+        "k": "f32"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "price",
+   "off": 308,
+   "t": {
+    "k": "i32"
+   },
+   "display": "money"
+  },
+  {
+   "name": "shop_price",
+   "off": 312,
+   "t": {
+    "k": "i32"
+   },
+   "display": "money"
+  },
+  {
+   "name": "pile_num_max",
+   "off": 316,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "proc_type",
+   "off": 320,
+   "t": {
+    "k": "i32"
+   },
+   "e": "trade_behavior"
+  }
+ ]
+}

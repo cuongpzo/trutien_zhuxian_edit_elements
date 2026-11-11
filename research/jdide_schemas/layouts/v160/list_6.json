@@ -1,0 +1,181 @@
+{
+ "name": "MEDICINE_ESSENCE",
+ "struct": "MEDICINE_ESSENCE",
+ "size": 192,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "type",
+   "off": 4,
+   "t": {
+    "k": "i32"
+   },
+   "refs": [
+    "MEDICINE_MAJOR_TYPE"
+   ]
+  },
+  {
+   "name": "sub_type",
+   "off": 8,
+   "t": {
+    "k": "i32"
+   },
+   "refs": [
+    "MEDICINE_SUB_TYPE"
+   ]
+  },
+  {
+   "name": "name",
+   "off": 12,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "matter_path",
+   "off": 76,
+   "t": {
+    "k": "i32"
+   },
+   "display": "path"
+  },
+  {
+   "name": "icon_path",
+   "off": 80,
+   "t": {
+    "k": "i32"
+   },
+   "display": "icon"
+  },
+  {
+   "name": "Req_Level",
+   "off": 84,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Req_Ascended",
+   "off": 88,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Cooldown",
+   "off": 92,
+   "t": {
+    "k": "i32"
+   },
+   "display": "duration_ms"
+  },
+  {
+   "name": "Only_in_War",
+   "off": 96,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Recovery_Type",
+   "off": 100,
+   "t": {
+    "k": "i32"
+   },
+   "e": "medicine_type"
+  },
+  {
+   "name": "Health",
+   "off": 104,
+   "t": {
+    "k": "array",
+    "n": 4,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Spirit",
+   "off": 120,
+   "t": {
+    "k": "array",
+    "n": 4,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Vigor",
+   "off": 136,
+   "t": {
+    "k": "array",
+    "n": 4,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Health_Spirit_Pool",
+   "off": 152,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Map_Restrictions",
+   "off": 156,
+   "t": {
+    "k": "array",
+    "n": 5,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "sell_price",
+   "off": 176,
+   "t": {
+    "k": "i32"
+   },
+   "display": "money"
+  },
+  {
+   "name": "buy_price",
+   "off": 180,
+   "t": {
+    "k": "i32"
+   },
+   "display": "money"
+  },
+  {
+   "name": "pile_num_max",
+   "off": 184,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "proc_type",
+   "off": 188,
+   "t": {
+    "k": "i32"
+   },
+   "e": "trade_behavior"
+  }
+ ]
+}

@@ -1,0 +1,798 @@
+{
+ "name": "MONSTER_ESSENCE",
+ "struct": "MONSTER_ESSENCE",
+ "size": 808,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "type",
+   "off": 4,
+   "t": {
+    "k": "i32"
+   },
+   "refs": [
+    "MONSTER_TYPE"
+   ]
+  },
+  {
+   "name": "name",
+   "off": 8,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "Descriptions",
+   "off": 72,
+   "t": {
+    "k": "array",
+    "n": 2,
+    "stride": 32,
+    "t": {
+     "k": "wstr",
+     "n": 16
+    }
+   }
+  },
+  {
+   "name": "title",
+   "off": 136,
+   "t": {
+    "k": "wstr",
+    "n": 16
+   }
+  },
+  {
+   "name": "faction",
+   "off": 168,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "enemy_faction",
+   "off": 172,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "monster_faction",
+   "off": 176,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "model_path",
+   "off": 180,
+   "t": {
+    "k": "i32"
+   },
+   "display": "path"
+  },
+  {
+   "name": "head_icon",
+   "off": 184,
+   "t": {
+    "k": "i32"
+   },
+   "display": "path"
+  },
+  {
+   "name": "big_icon",
+   "off": 188,
+   "t": {
+    "k": "i32"
+   },
+   "display": "path"
+  },
+  {
+   "name": "size",
+   "off": 192,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "color_name",
+   "off": 196,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "strategy_id",
+   "off": 200,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "select_strategy",
+   "off": 204,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "air_prop",
+   "off": 208,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "show_damage",
+   "off": 212,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "resist_valid",
+   "off": 216,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "level",
+   "off": 220,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "show_level",
+   "off": 224,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "is_it_boss",
+   "off": 228,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Kill_EXP",
+   "off": 232,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Kill_Drop",
+   "off": 236,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Is_Drop_Adjust_By_Skill",
+   "off": 240,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Immunity",
+   "off": 244,
+   "t": {
+    "k": "i32"
+   },
+   "e": "immune_type"
+  },
+  {
+   "name": "Sight_Range",
+   "off": 248,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "attack_range",
+   "off": 252,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Aggressive",
+   "off": 256,
+   "t": {
+    "k": "i32"
+   },
+   "e": "bool"
+  },
+  {
+   "name": "Monster_Faction_Ask_Help",
+   "off": 260,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Monster_Faction_Can_Help",
+   "off": 264,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Aggressive_Range",
+   "off": 268,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Aggressive_Time",
+   "off": 272,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Death_Aggressive_Time",
+   "off": 276,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Patrol_Mode",
+   "off": 280,
+   "t": {
+    "k": "i32"
+   },
+   "e": "zx_patroll_mode"
+  },
+  {
+   "name": "Stand_Mode",
+   "off": 284,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Walk_Speed",
+   "off": 288,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Run_Speed",
+   "off": 292,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "AIPolicy",
+   "off": 296,
+   "t": {
+    "k": "i32"
+   },
+   "display": "aipolicy"
+  },
+  {
+   "name": "After_Death",
+   "off": 300,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Adjust_EXP",
+   "off": 304,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Captureable",
+   "off": 308,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Player_Cannot_Atk",
+   "off": 312,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "EXP",
+   "off": 316,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Gold",
+   "off": 320,
+   "t": {
+    "k": "struct",
+    "fields": [
+     {
+      "name": "gold_min",
+      "off": 0,
+      "t": {
+       "k": "i32"
+      },
+      "display": "money"
+     },
+     {
+      "name": "gold_variable",
+      "off": 4,
+      "t": {
+       "k": "i32"
+      },
+      "display": "money"
+     }
+    ]
+   }
+  },
+  {
+   "name": "Health",
+   "off": 328,
+   "t": {
+    "k": "struct",
+    "fields": [
+     {
+      "name": "health",
+      "off": 0,
+      "t": {
+       "k": "i32"
+      }
+     },
+     {
+      "name": "health_bars",
+      "off": 4,
+      "t": {
+       "k": "i32"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "spirit",
+   "off": 336,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "attack_power",
+   "off": 340,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "defense",
+   "off": 344,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Bonus_Damage",
+   "off": 348,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Damage_Reduce",
+   "off": 352,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Accuracy",
+   "off": 356,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Evasion",
+   "off": 360,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Criti_Rate",
+   "off": 364,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Criti_Bonus",
+   "off": 368,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Stun_Resis",
+   "off": 372,
+   "t": {
+    "k": "i32"
+   },
+   "g": "Resistences"
+  },
+  {
+   "name": "Weaken_Resis",
+   "off": 376,
+   "t": {
+    "k": "i32"
+   },
+   "g": "Resistences"
+  },
+  {
+   "name": "Paralyze_Resis",
+   "off": 380,
+   "t": {
+    "k": "i32"
+   },
+   "g": "Resistences"
+  },
+  {
+   "name": "Silence_Resis",
+   "off": 384,
+   "t": {
+    "k": "i32"
+   },
+   "g": "Resistences"
+  },
+  {
+   "name": "Sleep_Resis",
+   "off": 388,
+   "t": {
+    "k": "i32"
+   },
+   "g": "Resistences"
+  },
+  {
+   "name": "Slow_Resis",
+   "off": 392,
+   "t": {
+    "k": "i32"
+   },
+   "g": "Resistences"
+  },
+  {
+   "name": "Experience",
+   "off": 396,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_gold",
+   "off": 400,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_gold_variable",
+   "off": 404,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_health",
+   "off": 408,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_spirit",
+   "off": 412,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_attack_power",
+   "off": 416,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_defense",
+   "off": 420,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_accuracy",
+   "off": 424,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_evasion",
+   "off": 428,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_criti_rate",
+   "off": 432,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_criti_bonus",
+   "off": 436,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_stun_resis",
+   "off": 440,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_weaken_resis",
+   "off": 444,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_paralyze_resis",
+   "off": 448,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_silence_resis",
+   "off": 452,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_sleep_resis",
+   "off": 456,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "level_up_slow_resis",
+   "off": 460,
+   "t": {
+    "k": "f32"
+   },
+   "g": "Level Up"
+  },
+  {
+   "name": "Health_Regen",
+   "off": 464,
+   "t": {
+    "k": "array",
+    "n": 2,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Spirit_Regen",
+   "off": 472,
+   "t": {
+    "k": "array",
+    "n": 2,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "War_Role",
+   "off": 480,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Drop Settings",
+   "off": 484,
+   "t": {
+    "k": "struct",
+    "fields": [
+     {
+      "name": "drop_count",
+      "off": 0,
+      "t": {
+       "k": "i32"
+      }
+     },
+     {
+      "name": "drop_table_settings",
+      "off": 4,
+      "t": {
+       "k": "array",
+       "n": 3,
+       "stride": 8,
+       "t": {
+        "k": "struct",
+        "fields": [
+         {
+          "name": "drop_table_id",
+          "off": 0,
+          "t": {
+           "k": "i32"
+          },
+          "refs": [
+           "DROPTABLE_ESSENCE"
+          ]
+         },
+         {
+          "name": "drop_table_probability",
+          "off": 4,
+          "t": {
+           "k": "f32"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "Skills",
+   "off": 512,
+   "t": {
+    "k": "array",
+    "n": 32,
+    "stride": 8,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "skill_id",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       },
+       "display": "skill"
+      },
+      {
+       "name": "skill_level",
+       "off": 4,
+       "t": {
+        "k": "i32"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "decrease_criti_rate",
+   "off": 768,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "decrease_criti_bonus",
+   "off": 772,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Def_Prop",
+   "off": 776,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Atk_Prop",
+   "off": 780,
+   "t": {
+    "k": "f32"
+   }
+  },
+  {
+   "name": "Task_Strategy",
+   "off": 784,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Task_Share",
+   "off": 788,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Item_Drop_Share",
+   "off": 792,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Buff_Area_ID",
+   "off": 796,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "monster_related_1",
+   "off": 800,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "monster_related_2",
+   "off": 804,
+   "t": {
+    "k": "i32"
+   }
+  }
+ ]
+}

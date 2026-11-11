@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\ElementsCore\ElementsCore.csproj" />
+    <Content Include="..\..\schemas\**\*" LinkBase="schemas" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Tru Tiên icon: exe file icon + embedded for every window -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\app.ico" LogicalName="ElementsEditor.app.ico" />
+    <EmbeddedResource Include="Assets\app_256.png" LogicalName="ElementsEditor.app_256.png" />
+  </ItemGroup>
+
+</Project>

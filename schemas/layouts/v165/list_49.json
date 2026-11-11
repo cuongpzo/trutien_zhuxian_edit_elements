@@ -1,0 +1,203 @@
+{
+ "name": "PLAYER_LEVELEXP_CONFIG",
+ "struct": "PLAYER_LEVELEXP_CONFIG",
+ "size": 10944,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "Levels",
+   "off": 68,
+   "t": {
+    "k": "array",
+    "n": 200,
+    "stride": 8,
+    "t": {
+     "k": "f64"
+    }
+   }
+  },
+  {
+   "name": "Levels Ascended 1",
+   "off": 1668,
+   "t": {
+    "k": "array",
+    "n": 200,
+    "stride": 8,
+    "t": {
+     "k": "f64"
+    }
+   }
+  },
+  {
+   "name": "Level Related",
+   "off": 3268,
+   "t": {
+    "k": "array",
+    "n": 3,
+    "stride": 12,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "Level",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "id",
+       "off": 4,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "count",
+       "off": 8,
+       "t": {
+        "k": "i32"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "Levels Ascended 2",
+   "off": 3304,
+   "t": {
+    "k": "array",
+    "n": 200,
+    "stride": 8,
+    "t": {
+     "k": "f64"
+    }
+   }
+  },
+  {
+   "name": "Levels Ascended 3",
+   "off": 4904,
+   "t": {
+    "k": "array",
+    "n": 200,
+    "stride": 8,
+    "t": {
+     "k": "f64"
+    }
+   }
+  },
+  {
+   "name": "Esper Levels",
+   "off": 6504,
+   "t": {
+    "k": "array",
+    "n": 100,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Craft Levels",
+   "off": 6904,
+   "t": {
+    "k": "array",
+    "n": 10,
+    "stride": 4,
+    "t": {
+     "k": "i32"
+    }
+   }
+  },
+  {
+   "name": "Crafting Gains",
+   "off": 6944,
+   "t": {
+    "k": "array",
+    "n": 10,
+    "stride": 40,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "Levels",
+       "off": 0,
+       "t": {
+        "k": "array",
+        "n": 10,
+        "stride": 4,
+        "t": {
+         "k": "i32"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "Pet Levels",
+   "off": 7344,
+   "t": {
+    "k": "array",
+    "n": 200,
+    "stride": 8,
+    "t": {
+     "k": "f64"
+    }
+   }
+  },
+  {
+   "name": "Chroma Levels",
+   "off": 8944,
+   "t": {
+    "k": "array",
+    "n": 100,
+    "stride": 20,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "Experience",
+       "off": 0,
+       "t": {
+        "k": "f64"
+       }
+      },
+      {
+       "name": "Probability",
+       "off": 8,
+       "t": {
+        "k": "f32"
+       },
+       "display": "probability"
+      },
+      {
+       "name": "Failure Experience",
+       "off": 12,
+       "t": {
+        "k": "f64"
+       }
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

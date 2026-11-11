@@ -1,0 +1,90 @@
+{
+ "key": "rune2013_config",
+ "name": "RUNE2013_CONFIG",
+ "struct": "RUNE2013_CONFIG",
+ "size": 232,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "u32"
+   },
+   "c": "ID"
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   },
+   "c": "名称, 最多15个汉字"
+  },
+  {
+   "name": "fatecharm_max_level",
+   "off": 68,
+   "t": {
+    "k": "i32"
+   },
+   "c": "等级上限"
+  },
+  {
+   "name": "Fatecharm Level Requirements",
+   "off": 72,
+   "t": {
+    "k": "struct",
+    "fields": [
+     {
+      "name": "Basic",
+      "off": 0,
+      "t": {
+       "k": "array",
+       "n": 10,
+       "stride": 4,
+       "t": {
+        "k": "i32"
+       }
+      }
+     },
+     {
+      "name": "Advanced",
+      "off": 40,
+      "t": {
+       "k": "array",
+       "n": 10,
+       "stride": 4,
+       "t": {
+        "k": "i32"
+       }
+      }
+     },
+     {
+      "name": "Celestial",
+      "off": 80,
+      "t": {
+       "k": "array",
+       "n": 10,
+       "stride": 4,
+       "t": {
+        "k": "i32"
+       }
+      }
+     },
+     {
+      "name": "Eternal",
+      "off": 120,
+      "t": {
+       "k": "array",
+       "n": 10,
+       "stride": 4,
+       "t": {
+        "k": "i32"
+       }
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

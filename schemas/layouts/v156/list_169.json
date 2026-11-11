@@ -1,0 +1,130 @@
+{
+ "key": "battle_201304_config",
+ "name": "BATTLE_201304_CONFIG",
+ "struct": "BATTLE_201304_CONFIG",
+ "size": 148,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "c": "名称, 最多15个汉字",
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "map_id",
+   "off": 68,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "add_time_if_full",
+   "off": 72,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "minute_add",
+   "off": 76,
+   "c": "延时长度",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "required_Level",
+   "off": 80,
+   "c": "等级限制",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "ascension_count",
+   "off": 84,
+   "c": "转生次数要求",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "Monster Info",
+   "off": 88,
+   "t": {
+    "k": "array",
+    "n": 5,
+    "stride": 8,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "monster_id",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "score",
+       "off": 4,
+       "t": {
+        "k": "i32"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "score",
+   "off": 128,
+   "c": "人头基础分值",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "score_tarqet",
+   "off": 132,
+   "c": "目标分数",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "task_id_success_human",
+   "off": 136,
+   "c": "人族完成发奖任务",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "task_id_success_wild",
+   "off": 140,
+   "c": "神族完成发奖任务",
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "task_id_everyone",
+   "off": 144,
+   "c": "参与奖发放任务",
+   "t": {
+    "k": "i32"
+   }
+  }
+ ]
+}

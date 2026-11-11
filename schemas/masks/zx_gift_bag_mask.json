@@ -1,0 +1,70 @@
+{
+ "key": "zx_gift_bag_mask",
+ "label": "Gift Bag Mask (official)",
+ "flags": [
+  {
+   "bit": 0,
+   "label": "1"
+  },
+  {
+   "bit": 1,
+   "label": "2"
+  },
+  {
+   "bit": 2,
+   "label": "3"
+  },
+  {
+   "bit": 3,
+   "label": "4"
+  },
+  {
+   "bit": 4,
+   "label": "5"
+  },
+  {
+   "bit": 5,
+   "label": "6"
+  },
+  {
+   "bit": 6,
+   "label": "7"
+  },
+  {
+   "bit": 7,
+   "label": "8"
+  },
+  {
+   "bit": 8,
+   "label": "9"
+  },
+  {
+   "bit": 9,
+   "label": "10"
+  },
+  {
+   "bit": 10,
+   "label": "11"
+  },
+  {
+   "bit": 11,
+   "label": "12"
+  },
+  {
+   "bit": 12,
+   "label": "13"
+  },
+  {
+   "bit": 13,
+   "label": "14"
+  },
+  {
+   "bit": 14,
+   "label": "15"
+  },
+  {
+   "bit": 15,
+   "label": "16"
+  }
+ ]
+}

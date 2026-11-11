@@ -1,0 +1,255 @@
+{
+ "name": "SALE_PROMOTION_ITEM_ESSENCE",
+ "struct": "SALE_PROMOTION_ITEM_ESSENCE",
+ "size": 5664,
+ "fields": [
+  {
+   "name": "id",
+   "off": 0,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "name",
+   "off": 4,
+   "t": {
+    "k": "wstr",
+    "n": 32
+   }
+  },
+  {
+   "name": "ui_name",
+   "off": 68,
+   "t": {
+    "k": "wstr",
+    "n": 16
+   }
+  },
+  {
+   "name": "file_matter",
+   "off": 100,
+   "t": {
+    "k": "i32"
+   },
+   "display": "path"
+  },
+  {
+   "name": "file_icon",
+   "off": 104,
+   "t": {
+    "k": "i32"
+   },
+   "display": "icon"
+  },
+  {
+   "name": "Element Lists",
+   "off": 108,
+   "t": {
+    "k": "array",
+    "n": 20,
+    "stride": 276,
+    "t": {
+     "k": "struct",
+     "fields": [
+      {
+       "name": "valid_time_start",
+       "off": 0,
+       "t": {
+        "k": "i32"
+       },
+       "display": "time"
+      },
+      {
+       "name": "valid_time_end",
+       "off": 4,
+       "t": {
+        "k": "i32"
+       },
+       "display": "time"
+      },
+      {
+       "name": "get_count",
+       "off": 8,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "field_4",
+       "off": 12,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "field_5",
+       "off": 16,
+       "t": {
+        "k": "i32"
+       }
+      },
+      {
+       "name": "Conditions",
+       "off": 20,
+       "t": {
+        "k": "struct",
+        "fields": [
+         {
+          "name": "type",
+          "off": 0,
+          "t": {
+           "k": "i32"
+          }
+         },
+         {
+          "name": "Requirements",
+          "off": 4,
+          "t": {
+           "k": "array",
+           "n": 5,
+           "stride": 4,
+           "t": {
+            "k": "i32"
+           }
+          },
+          "c": "its either amount or itemid"
+         }
+        ]
+       }
+      },
+      {
+       "name": "Awards List",
+       "off": 44,
+       "t": {
+        "k": "array",
+        "n": 2,
+        "stride": 16,
+        "t": {
+         "k": "struct",
+         "fields": [
+          {
+           "name": "award_id",
+           "off": 0,
+           "t": {
+            "k": "i32"
+           }
+          },
+          {
+           "name": "award_count",
+           "off": 4,
+           "t": {
+            "k": "i32"
+           }
+          },
+          {
+           "name": "expire",
+           "off": 8,
+           "t": {
+            "k": "i32"
+           },
+           "display": "duration"
+          },
+          {
+           "name": "bind",
+           "off": 12,
+           "t": {
+            "k": "i32"
+           },
+           "e": "bool"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "Description",
+       "off": 76,
+       "t": {
+        "k": "wstr",
+        "n": 100
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "Extra Award",
+   "off": 5628,
+   "t": {
+    "k": "struct",
+    "fields": [
+     {
+      "name": "needed_count",
+      "off": 0,
+      "t": {
+       "k": "i32"
+      }
+     },
+     {
+      "name": "award_id",
+      "off": 4,
+      "t": {
+       "k": "i32"
+      }
+     },
+     {
+      "name": "award_count",
+      "off": 8,
+      "t": {
+       "k": "i32"
+      }
+     },
+     {
+      "name": "expire",
+      "off": 12,
+      "t": {
+       "k": "i32"
+      },
+      "display": "duration"
+     },
+     {
+      "name": "bind",
+      "off": 16,
+      "t": {
+       "k": "i32"
+      },
+      "e": "bool"
+     }
+    ]
+   }
+  },
+  {
+   "name": "price",
+   "off": 5648,
+   "t": {
+    "k": "i32"
+   },
+   "display": "money"
+  },
+  {
+   "name": "shop_price",
+   "off": 5652,
+   "t": {
+    "k": "i32"
+   },
+   "display": "money"
+  },
+  {
+   "name": "pile_num_max",
+   "off": 5656,
+   "t": {
+    "k": "i32"
+   }
+  },
+  {
+   "name": "proc_type",
+   "off": 5660,
+   "t": {
+    "k": "i32"
+   },
+   "e": "trade_behavior"
+  }
+ ]
+}
