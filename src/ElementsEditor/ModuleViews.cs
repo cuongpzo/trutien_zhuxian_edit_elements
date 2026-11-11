@@ -19,8 +19,10 @@ public static class IdNames
     /// <summary>Raised when elements.data is (re)loaded so open grids can show the names.</summary>
     public static event Action? Changed;
     /// <summary>Only columns that really hold an elements.data ID (domain / path IDs are their own numbering).</summary>
-    public static bool IsRefColumn(DataFile f, ColumnDef c)
+    public static bool IsRefColumn(DataFile f, RecordTable t, ColumnDef c)
     {
+        // gshop: only the items refer to elements.data (Categories ids are category numbers)
+        if (f is GShopFile && t.Name != "Items") return false;
         if (!c.IsInteger) return false;
         var n = c.Name.ToLowerInvariant();
         return f switch
@@ -125,7 +127,8 @@ public sealed class TableFileView : Panel, IModuleView
         _grid.CellMouseDown += (_, e) =>
         {
             if (e.Button != MouseButtons.Right || e.RowIndex < 0 || e.ColumnIndex < 0) return;
-            int c = _gridCols[e.ColumnIndex];
+            if (e.ColumnIndex < 0 || e.ColumnIndex >= _gridCols.Count) return;
+        int c = _gridCols[e.ColumnIndex];
             if (!_grid.Rows[e.RowIndex].Selected) { _grid.ClearSelection(); _grid.CurrentCell = _grid.Rows[e.RowIndex].Cells[e.ColumnIndex]; _grid.Rows[e.RowIndex].Selected = true; }
             if (c >= 0) ShowFieldMenu(c);
         };
@@ -139,7 +142,8 @@ public sealed class TableFileView : Panel, IModuleView
         _grid.CellDoubleClick += (_, e) =>
         {
             if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
-            int c = _gridCols[e.ColumnIndex];
+            if (e.ColumnIndex < 0 || e.ColumnIndex >= _gridCols.Count) return;
+        int c = _gridCols[e.ColumnIndex];
             if (c < 0 || !_table.Columns[c].IsText) return;
             _grid.CancelEdit();
             _grid.EndEdit();
@@ -175,11 +179,20 @@ public sealed class TableFileView : Panel, IModuleView
 
     private void SetTable(RecordTable t)
     {
+        // clear the old rows while the old table is still current: clearing fires SelectionChanged,
+        // which must not look up the old row positions in the new table
+        _syncing = true;
+        try
+        {
+            _grid.CancelEdit();
+            _view.Clear();
+            _grid.RowCount = 0;
+            _grid.Rows.Clear();
+            _grid.Columns.Clear();
+            _gridCols.Clear();
+        }
+        finally { _syncing = false; }
         _table = t;
-        _grid.CancelEdit();
-        _grid.Rows.Clear();
-        _grid.Columns.Clear();
-        _gridCols.Clear();
 
         AddCol("#", -1, 56, true);
         _iconCol = IconSourceColumn(t);
@@ -191,7 +204,7 @@ public sealed class TableFileView : Panel, IModuleView
             _grid.Columns.Add(ic);
             _gridCols.Add(-3);
         }
-        _refCol = Enumerable.Range(0, t.Columns.Count).FirstOrDefault(i => IdNames.IsRefColumn(_file, t.Columns[i]) && i != t.NameColumn && !t.Columns[i].HideInGrid, -1);
+        _refCol = Enumerable.Range(0, t.Columns.Count).FirstOrDefault(i => IdNames.IsRefColumn(_file, t, t.Columns[i]) && i != t.NameColumn && !t.Columns[i].HideInGrid, -1);
         for (int i = 0; i < t.Columns.Count; i++)
         {
             var c = t.Columns[i];
@@ -218,7 +231,7 @@ public sealed class TableFileView : Panel, IModuleView
         for (int i = 0; i < t.Columns.Count; i++)
             if (t.Columns[i].IsText && t.Columns[i].Name.Equals("icon", StringComparison.OrdinalIgnoreCase)) return i;
         if (_file is PathTableFile) return t.IndexOf("path");
-        int r = Enumerable.Range(0, t.Columns.Count).FirstOrDefault(i => IdNames.IsRefColumn(_file, t.Columns[i]) && t.Columns[i].Name != "npcId", -1);
+        int r = Enumerable.Range(0, t.Columns.Count).FirstOrDefault(i => IdNames.IsRefColumn(_file, t, t.Columns[i]) && t.Columns[i].Name != "npcId", -1);
         return r >= 0 ? -1 - r : int.MinValue; // -1 - column = elements item reference
     }
 
@@ -270,12 +283,14 @@ public sealed class TableFileView : Panel, IModuleView
         ShowDetails();
     }
 
-    private Record? RowAt(int gridRow) => gridRow >= 0 && gridRow < _view.Count ? _table.Rows[_view[gridRow]] : null;
+    private Record? RowAt(int gridRow) =>
+        gridRow >= 0 && gridRow < _view.Count && _view[gridRow] >= 0 && _view[gridRow] < _table.Rows.Count ? _table.Rows[_view[gridRow]] : null;
 
     private void OnCellValueNeeded(object? sender, DataGridViewCellValueEventArgs e)
     {
         var rec = RowAt(e.RowIndex);
         if (rec == null) return;
+        if (e.ColumnIndex < 0 || e.ColumnIndex >= _gridCols.Count) return;
         int c = _gridCols[e.ColumnIndex];
         if (c == -1) { e.Value = _view[e.RowIndex]; return; }
         if (c == -2) { e.Value = _refCol >= 0 && rec.Values[_refCol] != null ? IdNames.Lookup?.Invoke(rec.Long(_refCol)) : null; return; }
@@ -287,6 +302,7 @@ public sealed class TableFileView : Panel, IModuleView
     private void OnCellValidating(object? sender, DataGridViewCellValidatingEventArgs e)
     {
         if (!_grid.IsCurrentCellInEditMode) return;
+        if (e.ColumnIndex < 0 || e.ColumnIndex >= _gridCols.Count) return;
         int c = _gridCols[e.ColumnIndex];
         if (c < 0) return;
         var col = _table.Columns[c];
@@ -302,6 +318,7 @@ public sealed class TableFileView : Panel, IModuleView
     private void OnCellValuePushed(object? sender, DataGridViewCellValueEventArgs e)
     {
         var rec = RowAt(e.RowIndex);
+        if (e.ColumnIndex < 0 || e.ColumnIndex >= _gridCols.Count) return;
         int c = _gridCols[e.ColumnIndex];
         if (rec == null || c < 0) return;
         SetValue(_table.Columns[c], rec, c, e.Value?.ToString() ?? "");
