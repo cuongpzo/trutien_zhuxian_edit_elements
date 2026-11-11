@@ -45,6 +45,12 @@ Mỗi loại file một tab: **Elements · Path · Objects · Domains · Drops �
 - **Lịch sử sửa**: thanh trạng thái hiện `● N bản ghi đã sửa · chưa lưu` – bấm vào (hoặc nút *Lịch sử sửa*, Ctrl+H ở tab khác) để xem mọi thay đổi so với file đã mở, gom theo bảng/list → bản ghi → field `cũ → mới`; nhấp đúp để tới đúng chỗ, nút ↺ hoàn tác từng thay đổi, *Hoàn tác hết*.
 - **Thoát khi chưa lưu**: một cảnh báo liệt kê mọi tab còn thay đổi (kể cả chữ đang gõ dở) – *Có* = lưu tất cả (có backup) rồi thoát, *Không* = bỏ, *Hủy* = ở lại.
 
+### Icon trong game (đọc từ surfaces.pck)
+- Elements: icon cạnh tên trong danh sách bản ghi; field `file_icon` (và `….icon`) hiện icon; mọi field `file_*` (path ID) hiện đường dẫn tài nguyên từ `path.data` ở cột chú thích.
+- GShop: cột **Ảnh** lấy từ đường dẫn `icon` (`Surfaces\QShop\…`); VIP: icon của vật phẩm `itemId` (tra elements.data); Path: xem trước ảnh của đường dẫn `.dds/.tga`.
+- Cách hoạt động (chỉ đọc file game): gói `element\surfaces.pck` (Angelica PCK 2.0.3, khoá PW) → icon vật phẩm nằm trong ảnh ghép `surfaces\iconset\iconlist.dds` (lưới icon 36×36) + `iconlist.txt` (tên từng ô); `file_icon` = ID trong `path.data` → `Surfaces\男物品\x.dds` → tìm theo tên file trong ảnh ghép. Chỉ giải đúng ô cần dùng (DXT1/3/5, RGB, TGA), có bộ nhớ đệm.
+- Thư mục client lấy từ đường dẫn elements.data đang mở (`…\Client0619`). Tab Elements mở lại đúng list đã xem lần trước.
+
 ### Việt hoá Hán Việt hàng loạt
 - Dùng từ điển phiên âm `ChinesePhienAmWords.txt` (dạng `字=âm`, mặc định `E:\Quick Translator 2016 - Revo\Data\…`, đổi được trong hộp thoại): 积善衣（女） → **Tích Thiện Y (Nữ)**. Giữ nguyên mã màu, số, chữ Latin, `\n`; dấu câu toàn khổ → ASCII; chữ thiếu trong từ điển giữ nguyên (có báo).
 - Mở: Elements → *Việt hoá Hán Việt…* (list đang chọn / tất cả list), tab khác → *Hán Việt…*; chọn field (vd `name`), kiểu viết hoa, **Xem trước** rồi **Áp dụng**.

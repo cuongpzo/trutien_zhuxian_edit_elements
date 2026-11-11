@@ -1,4 +1,4 @@
-using ElementsCore.Schema;
+﻿using ElementsCore.Schema;
 
 namespace ElementsEditor;
 
@@ -90,8 +90,12 @@ public sealed partial class MainForm
     }
 
     /// <summary>After opening a file: show the first list that has records (JD IDE opens EQUIPMENT_ADDON).</summary>
-    private void SelectFirstDataList() =>
+    private void SelectFirstDataList()
+    {
+        // reopen the list that was open last time; else the first list with records
+        if (_settings.LastList is int last && SelectListEntry(e => !e.IsTalk && e.List!.Index == last)) return;
         SelectListEntry(e => !e.IsTalk && e.Count > 0);
+    }
 
     private void EnsureSelectedVisible()
     {

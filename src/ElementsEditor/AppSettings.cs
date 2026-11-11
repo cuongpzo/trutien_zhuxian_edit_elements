@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace ElementsEditor;
 
@@ -9,6 +9,8 @@ public sealed class AppSettings
     public bool DarkTheme { get; set; } = true;
     /// <summary>Hán-Việt dictionary (ChinesePhienAmWords.txt) used by bulk Việt hoá.</summary>
     public string? HanVietDict { get; set; }
+    /// <summary>Index of the elements list open last time (reopened at start).</summary>
+    public int? LastList { get; set; }
 
     private static string FilePath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ElementsEditor", "settings.json");

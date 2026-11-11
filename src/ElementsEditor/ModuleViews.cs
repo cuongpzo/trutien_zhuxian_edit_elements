@@ -50,6 +50,7 @@ public sealed class TableFileView : Panel, IModuleView
     private List<int> _view = new();
     private readonly List<int> _gridCols = new();   // grid column → table column (-1 = "#", -2 = name lookup)
     private int _refCol = -1;
+    private int _iconCol = int.MinValue; // ≥0: text column with a picture path; -1: elements item ID (_refCol)
     private bool _syncing;
     private readonly ColorTextEditor _editor;
     private readonly Splitter _editorSplit;
@@ -147,7 +148,8 @@ public sealed class TableFileView : Panel, IModuleView
 
         Action refresh = () => { if (IsHandleCreated) BeginInvoke(() => { _grid.Invalidate(); ShowDetails(); }); };
         IdNames.Changed += refresh;
-        Disposed += (_, _) => IdNames.Changed -= refresh;
+        GameIcons.Ready += refresh;
+        Disposed += (_, _) => { IdNames.Changed -= refresh; GameIcons.Ready -= refresh; };
 
         // open the biggest editable table first (e.g. Items, not the one-row Header)
         var first = file.Tables.OrderByDescending(t => t.Rows.Count > 1 || t.CanAddRemove).ThenBy(t => file.Tables.IndexOf(t)).First();
@@ -179,6 +181,15 @@ public sealed class TableFileView : Panel, IModuleView
         _gridCols.Clear();
 
         AddCol("#", -1, 56, true);
+        _iconCol = IconSourceColumn(t);
+        if (_iconCol != int.MinValue)
+        {
+            var ic = new DataGridViewImageColumn { HeaderText = "Ảnh", Width = 46, ImageLayout = DataGridViewImageCellLayout.Normal, SortMode = DataGridViewColumnSortMode.NotSortable, ReadOnly = true };
+            ic.DefaultCellStyle.NullValue = null;
+            ic.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            _grid.Columns.Add(ic);
+            _gridCols.Add(-3);
+        }
         _refCol = Enumerable.Range(0, t.Columns.Count).FirstOrDefault(i => IdNames.IsRefColumn(_file, t.Columns[i]) && i != t.NameColumn && !t.Columns[i].HideInGrid, -1);
         for (int i = 0; i < t.Columns.Count; i++)
         {
@@ -198,6 +209,23 @@ public sealed class TableFileView : Panel, IModuleView
         bool canEdit = t.CanAddRemove;
         _btnAdd.Enabled = _btnClone.Enabled = _btnDel.Enabled = canEdit;
         ApplyFilter();
+    }
+
+    /// <summary>Where a row's picture comes from: an "icon"/"path" text column, or the elements item it refers to.</summary>
+    private int IconSourceColumn(RecordTable t)
+    {
+        for (int i = 0; i < t.Columns.Count; i++)
+            if (t.Columns[i].IsText && t.Columns[i].Name.Equals("icon", StringComparison.OrdinalIgnoreCase)) return i;
+        if (_file is PathTableFile) return t.IndexOf("path");
+        int r = Enumerable.Range(0, t.Columns.Count).FirstOrDefault(i => IdNames.IsRefColumn(_file, t.Columns[i]) && t.Columns[i].Name != "npcId", -1);
+        return r >= 0 ? -1 - r : int.MinValue; // -1 - column = elements item reference
+    }
+
+    private Image? IconFor(Record rec)
+    {
+        if (_iconCol >= 0) return rec.Values[_iconCol] is string p && (p.EndsWith(".dds", StringComparison.OrdinalIgnoreCase) || p.EndsWith(".tga", StringComparison.OrdinalIgnoreCase)) ? GameIcons.ForPath(p, 24) : null;
+        if (_iconCol != int.MinValue) { int c = -1 - _iconCol; return rec.Values[c] != null ? GameIcons.ForItem(rec.Long(c), 24) : null; }
+        return null;
     }
 
     private void AddCol(string name, int col, int width, bool ro, string? tip = null)
@@ -250,6 +278,7 @@ public sealed class TableFileView : Panel, IModuleView
         int c = _gridCols[e.ColumnIndex];
         if (c == -1) { e.Value = _view[e.RowIndex]; return; }
         if (c == -2) { e.Value = _refCol >= 0 && rec.Values[_refCol] != null ? IdNames.Lookup?.Invoke(rec.Long(_refCol)) : null; return; }
+        if (c == -3) { e.Value = IconFor(rec); return; }
         var col = _table.Columns[c];
         e.Value = col.Type == ColType.Bytes && rec.Values[c] is byte[] { Length: > 48 } b ? Convert.ToHexString(b, 0, 48) + "…" : RecordIO.Describe(col, rec.Values[c]);
     }

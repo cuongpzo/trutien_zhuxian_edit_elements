@@ -144,6 +144,7 @@ public sealed partial class MainForm
         _recent.Opened("elements", path);
         UpdateElementsStart();
         BuildIdNames();
+        BuildItemIcons();
     }
 
     /// <summary>ID → name of every record in elements.data, for the "→ tên" column of other tabs.</summary>

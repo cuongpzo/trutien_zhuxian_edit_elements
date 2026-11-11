@@ -333,6 +333,8 @@ public sealed partial class MainForm : ThemedForm
         SetupModules();
         // colour text editor, data export/import, edit history (MainForm.Exchange.cs)
         SetupDataExchange();
+        // game icons from surfaces.pck (MainForm.Icons.cs)
+        SetupIcons();
     }
 
     private static DataGridView CreateFastGrid()
@@ -567,6 +569,7 @@ public sealed partial class MainForm : ThemedForm
             _workSplitHost.Visible = true;
             _currentList = entry.List;
             RefreshFilteredItems();
+            if (_currentList != null && _settings.LastList != _currentList.Index) { _settings.LastList = _currentList.Index; _settings.Save(); }
         }
     }
 
