@@ -9,7 +9,7 @@ namespace ElementsEditor;
 /// export / import, edit history), the start page while no file is open, otherwise a table, text
 /// or hex view of the file. Changes are measured against the bytes as opened (or last saved).
 /// </summary>
-public sealed class ModulePage : Panel
+public sealed class ModulePage : Panel, ILocalizable
 {
     public ModuleInfo Module { get; }
     public DataFile? File { get; private set; }
@@ -196,7 +196,7 @@ public sealed class ModulePage : Panel
         {
             // safety: the bytes we are about to write must read back as the same format
             var bytes = File.ToBytes();
-            if (File is not TextDataFile && DataModules.TryParse(Module, bytes, target, out var why)?.GetType() != File.GetType())
+            if (File is not TextDataFile && !File.SavesSeveralFiles && DataModules.TryParse(Module, bytes, target, out var why)?.GetType() != File.GetType())
                 throw new InvalidDataException(L.T("The edited data cannot be read back – nothing was written.") + " " + why);
             var bak = File.Save(target, backup: true);
             _origBytes = bytes;
@@ -271,7 +271,7 @@ public sealed class ModulePage : Panel
             var cur = _iview is TextFileView tv ? tv.CurrentText : tf.Text;
             return TableDiff.TextDiff(tf, cur, tf.OriginalText, () => (_iview as TextFileView)?.ResetText(tf.OriginalText));
         }
-        _baseline ??= DataModules.Parse(Module, _origBytes, File.Path);
+        _baseline ??= File.OriginalSnapshot() ?? DataModules.Parse(Module, _origBytes, File.Path);
         return TableDiff.Compute(File, _baseline);
     }
 
@@ -432,6 +432,9 @@ public sealed class ModulePage : Panel
     }
 
     public void RefreshStart() { if (File == null) _start.Refresh2(); }
+
+    /// <summary>Language switched: header texts composed here (title, path / description, history count).</summary>
+    public void OnLanguageChanged() => UpdateHeader();
 }
 
 /// <summary>What a module page needs from its content view.</summary>

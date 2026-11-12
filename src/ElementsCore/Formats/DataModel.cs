@@ -22,13 +22,30 @@ public sealed class ColumnDef
     public required ColType Type { get; init; }
     /// <summary>WStr: UTF-16 chars (bytes = 2×Length); Str: GBK bytes; Bytes: byte count. 0 = variable (format writes the length itself).</summary>
     public int Length { get; init; }
-    /// <summary>Short explanation shown as tooltip / in the detail panel.</summary>
-    public string? Note { get; init; }
+    private readonly string? _note;
+    /// <summary>Short explanation shown as tooltip / in the detail panel (in the current UI language).</summary>
+    public string? Note { get => L.Retranslate(_note); init => _note = value; }
     public bool ReadOnly { get; init; }
     /// <summary>Not shown as a column of the main grid (still in the detail panel).</summary>
     public bool HideInGrid { get; init; }
-    /// <summary>Optional value → meaning map (display only).</summary>
-    public IReadOnlyDictionary<long, string>? Enum { get; init; }
+    private readonly IReadOnlyDictionary<long, string>? _enum;
+    private IReadOnlyDictionary<long, string>? _enumShown;
+    private int _enumVersion = -1;
+    /// <summary>Optional value → meaning map (display only, in the current UI language).</summary>
+    public IReadOnlyDictionary<long, string>? Enum
+    {
+        get
+        {
+            if (_enum == null || L.Version == 0) return _enum;
+            if (_enumVersion != L.Version)
+            {
+                _enumShown = _enum.ToDictionary(kv => kv.Key, kv => L.Retranslate(kv.Value) ?? "");
+                _enumVersion = L.Version;
+            }
+            return _enumShown;
+        }
+        init => _enum = value;
+    }
     /// <summary>Columns of the nested records when <see cref="Type"/> is <see cref="ColType.Table"/>.</summary>
     public IReadOnlyList<ColumnDef>? SubColumns { get; init; }
     /// <summary>For nested tables: whether rows may be added/removed.</summary>
@@ -129,7 +146,8 @@ public sealed class RecordTable
     public int KeyColumn { get; init; } = -1;
     /// <summary>Column holding the display name, or -1.</summary>
     public int NameColumn { get; init; } = -1;
-    public string? Note { get; init; }
+    private readonly string? _note;
+    public string? Note { get => L.Retranslate(_note); init => _note = value; }
 
     public int IndexOf(string column)
     {
@@ -150,8 +168,14 @@ public abstract class DataFile
 
     public abstract byte[] ToBytes();
 
+    /// <summary>True when <see cref="Save"/> writes more than one file and checks the result itself (tasks.data + packs).</summary>
+    public virtual bool SavesSeveralFiles => false;
+
+    /// <summary>Values as read / last saved, for the edit history; null = re-parse the original bytes.</summary>
+    public virtual DataFile? OriginalSnapshot() => null;
+
     /// <summary>Saves via a temp file; backs up the existing file first. Returns the backup path (or null).</summary>
-    public string? Save(string path, bool backup = true)
+    public virtual string? Save(string path, bool backup = true)
     {
         var bytes = ToBytes();
         string? bak = null;

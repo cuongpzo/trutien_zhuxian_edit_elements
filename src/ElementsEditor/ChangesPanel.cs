@@ -8,7 +8,7 @@ namespace ElementsEditor;
 /// "Edit history" panel: every difference between the open document and the file as it was opened,
 /// grouped by table / list then by record, with old → new values, undo per change and "go to".
 /// </summary>
-public sealed class ChangesPanel : Panel
+public sealed class ChangesPanel : Panel, ILocalizable
 {
     private readonly Func<List<ChangeItem>> _compute;
     private readonly Action<ChangeItem> _locate;
@@ -74,6 +74,8 @@ public sealed class ChangesPanel : Panel
     }
 
     public int Count => _all.Count;
+
+    public void OnLanguageChanged() { if (Visible) Reload(); }
 
     public void Reload()
     {

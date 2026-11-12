@@ -36,7 +36,7 @@ public static class IdNames
 }
 
 /// <summary>Grid of a decoded file: table picker, search, add/clone/delete, row details and nested lists.</summary>
-public sealed class TableFileView : Panel, IModuleView
+public sealed class TableFileView : Panel, IModuleView, ILocalizable
 {
     public event Action? Changed;
     public event Action<string>? Status;
@@ -213,7 +213,7 @@ public sealed class TableFileView : Panel, IModuleView
             if (c.HideInGrid) continue;
             int w = c.Type switch
             {
-                ColType.WStr or ColType.Str => i == t.NameColumn ? 220 : 180,
+                ColType.WStr or ColType.Str => i == t.NameColumn ? 220 : c.Length == 0 || c.Length >= 64 ? 520 : 180,
                 ColType.Bytes => 120,
                 ColType.Table => 64,
                 ColType.F32 or ColType.F64 => 90,
@@ -275,13 +275,28 @@ public sealed class TableFileView : Panel, IModuleView
         }
         _grid.RowCount = 0;
         _grid.RowCount = _view.Count;
-        _count.Text = q.Length == 0 ? L.F("{0:N0} rows", rows.Count) : L.F("{0:N0} / {1:N0} rows", _view.Count, rows.Count);
-        if (_table.Note != null) _count.Text += "   ·   " + _table.Note;
+        UpdateCount();
         if (_view.Count > 0 && _grid.CurrentCell == null && _grid.Columns.Count > 1)
         {
             _grid.CurrentCell = _grid.Rows[0].Cells[1];
             _grid.Rows[0].Selected = true;
         }
+        ShowDetails();
+    }
+
+    private void UpdateCount()
+    {
+        var q = _search.Text.Trim();
+        var text = q.Length == 0 ? L.F("{0:N0} rows", _table.Rows.Count) : L.F("{0:N0} / {1:N0} rows", _view.Count, _table.Rows.Count);
+        if (_table.Note != null) text += "   ·   " + _table.Note;
+        if (_count.Text != text) _count.Text = text;
+    }
+
+    /// <summary>Language switched: re-compose the texts built here; rows, selection and edits stay.</summary>
+    public void OnLanguageChanged()
+    {
+        UpdateCount();
+        _grid.Invalidate();
         ShowDetails();
     }
 

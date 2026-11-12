@@ -12,9 +12,9 @@ C# .NET 10 – WinForms. Đã kiểm chứng trên Client0619 (version 165): đ�
 - Build thử (Debug): `dotnet build`.
 
 ## Ngôn ngữ / Language
-- Giao diện mặc định **tiếng Anh**. Menu **🌐 Language** (góc phải thanh menu): English, Tiếng Việt, 简体中文, 한국어, ไทย, 日本語, Bahasa Indonesia → chọn rồi khởi động lại.
+- Giao diện mặc định **tiếng Anh**. Menu **🌐 Language** (góc phải thanh menu): English, Tiếng Việt, 简体中文, 한국어, ไทย, 日本語, Bahasa Indonesia → **đổi ngay trên chương trình đang chạy**, không cần khởi động lại: file đang mở, dòng đang chọn và chỗ sửa chưa lưu vẫn giữ nguyên, chỉ chữ giao diện đổi (tạm dừng vẽ trong lúc đổi nên không nháy).
 - Mỗi ngôn ngữ là một file JSON `src\ElementsEditor\lang\<mã>.json` (được chép vào `lang\` cạnh exe): `{"code","name","englishName","strings":{"English text":"bản dịch"}}`. Chuỗi thiếu → hiện tiếng Anh. Thêm ngôn ngữ mới = thả thêm file JSON (vd `fr.json`), không cần build lại.
-- Trong code: `L.T("English")` / `L.F("Saved {0}", path)` (src\ElementsCore\L.cs).
+- Trong code: `L.T("English")` / `L.F("Saved {0}", path)` (src\ElementsCore\L.cs). Đổi ngôn ngữ lúc chạy: `L.Load(code)` + `UiText.RelocalizeAll()` dịch lại chữ đã hiện (tra ngược bản dịch cũ → tiếng Anh → bản dịch mới); control tự ghép chữ thì cài `ILocalizable`.
 
 ## Phông chữ cho chữ tiếng Trung
 - Menu **Aa Font** (cạnh Language): chọn phông cho chữ tiếng Trung / dữ liệu game (tên vật phẩm, mô tả, hội thoại NPC, các bảng dữ liệu) và cỡ chữ 100–175%; áp dụng ngay, lưu trong settings.
@@ -48,7 +48,7 @@ Mỗi loại file một tab: **Elements · Path · Objects · Domains · Drops �
 | Task NPC | `task_npc.data` (NPC nhiệm vụ + vị trí) | Đọc/sửa, giống từng byte |
 | VIP | `vipaward.data` (quà VIP) | Đọc/sửa, giống từng byte |
 | Areas / Lua | `precinct.clt`, `region.clt`, `*.lua`, `*.txt` | Trình sửa văn bản, giữ nguyên bảng mã (UTF-16/UTF-8/GBK) và kiểu xuống dòng |
-| Tasks | `tasks.data` + `tasks.data1…62` | Chỉ xem hex (chưa giải mã) |
+| Tasks | `tasks.data` (index + MD5) + `tasks.data1…61` (mỗi file ≤ 300 task) | 18 276 task: sửa **tên task**, **hội thoại NPC** (~37k cửa sổ), **chữ nút lựa chọn** (~46k), **mô tả / văn bản khác** (~33k); Hán Việt, xuất/nhập, lịch sử sửa. Lưu: ghi lại các pack đã sửa (+ .bak) và cập nhật MD5 trong `tasks.data`. Phần logic task giữ nguyên byte (chưa giải mã từng field). Xem `research/formats/tasks.md` |
 | Drops / Quiz / NPC Gen / AI | file phía server (`extra_drops.sev`, `npcgen.data`, `aipolicy.data`…) | Chỉ xem hex – cần chép file mẫu từ máy chủ để giải mã |
 
 ### Sửa, xuất/nhập, lịch sử sửa (mọi tab)
@@ -87,7 +87,8 @@ ElementsCli info    <elements.data>
 ElementsCli verify  <elements.data>
 ElementsCli export  <elements.data> out.csv [--glossary] [--all] [--lists 0,3,9]
 ElementsCli import  <elements.data> in.csv [--out new.data]
-ElementsCli data    <file|thư mục> [module]      # gshop, domain, path, task_npc, vipaward… (chỉ đọc)
+ElementsCli data    <file|thư mục> [module]      # gshop, domain, path, task_npc, vipaward, tasks… (chỉ đọc)
+ElementsCli tasks-test <tasks.data> <thư mục trống>  # thử sửa → lưu → đọc lại trên bản sao
 ```
 
 ## Cấu trúc
@@ -104,5 +105,18 @@ research/          ghi chú định dạng + script Python khảo sát
 - Thư mục `schemas/` lấy từ dữ liệu nhúng trong JD IDE – chỉ dùng cá nhân.
 - Client đọc `elements.data`; **server cũng có bản elements.data riêng** – sửa chỉ số (không chỉ chữ) thì phải đồng bộ cả hai.
 - Font game phải hỗ trợ tiếng Việt có dấu, nếu không chữ sẽ hiện ô vuông.
-- Nhiều văn bản khác không nằm trong elements.data – theo cách tổ chức thường thấy ở engine PW: mô tả item (`item_ext_desc.txt` trong configs), nhiệm vụ (`tasks.data`), giao diện (`interfaces.pck`). Chưa kiểm tra trên client này.
-# trutien_zhuxian_edit_elements
+- Nhiều văn bản khác không nằm trong elements.data – theo cách tổ chức thường thấy ở engine PW: mô tả item (`item_ext_desc.txt` trong configs), nhiệm vụ (`tasks.data` – đã hỗ trợ ở tab Tasks), giao diện (`interfaces.pck`).
+
+## Tác giả · About
+- **Tác giả:** cuongpzo · **Nơi ở:** Việt Nam
+- **Diễn đàn:** https://forum.ragezone.com/members/cuongpzo11.2000582524/
+- **Mã nguồn:** https://github.com/cuongpzo/trutien_zhuxian_edit_elements
+- Trong chương trình: menu **Help → About…** (thông tin tác giả, tính năng, điều khoản).
+
+## Quyền sử dụng mã nguồn
+- Miễn phí cho mục đích cá nhân, phi thương mại, học tập và server game riêng.
+- Được đọc, sửa và chia sẻ source code, với điều kiện **giữ ghi công tác giả (cuongpzo)** và đường dẫn tới repository gốc.
+- Bán chương trình / source code hoặc dùng trong sản phẩm có thu phí: cần tác giả đồng ý bằng văn bản.
+- Dữ liệu game, tên, icon, font thuộc chủ sở hữu tương ứng; công cụ không liên quan tới nhà phát hành game.
+- Cung cấp nguyên trạng, không bảo hành – luôn sao lưu file game trước khi sửa.
+

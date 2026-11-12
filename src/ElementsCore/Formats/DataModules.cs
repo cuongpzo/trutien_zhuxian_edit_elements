@@ -9,7 +9,9 @@ public sealed class ModuleInfo
     public required string Title { get; init; }
     /// <summary>Segoe Fluent / MDL2 icon glyph.</summary>
     public required string Glyph { get; init; }
-    public required string Description { get; init; }
+    private readonly string _description = "";
+    /// <summary>One-line explanation (in the current UI language).</summary>
+    public required string Description { get => L.Retranslate(_description) ?? ""; init => _description = value; }
     /// <summary>File name patterns ("gshop*.data"), used by the open dialog and the client file finder.</summary>
     public required string[] Patterns { get; init; }
     /// <summary>Where the files live relative to the client root ("element\data", "element\maps\*"), or null (server side / anywhere).</summary>
@@ -50,7 +52,7 @@ public static class DataModules
                 Description = L.T("precinct.clt / region.clt of each map – areas, background music, respawn points."),
                 Patterns = ["precinct.clt", "region.clt", "*.clt", "*.sev"], ClientFolder = @"element\maps\*" },
         new() { Key = "tasks", Title = "Tasks", Glyph = "",
-                Description = L.T("tasks.data – tasks."),
+                Description = L.T("tasks.data + tasks.data1…N – task names, NPC dialogues and option texts (task logic kept as is)."),
                 Patterns = ["tasks.data", "tasks.data*"], ClientFolder = @"element\data" },
         new() { Key = "dyntasks", Title = "Dyn Tasks", Glyph = "",
                 Description = L.T("dyn_tasks.data – dynamic tasks / events."),
@@ -85,6 +87,7 @@ public static class DataModules
         new("vip", VipAwardFile.Sniff, VipAwardFile.Parse),
         new("gshop", GShopFile.Sniff, GShopFile.Parse),
         new("dyntasks", DynTasksFile.Sniff, DynTasksFile.Parse),
+        new("tasks", TasksFile.Sniff, TasksFile.Parse),
     ];
 
     private static string FormatKey(string module) => module == "objects" ? "path" : module;

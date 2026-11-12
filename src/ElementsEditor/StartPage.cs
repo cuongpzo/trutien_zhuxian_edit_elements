@@ -8,8 +8,9 @@ namespace ElementsEditor;
 /// the recent list (Documents\TruTien Elements Editor) and the matching files found in the client.
 /// Files can also be dropped anywhere on the page.
 /// </summary>
-public sealed class StartPage : Panel
+public sealed class StartPage : Panel, ILocalizable
 {
+    private readonly Label _title;
     private readonly ModuleInfo _m;
     private readonly RecentStore _recent;
     private readonly Func<string?> _clientRoot;
@@ -34,7 +35,7 @@ public sealed class StartPage : Panel
         Controls.Add(_card);
 
         var logo = new PictureBox { Image = AppIcon.Logo, SizeMode = PictureBoxSizeMode.Zoom, Size = new Size(64, 64), BackColor = Color.Transparent };
-        var title = new Label { Text = L.F("Open {0}", string.Join(" / ", m.Patterns.Take(2))), Font = new Font("Segoe UI", 14F, FontStyle.Bold), AutoSize = false, Height = 32, TextAlign = ContentAlignment.MiddleCenter, UseMnemonic = false };
+        var title = _title = new Label { Text = L.F("Open {0}", string.Join(" / ", m.Patterns.Take(2))), Font = new Font("Segoe UI", 14F, FontStyle.Bold), AutoSize = false, Height = 32, TextAlign = ContentAlignment.MiddleCenter, UseMnemonic = false };
         var desc = new Label
         {
             Text = m.Description + (m.ServerSide ? "\n" + L.T("This is a server-side file (on the server, not in the client) – copy it to this computer, then open it.") : "")
@@ -119,6 +120,13 @@ public sealed class StartPage : Panel
     {
         _card.Left = Math.Max(10, (ClientSize.Width - _card.Width) / 2);
         _card.Top = Math.Max(10, (ClientSize.Height - _card.Height) / 2);
+    }
+
+    /// <summary>Language switched: texts composed here; the lists are rebuilt only when shown.</summary>
+    public void OnLanguageChanged()
+    {
+        _title.Text = L.F("Open {0}", string.Join(" / ", _m.Patterns.Take(2)));
+        if (Visible && Parent?.Visible == true) Refresh2();
     }
 
     /// <summary>Reloads the recent list and the client file list.</summary>

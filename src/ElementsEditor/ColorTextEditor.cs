@@ -149,8 +149,9 @@ public sealed class GameTextPreview : Control
 }
 
 /// <summary>Row of colour swatches that inserts ^RRGGBB codes into a TextBox (wraps the selection).</summary>
-public sealed class ColorCodeBar : FlowLayoutPanel
+public sealed class ColorCodeBar : FlowLayoutPanel, ILocalizable
 {
+    private readonly List<(Control Swatch, string Code, string Name)> _swatches = new();
     private readonly TextBox _target;
     private string _last = "ffcb4a";
     private readonly LinkLabel _insertLast;
@@ -167,7 +168,8 @@ public sealed class ColorCodeBar : FlowLayoutPanel
         foreach (var (code, name) in GameColors.Palette)
         {
             var sw = new Swatch(ColorTranslator.FromHtml("#" + code));
-            _tip.SetToolTip(sw, $"{name}  ^{code}\n" + L.T("Click to insert; if text is selected, it is coloured and then set back to white."));
+            _swatches.Add((sw, code, name));
+            _tip.SetToolTip(sw, SwatchTip(code, name));
             var c = code;
             sw.Click += (_, _) => Insert(c);
             Controls.Add(sw);
@@ -186,6 +188,15 @@ public sealed class ColorCodeBar : FlowLayoutPanel
     }
 
     private void UpdateLast() => _insertLast.Text = L.F("Insert ^{0}", _last);
+
+    private static string SwatchTip(string code, string name) =>
+        $"{L.Retranslate(name)}  ^{code}\n" + L.T("Click to insert; if text is selected, it is coloured and then set back to white.");
+
+    public void OnLanguageChanged()
+    {
+        foreach (var (sw, code, name) in _swatches) _tip.SetToolTip(sw, SwatchTip(code, name));
+        UpdateLast();
+    }
 
     public void Insert(string code)
     {

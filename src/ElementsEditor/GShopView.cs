@@ -498,7 +498,7 @@ public sealed class GShopView : Panel, IModuleView
         tb.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Commit(); } };
         tb.TextChanged += (_, _) => UpdateHint();
         if (col.IsText) GameFont.Bind(tb);
-        if (col.Note != null) new ToolTip().SetToolTip(tb, col.Note);
+        if (col.Note != null) UiText.Tips.SetToolTip(tb, col.Note);
         s.AddRow(label, col.Note, tb, after);
         if (wide) s.Stretch.Add((tb, 230));
         _loaders.Add(() => { var v = Value(); if (tb.Text != v) tb.Text = v; UpdateHint(); });
@@ -799,7 +799,7 @@ public sealed class GShopView : Panel, IModuleView
         {
             var row = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = new Padding(0, 2, 0, 2) };
             var l = new Label { Text = label, Width = 120, TextAlign = ContentAlignment.MiddleRight, ForeColor = Color.DimGray, Margin = new Padding(0, 4, 8, 0), Height = 22, UseMnemonic = false };
-            if (tip != null) new ToolTip().SetToolTip(l, tip);
+            if (tip != null) UiText.Tips.SetToolTip(l, tip);
             row.Controls.Add(l);
             row.Controls.AddRange(controls);
             _rows.Controls.Add(row);

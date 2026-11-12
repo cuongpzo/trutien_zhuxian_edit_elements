@@ -25,6 +25,7 @@ if (args.Length < 2)
           [--schemas <dir>]                       Schema folder (default: auto-detect next to the exe)
           data        <file|folder> [module]      Other files (gshop, domain, path, task_npc, vipaward…):
                                                   format, row count, byte-identical rewrite check (read-only)
+          tasks-test  <tasks.data> <empty out folder> Rebuild check + edit/save/re-read test on a copy
         """);
     return 1;
 }
@@ -48,8 +49,71 @@ if (args[0].Equals("data", StringComparison.OrdinalIgnoreCase))
         if (!same) bad++;
         Console.WriteLine($"{Path.GetFileName(f),-24} {(same ? "OK  " : "BAD ")} {df.FormatName} · {string.Join(", ", df.Tables.Select(t => $"{t.Name} {t.Rows.Count}"))}");
         foreach (var w in df.Warnings.Take(5)) Console.WriteLine("    ! " + w);
+        if (df is ElementsCore.Formats.TasksFile tfile && !tfile.RebuildEqualsOriginal(out var diff)) { bad++; Console.WriteLine($"    BAD rebuild through the text editor path: {diff}"); }
     }
     return bad == 0 ? 0 : 2;
+}
+
+if (args[0].Equals("tasks-dump", StringComparison.OrdinalIgnoreCase) && args.Length >= 3)
+{
+    // debugging aid: every text found in the tasks, tab separated
+    var tf = ElementsCore.Formats.TasksFile.Parse(File.ReadAllBytes(args[1]), args[1]);
+    using var sw1 = new StreamWriter(args[2], false, new UTF8Encoding(true));
+    foreach (var t in tf.Tables)
+        foreach (var r in t.Rows)
+            sw1.WriteLine(t.Name + "\t" + string.Join("\t", r.Values.Select(v => (v?.ToString() ?? "").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", " "))));
+    return 0;
+}
+
+if (args[0].Equals("tasks-test", StringComparison.OrdinalIgnoreCase) && args.Length >= 3)
+{
+    // edit test on a copy: change name / dialogue / text / option of a few tasks, save into the out folder, read back
+    var src = args[1]; var outDir = args[2];
+    Directory.CreateDirectory(outDir);
+    if (Directory.GetFiles(outDir).Length > 0) { Console.WriteLine("Out folder must be empty."); return 1; }
+    var sw0 = Stopwatch.StartNew();
+    var tf = ElementsCore.Formats.TasksFile.Parse(File.ReadAllBytes(src), src);
+    Console.WriteLine($"Read in {sw0.ElapsedMilliseconds} ms: {tf.FormatName} · {string.Join(", ", tf.Tables.Select(t => $"{t.Name} {t.Rows.Count}"))}");
+    foreach (var w in tf.Warnings.Take(5)) Console.WriteLine("  ! " + w);
+    Console.WriteLine("Rebuild check: " + (tf.RebuildEqualsOriginal(out var d0) ? "OK" : "BAD " + d0));
+    var rnd = new Random(7);
+    var edits = new List<(int T, int R, string V)>();
+    void Edit(int t, int r, int col, string v) { tf.Tables[t].Rows[r][col] = v; edits.Add((t, r, v)); }
+    var tt = tf.Tables;
+    for (int i = 0; i < 40; i++)
+    {
+        int r = rnd.Next(tt[0].Rows.Count); Edit(0, r, 3, "Tên thử " + i);
+        r = rnd.Next(tt[1].Rows.Count); Edit(1, r, 5, tt[1].Rows[r].Text(5) + " — Việt hoá thử " + i + " ^ffcb4a màu");
+        r = rnd.Next(tt[1].Rows.Count); Edit(1, r, 5, "Ngắn");
+        r = rnd.Next(tt[2].Rows.Count); Edit(2, r, 5, "Lựa chọn " + i);
+    }
+    var target = Path.Combine(outDir, Path.GetFileName(src));
+    sw0.Restart();
+    tf.Save(target, backup: false);
+    Console.WriteLine($"Saved {Directory.GetFiles(outDir).Length} file(s) in {sw0.ElapsedMilliseconds} ms");
+    // packs that were not changed are not written to another folder? (save-as writes all) → read back
+    var back = ElementsCore.Formats.TasksFile.Parse(File.ReadAllBytes(target), target);
+    int fail = 0;
+    for (int t = 0; t < 3; t++)
+    {
+        var a = tf.Tables[t]; var b = back.Tables[t];
+        if (t == 0 && a.Rows.Count != b.Rows.Count) { Console.WriteLine("row count differs"); fail++; }
+    }
+    foreach (var (t, r, v) in edits)
+    {
+        var row = tf.Tables[t].Rows[r];
+        int col = t == 0 ? 3 : 5;
+        // find the same item in the re-read file by (pack, slot, offset)
+        var match = back.Tables[t].Rows.FirstOrDefault(x => t == 0
+            ? x.Long(0) == row.Long(0) && x.Long(1) == row.Long(1)
+            : x.Long(0) == row.Long(0) && x.Long(1) == row.Long(1) && x.Long(t == 1 ? 4 : 3) == row.Long(t == 1 ? 4 : 3));
+        var got = match?.Text(col);
+        var want = row.Text(col);
+        if (got != want) { fail++; if (fail < 10) Console.WriteLine($"  MISMATCH table {t} row {r}: want \"{want}\" got \"{got ?? "(not found)"}\""); }
+    }
+    Console.WriteLine($"Index MD5 check: {(back.Warnings.Any(w => w.Contains("MD5")) ? "BAD" : "OK")}");
+    Console.WriteLine(fail == 0 ? $"Edit test OK ({edits.Count} edits)" : $"Edit test: {fail} mismatch(es)");
+    return fail == 0 ? 0 : 2;
 }
 
 string Opt(string name, string? def = null) { int i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : def!; }

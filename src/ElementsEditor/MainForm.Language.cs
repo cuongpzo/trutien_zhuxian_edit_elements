@@ -4,8 +4,8 @@ namespace ElementsEditor;
 
 /// <summary>
 /// "Language" menu on the main menu bar (every tab): English (built in) plus every
-/// lang\&lt;code&gt;.json next to the exe. Choosing one saves it and restarts the program
-/// (the usual unsaved-changes warning comes first).
+/// lang\&lt;code&gt;.json next to the exe. Choosing one switches the whole program at once – no restart:
+/// open files, selections and unsaved edits stay; only the UI texts change (see <see cref="UiText"/>).
 /// </summary>
 public sealed partial class MainForm
 {
@@ -38,11 +38,21 @@ public sealed partial class MainForm
     private void SwitchLanguage(string code)
     {
         if (string.Equals(code, L.Code, StringComparison.OrdinalIgnoreCase)) return;
-        _settings.Language = code;
-        _settings.Save();
-        var name = L.Available().FirstOrDefault(l => l.Code == code)?.Name ?? code;
-        if (Msg.Show(L.F("The language is now {0}. Restart the program to apply it?", name), "Language",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-            Application.Restart(); // closing still asks about unsaved changes
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        Cursor = Cursors.WaitCursor;
+        try
+        {
+            L.Load(code);
+            _settings.Language = L.Code;
+            _settings.Save();
+            UiText.RelocalizeAll();
+            // texts composed by the main window itself
+            if (_menu.Items["mnuFont"] is ToolStripItem font) font.Text = "Aa " + L.T("Font");
+            ShowModule(_activeModule);
+            UpdateWindowTitle();
+        }
+        finally { Cursor = Cursors.Default; }
+        var name = L.Available().FirstOrDefault(l => string.Equals(l.Code, L.Code, StringComparison.OrdinalIgnoreCase))?.Name ?? "English";
+        _lblStatus.Text = L.F("Language: {0} ({1} ms)", name, sw.ElapsedMilliseconds);
     }
 }

@@ -121,7 +121,10 @@ public sealed partial class MainForm : ThemedForm
         mTools.DropDownItems.Add(new ToolStripSeparator());
         mTools.DropDownItems.Add(Theme.Dark ? L.T("Switch to &light theme") : L.T("Switch to &dark theme"), null, (_, _) => ToggleTheme());
 
-        menu.Items.AddRange([mFile, mEdit, mLoc, mTools]);
+        var mHelp = new ToolStripMenuItem(L.T("&Help")) { Name = "mnuHelp" };
+        mHelp.DropDownItems.Add(L.T("&About…"), null, (_, _) => { using var dlg = new AboutDialog(); dlg.ShowDialog(this); });
+
+        menu.Items.AddRange([mFile, mEdit, mLoc, mTools, mHelp]);
         MainMenuStrip = menu;
 
         // 2. ToolStrip
